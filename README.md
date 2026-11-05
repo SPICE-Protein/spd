@@ -33,7 +33,7 @@ pnpm build
 
 ## Deployment
 
-The frontend ships as a Cloudflare Pages project behind a small pass-through Worker. Build and release steps, including the experimental `d-exp.spicebio.top` topology, are in [DEPLOY.md](DEPLOY.md).
+Cloudflare Pages builds and deploys `main` on every push. Production: [d.spicebio.top](https://d.spicebio.top).
 
 ## Repository
 
