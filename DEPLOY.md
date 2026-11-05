@@ -1,6 +1,12 @@
-# Deployment (experimental: d-exp.spicebio.top)
+# Deployment
 
 The frontend builds with `@sveltejs/adapter-cloudflare` into `.svelte-kit/cloudflare` (`_worker.js` plus static assets). The API is fixed to `https://d-api.spicebio.top` at production build time (`src/lib/api/base.ts`; dev uses an empty base and the Vite proxy).
+
+## Production Pages project (d.spicebio.top)
+
+`spd-front` is a Git-connected Cloudflare Pages project for `SPICE-Protein/spd` on the `main` branch. Cloudflare runs `pnpm build` with Node 22 and pnpm 11.21.0, then publishes `.svelte-kit/cloudflare`. Pushes to `main` build production; other branches produce preview deployments.
+
+Cloudflare Pages still rejects `.top` custom domains, so `d.spicebio.top` is a Worker custom domain (`deploy/pages-router-prod/`) that forwards to `https://spd-front.pages.dev`. The Worker only rewrites the Host; paths, headers, cookies and bodies pass through.
 
 ## Current topology (as of 2026-09-30)
 

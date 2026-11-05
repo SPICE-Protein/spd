@@ -1,0 +1,13 @@
+name = "spd-front-router-prod"
+main = "router.js"
+compatibility_date = "2026-11-05"
+
+# Cloudflare Pages custom domains still reject the .top TLD
+# ("invalid TLD" 8000015), so the production hostname is a Worker custom
+# domain that forwards every request to the Git-connected Pages project.
+[[routes]]
+pattern = "d.spicebio.top"
+custom_domain = true
+
+[vars]
+PAGES_ORIGIN = "https://spd-front.pages.dev"
