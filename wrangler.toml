@@ -1,0 +1,4 @@
+name = "spd-front"
+pages_build_output_dir = ".svelte-kit/cloudflare"
+compatibility_date = "2026-11-05"
+compatibility_flags = ["nodejs_compat"]
