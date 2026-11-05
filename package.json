@@ -12,7 +12,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "wrangler types --config=deploy/pages-router/wrangler.toml --check && vite build",
-		"preview": "pnpm run build && wrangler dev --config wrangler.jsonc",
+		"preview": "pnpm run build && wrangler dev --config wrangler.worker.jsonc",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "wrangler types --config=deploy/pages-router/wrangler.toml --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -21,7 +21,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"gen": "wrangler types --config=deploy/pages-router/wrangler.toml",
-		"deploy": "pnpm run build && wrangler deploy --config wrangler.jsonc",
+		"deploy": "pnpm run build && wrangler deploy --config wrangler.worker.jsonc",
 		"cf-typegen": "wrangler types --config=deploy/pages-router/wrangler.toml"
 	},
 	"devDependencies": {
