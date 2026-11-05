@@ -1,0 +1,13 @@
+diff --git a/dist/KekuleViewer.svelte b/dist/KekuleViewer.svelte
+index ab593e2f3c35435dbead62df5087224204a0f992..73d37c222a10bf29ffe86abf32c920ce99ca03a9 100644
+--- a/dist/KekuleViewer.svelte
++++ b/dist/KekuleViewer.svelte
+@@ -67,7 +67,7 @@
+ 
+   let container:  HTMLDivElement | undefined = $state()
+   let mountEl:    HTMLDivElement | null = $state(null)
+-  let viewer:     unknown = $state(null)
++  let viewer:     unknown = null
+   let isLoading:  boolean = $state(true)
+   let errorMsg:   string | null = $state(null)
+   let K:          KekuleModule | null = $state(null)

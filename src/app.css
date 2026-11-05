@@ -1,0 +1,435 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn-svelte/tailwind.css';
+@import '@fontsource-variable/noto-serif';
+@import '@fontsource-variable/eb-garamond';
+@import "@fontsource-variable/jetbrains-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn neutral base palette (tokens consumed via @theme inline below) */
+:root {
+	--radius: 0.625rem;
+	--background: oklch(1 0 0);
+	--foreground: oklch(0.145 0 0);
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.145 0 0);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.145 0 0);
+	--primary: oklch(0.205 0 0);
+	--primary-foreground: oklch(0.985 0 0);
+	--secondary: oklch(0.97 0 0);
+	--secondary-foreground: oklch(0.205 0 0);
+	--muted: oklch(0.97 0 0);
+	--muted-foreground: oklch(0.556 0 0);
+	--accent: oklch(0.97 0 0);
+	--accent-foreground: oklch(0.205 0 0);
+	--destructive: oklch(0.577 0.245 27.325);
+	--border: oklch(0.922 0 0);
+	--input: oklch(0.922 0 0);
+	--ring: oklch(0.708 0 0);
+	--chart-1: oklch(0.87 0 0);
+	--chart-2: oklch(0.556 0 0);
+	--chart-3: oklch(0.439 0 0);
+	--chart-4: oklch(0.371 0 0);
+	--chart-5: oklch(0.269 0 0);
+	--sidebar: oklch(0.985 0 0);
+	--sidebar-foreground: oklch(0.145 0 0);
+	--sidebar-primary: oklch(0.205 0 0);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.97 0 0);
+	--sidebar-accent-foreground: oklch(0.205 0 0);
+	--sidebar-border: oklch(0.922 0 0);
+	--sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+	--background: oklch(0.145 0 0);
+	--foreground: oklch(0.985 0 0);
+	--card: oklch(0.205 0 0);
+	--card-foreground: oklch(0.985 0 0);
+	--popover: oklch(0.205 0 0);
+	--popover-foreground: oklch(0.985 0 0);
+	--primary: oklch(0.922 0 0);
+	--primary-foreground: oklch(0.205 0 0);
+	--secondary: oklch(0.269 0 0);
+	--secondary-foreground: oklch(0.985 0 0);
+	--muted: oklch(0.269 0 0);
+	--muted-foreground: oklch(0.708 0 0);
+	--accent: oklch(0.269 0 0);
+	--accent-foreground: oklch(0.985 0 0);
+	--destructive: oklch(0.704 0.191 22.216);
+	--border: oklch(1 0 0 / 10%);
+	--input: oklch(1 0 0 / 15%);
+	--ring: oklch(0.556 0 0);
+	--chart-1: oklch(0.87 0 0);
+	--chart-2: oklch(0.556 0 0);
+	--chart-3: oklch(0.439 0 0);
+	--chart-4: oklch(0.371 0 0);
+	--chart-5: oklch(0.269 0 0);
+	--sidebar: oklch(0.205 0 0);
+	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar-primary: oklch(0.488 0.243 264.376);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.269 0 0);
+	--sidebar-accent-foreground: oklch(0.985 0 0);
+	--sidebar-border: oklch(1 0 0 / 10%);
+	--sidebar-ring: oklch(0.556 0 0);
+}
+
+/* native widgets (scrollbars, form fields, the OS palette behind canvas
+   areas) must follow the theme too, or dark pages keep light scrollbars */
+:root {
+	color-scheme: light;
+}
+.dark {
+	color-scheme: dark;
+}
+
+@theme inline {
+	--font-serif: 'EB Garamond Variable', 'Noto Serif Variable', Georgia, 'Songti SC', serif;
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--font-mono: 'JetBrains Mono Variable', monospace;
+	--font-heading: 'EB Garamond Variable', serif;
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar: var(--sidebar);
+	--color-chart-5: var(--chart-5);
+	--color-chart-4: var(--chart-4);
+	--color-chart-3: var(--chart-3);
+	--color-chart-2: var(--chart-2);
+	--color-chart-1: var(--chart-1);
+	--radius-2xl: calc(var(--radius) * 1.8);
+	--radius-3xl: calc(var(--radius) * 2.2);
+	--radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
+	/* preset typography: mono body, serif display headings (matches
+	   CardTitle/DialogTitle which already use --font-heading) */
+	h1,
+	h2 {
+		@apply font-heading;
+	}
+	html {
+		@apply font-mono;
+	}
+}
+
+/* Gene viewers (sequence + plasmid map) speak SPD's design language, not
+   the GUI's dark instrument panel: a light palette whose structural colors
+   mirror the site tokens, with saturated-but-readable data hues. The --pix-*
+   names survive from the port so canvas painters and inline styles keep a
+   single source of truth. */
+.gene-view {
+	--pix-bg: var(--background);
+	--pix-bg-2: var(--muted);
+	--pix-bg-3: var(--muted);
+	--pix-panel: var(--card);
+	--pix-border: var(--border);
+	--pix-border-hi: var(--input);
+	--pix-fg: var(--foreground);
+	--pix-fg-dim: var(--muted-foreground);
+	--pix-accent: #d97706;
+	--pix-accent-2: #b45309;
+	--pix-green: #059669;
+	--pix-red: #dc2626;
+	--pix-cyan: #0891b2;
+	--pix-purple: #7c3aed;
+	--pix-font: "JetBrains Mono Variable", "JetBrains Mono", "SFMono-Regular", "Fira Code", Menlo, monospace;
+	background: var(--pix-bg);
+	color: var(--pix-fg);
+	font-family: var(--pix-font);
+	border: 1px solid var(--pix-border);
+	overflow: hidden;
+}
+
+/* PageSearch uses the CSS Custom Highlight API rather than mutating text
+   nodes. Amber works on both themes; the active hit is stronger so "next"
+   is visible at a glance. */
+::highlight(spd-page-find) {
+	background-color: #fde68a;
+	color: #111827;
+}
+::highlight(spd-page-find-active) {
+	background-color: #f59e0b;
+	color: #111827;
+}
+
+/* Ctrl+P still prints whichever page is open; the per-record print button
+   opens /print/… instead and restyles the whole article. These rules keep the
+   browser path readable: chrome disappears, colour collapses to ink, and
+   disclosure triangles open before the dialog paints. */
+@page {
+	size: A4;
+	margin: 16mm 15mm 18mm;
+}
+
+@media print {
+	:root,
+	.dark {
+		color-scheme: light !important;
+		--background: #fff;
+		--foreground: #111;
+		--card: #fff;
+		--card-foreground: #111;
+		--popover: #fff;
+		--popover-foreground: #111;
+		--primary: #111;
+		--primary-foreground: #fff;
+		--secondary: #f5f5f5;
+		--secondary-foreground: #111;
+		--muted: #f5f5f5;
+		--muted-foreground: #555;
+		--accent: #f5f5f5;
+		--accent-foreground: #111;
+		--border: #bbb;
+		--input: #bbb;
+		--ring: #999;
+	}
+
+	html,
+	body {
+		background: #fff !important;
+		color: #111 !important;
+	}
+
+	html {
+		font-family: var(--font-serif);
+		font-size: 10.5pt;
+	}
+
+	body {
+		line-height: 1.55;
+	}
+
+	/* app chrome and controls never belong on paper */
+	header.sticky,
+	[data-print-hide],
+	[role='tablist'],
+	[role='dialog'],
+	[data-sonner-toaster],
+	.fixed,
+	details > summary,
+	input,
+	select,
+	textarea {
+		display: none !important;
+	}
+
+	main {
+		width: auto !important;
+		max-width: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	*,
+	*::before,
+	*::after {
+		background: transparent !important;
+		box-shadow: none !important;
+		text-shadow: none !important;
+		color: #111 !important;
+		border-color: #b8b8b8 !important;
+		border-radius: 0 !important;
+	}
+
+	.text-muted-foreground,
+	[class*='text-muted'] {
+		color: #555 !important;
+	}
+
+	a {
+		color: #111 !important;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4 {
+		font-family: var(--font-serif);
+		break-after: avoid;
+	}
+
+	h1 {
+		font-size: 24pt;
+		line-height: 1.1;
+		margin: 0 0 6pt;
+	}
+
+	h2 {
+		font-size: 15pt;
+		margin: 16pt 0 6pt;
+		padding-bottom: 2pt;
+		border-bottom: 0.6pt solid #999 !important;
+	}
+
+	h3 {
+		font-size: 12pt;
+		margin: 12pt 0 4pt;
+	}
+
+	/* Section cards become ruled textbook sections instead of boxes */
+	[data-slot='card'] {
+		border: 0 !important;
+		border-top: 0.6pt solid #999 !important;
+		padding: 8pt 0 0 !important;
+		margin: 0 0 14pt !important;
+		overflow: visible !important;
+	}
+
+	[data-slot='card-header'] {
+		padding: 0 !important;
+		margin-bottom: 4pt;
+	}
+
+	[data-slot='card-title'] {
+		font-family: var(--font-serif);
+		font-size: 13pt;
+		font-weight: 600;
+	}
+
+	[data-slot='card-content'] {
+		padding: 0 !important;
+		overflow: visible !important;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		border-top: 0.4pt solid #999 !important;
+		font-size: 9pt;
+	}
+
+	thead {
+		display: table-header-group;
+	}
+
+	tfoot {
+		display: table-footer-group;
+	}
+
+	th,
+	td {
+		border-bottom: 0.4pt solid #ccc !important;
+		padding: 3pt 4pt !important;
+		vertical-align: top;
+	}
+
+	th {
+		text-align: left;
+		font-weight: 600;
+	}
+
+	figure,
+	img,
+	svg,
+	canvas,
+	table,
+	pre,
+	blockquote,
+	[data-print-keep] {
+		break-inside: avoid;
+	}
+
+	tr,
+	li {
+		break-inside: avoid;
+	}
+
+	p,
+	dd,
+	dt {
+		orphans: 3;
+		widows: 3;
+	}
+
+	.max-h-56,
+	.max-h-\[50vh\],
+	.overflow-y-auto,
+	.overflow-x-auto,
+	[class*='max-h-'] {
+		max-height: none !important;
+		overflow: visible !important;
+	}
+
+	pre {
+		background: #f7f7f7 !important;
+		border: 0.5pt solid #ccc !important;
+		padding: 6pt !important;
+		font-family: var(--font-mono);
+		font-size: 8.5pt;
+		line-height: 1.4;
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	code,
+	.font-mono {
+		font-family: var(--font-mono);
+	}
+
+	code {
+		font-size: 9pt;
+	}
+
+	img,
+	canvas {
+		max-width: 100% !important;
+		height: auto !important;
+	}
+
+	.spd-print-footer {
+		display: flex !important;
+		position: fixed;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		justify-content: space-between;
+		gap: 8pt;
+		border-top: 0.4pt solid #ccc;
+		padding-top: 2pt;
+		color: #666 !important;
+		font-family: var(--font-mono);
+		font-size: 8pt;
+	}
+}
+
+.spd-print-footer {
+	display: none;
+}

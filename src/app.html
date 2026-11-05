@@ -1,0 +1,31 @@
+<!doctype html>
+
+<html lang="%paraglide.lang%" dir="%paraglide.dir%">
+	<head>
+		<meta charset="utf-8" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<meta name="text-scale" content="scale" />
+
+		<!-- The first data read (session) is cross-origin; warm the TLS
+		     connection while the JS bundle is still parsing. -->
+		<link rel="preconnect" href="https://d-api.spicebio.top" crossorigin />
+		<link rel="dns-prefetch" href="https://d-api.spicebio.top" />
+		<script>
+			// Replay the saved theme before first paint (src/lib/state/theme.svelte.ts):
+			// a dark-mode visitor must never see a white flash on load.
+			try {
+				var c = localStorage.getItem('spd_theme') || 'system';
+				if (c === 'dark' || (c === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+					document.documentElement.classList.add('dark');
+				}
+			} catch (e) {}
+		</script>
+		%sveltekit.head%
+	</head>
+
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

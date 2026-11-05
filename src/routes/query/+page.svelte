@@ -1,0 +1,250 @@
+<script lang="ts">
+	import { graphQuery } from '$lib/api/client';
+	import { SpdApiError } from '$lib/api/base';
+	import { session } from '$lib/state/session.svelte';
+	import { queryToken } from '$lib/state/query-token.svelte';
+	import { tr, enumLabel } from '$lib/i18n';
+	import { toastErr } from '$lib/state/toast.svelte';
+	import Section from '$lib/components/Section.svelte';
+	import Badge from '$lib/components/Badge.svelte';
+	import Button from '$lib/components/Button.svelte';
+	import JsonBlock from '$lib/components/JsonBlock.svelte';
+	import StatBar from '$lib/components/StatBar.svelte';
+	import QueryNodeEditor from '$lib/components/QueryNodeEditor.svelte';
+	import ResultTree from '$lib/components/ResultTree.svelte';
+	import Input from '$lib/components/Input.svelte';
+	import Textarea from '$lib/components/Textarea.svelte'
+	import {
+		TIERS,
+		tierFor,
+		specsToInput,
+		inputToSpecs,
+		specHeight,
+		treesMinResolutions,
+		newSpec,
+		presetProtein,
+		presetFoldEvidence,
+		presetLineage,
+		type NodeSpec
+	} from '$lib/graph/registry';
+
+	// Presets are builder trees, not JSON strings — the visual path is the
+	// primary one; raw JSON stays as the power-user tab.
+	const PRESETS = [
+		{ key: 'protein_graph', make: presetProtein },
+		{ key: 'fold_evidence', make: presetFoldEvidence },
+		{ key: 'sequence_lineage', make: presetLineage }
+	];
+
+	let roots = $state<NodeSpec[]>([presetProtein()[0]]);
+	let mode = $state<'visual' | 'json'>('visual');
+	let rawText = $state('');
+	let running = $state(false);
+	let result = $state<Record<string, unknown> | null>(null);
+	let error = $state('');
+
+	const tier = $derived(TIERS[tierFor(session.signedIn)]);
+	// A bearer token the caller brought decides the real tier server-side; the
+	// cookie-derived ladder below is only the fallback prediction.
+	const usingToken = $derived(!!queryToken.value);
+	const maxTreeHeight = $derived(Math.max(...roots.map((r) => specHeight(r))));
+	const minRes = $derived(treesMinResolutions(roots));
+	const willBeRejected = $derived(!usingToken && maxTreeHeight > tier.depth);
+
+	// Local mirror of the stored token so typing never re-trims the field;
+	// the store is written on change/blur and cleared explicitly.
+	let tokenDraft = $state(queryToken.value);
+	let tokenRevealed = $state(false);
+	function saveToken() {
+		queryToken.set(tokenDraft);
+	}
+	function clearToken() {
+		queryToken.clear();
+		tokenDraft = '';
+	}
+
+	const currentInput = $derived.by(() => {
+		try {
+			return JSON.stringify(specsToInput(roots), null, 2);
+		} catch {
+			return '{}';
+		}
+	});
+
+	function switchMode(next: 'visual' | 'json') {
+		if (next === mode) return;
+		if (next === 'json') {
+			rawText = currentInput;
+			mode = 'json';
+		} else {
+			try {
+				const parsed = inputToSpecs(JSON.parse(rawText));
+				if (!parsed) throw new Error();
+				roots = parsed;
+				mode = 'visual';
+			} catch {
+				error = tr('query_bad_json');
+			}
+		}
+	}
+
+	function usePreset(key: string) {
+		const p = PRESETS.find((x) => x.key === key);
+		if (!p) return;
+		roots = p.make();
+		if (mode === 'json') rawText = JSON.stringify(specsToInput(roots), null, 2);
+	}
+
+	const idsMissing = $derived(roots.some((r) => !r.id.trim()));
+
+	async function run() {
+		error = '';
+		let body: unknown;
+		try {
+			body = mode === 'visual' ? specsToInput(roots) : JSON.parse(rawText);
+		} catch {
+			error = tr('query_bad_json');
+			return;
+		}
+		if (mode === 'visual' && idsMissing) {
+			error = tr('query_needs_ids');
+			return;
+		}
+		running = true;
+		try {
+			result = await graphQuery.run(body as never, queryToken.value || undefined);
+		} catch (e) {
+			result = null;
+			if (e instanceof SpdApiError) {
+				error = `${e.code}: ${e.message}`;
+				const fe = Object.entries(e.fields ?? {});
+				if (fe.length) error += ' · ' + fe.map(([k, v]) => `${k}: ${v}`).join('; ');
+			} else error = String(e);
+			toastErr(e);
+		} finally {
+			running = false;
+		}
+	}
+
+	const budget = $derived(
+		result ? { used: Number(result.budgetUsed ?? 0), max: Number(result.budgetMax ?? 0) } : null
+	);
+	const resultRoots = $derived(Array.isArray(result?.results) ? (result.results as unknown[]) : []);
+</script>
+
+<div class="mx-auto max-w-4xl space-y-4">
+	<div>
+		<h1 class="text-2xl font-bold">{tr('query_title')}</h1>
+		<p class="mt-1 text-sm text-muted-foreground">{tr('query_intro')}</p>
+	</div>
+
+	<Section title={tr('query_token_title')}>
+		<div class="flex flex-wrap items-end gap-2">
+			<label class="min-w-64 flex-1 text-sm">
+				<span class="text-xs text-muted-foreground">{tr('query_token_label')}</span>
+				<Input
+					name="query_token"
+					type={tokenRevealed ? 'text' : 'password'}
+					placeholder="spd_…"
+					class="mt-1 w-full font-mono text-xs"
+					bind:value={tokenDraft}
+					onchange={saveToken}
+					onblur={saveToken}
+				/>
+			</label>
+			<Button size="sm" variant="ghost" onclick={() => (tokenRevealed = !tokenRevealed)}>{tokenRevealed ? tr('query_token_hide') : tr('query_token_show')}</Button>
+			{#if queryToken.value}<Button size="sm" variant="outline" onclick={clearToken}>{tr('query_token_clear')}</Button>{/if}
+		</div>
+		<p class="mt-2 text-xs text-muted-foreground">
+			{tr('query_token_hint')}
+			<a class="underline" href="/me">{tr('query_token_mint')}</a>.
+		</p>
+		{#if usingToken}
+			<p class="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{tr('query_token_active')}</p>
+		{/if}
+	</Section>
+
+	<div class="flex flex-wrap gap-2">
+		{#each PRESETS as p (p.key)}
+			<Button size="xs" variant="outline" onclick={() => usePreset(p.key)}>{tr(`query_preset_${p.key}`)}</Button>
+		{/each}
+		<span class="mx-2 border-l"></span>
+		<Button size="xs" variant={mode === 'visual' ? 'secondary' : 'ghost'} onclick={() => switchMode('visual')}>{tr('query_mode_visual')}</Button>
+		<Button size="xs" variant={mode === 'json' ? 'secondary' : 'ghost'} onclick={() => switchMode('json')}>{tr('query_mode_json')}</Button>
+	</div>
+
+	<Section title={mode === 'visual' ? tr('query_build') : tr('query_input')}>
+		{#if mode === 'visual'}
+			<div class="space-y-3">
+				{#each roots as r, i (i)}
+					<QueryNodeEditor spec={r} isRoot maxDepth={tier.depth} onRemove={roots.length > 1 ? () => roots.splice(i, 1) : undefined} />
+				{/each}
+				{#if roots.length < 25}
+					<Button
+						size="xs"
+						variant="outline"
+						onclick={() => roots.push(newSpec('protein'))}
+					>＋ {tr('query_add_root')}</Button>
+				{/if}
+				<p class="text-xs text-muted-foreground">{tr('query_roots_hint')}</p>
+			</div>
+		{:else}
+			<Textarea name="query_raw" bind:value={rawText} spellcheck={false} monospace class="h-64 w-full p-3 text-xs" />
+		{/if}
+
+		<div class="mt-3 flex flex-wrap items-center gap-2">
+			{#if mode === 'visual'}
+				<Badge tone={willBeRejected ? 'bad' : 'muted'}>
+					{tr('query_height')}: {maxTreeHeight}/{tier.depth}
+				</Badge>
+				<Badge tone={minRes > tier.budget ? 'bad' : 'muted'}>
+					{tr('query_min_resolutions')}: {minRes}/{tier.budget}
+				</Badge>
+				{#if usingToken}
+					<Badge tone="ok">{tr('query_token_tier_badge')}</Badge>
+				{:else}
+					<Badge tone="info">{enumLabel('tk', tierFor(session.signedIn))}</Badge>
+				{/if}
+				{#if willBeRejected}
+					<span class="text-xs text-destructive">{tr(session.signedIn ? 'query_reject_depth_signed' : 'query_reject_depth_anon')}</span>
+				{/if}
+			{/if}
+			<Button class="ml-auto" size="sm" onclick={run} disabled={running || (mode === 'visual' && idsMissing)}>
+				{tr('query_run')}
+			</Button>
+		</div>
+		{#if mode === 'visual' && idsMissing}
+			<p class="mt-1 text-xs text-amber-700 dark:text-amber-300">{tr('query_needs_ids')}</p>
+		{/if}
+	</Section>
+
+	{#if error}
+		<div class="rounded-none border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-line">{error}</div>
+	{/if}
+
+	{#if result}
+		<Section title={tr('query_result')}>
+			<div class="mb-3 flex flex-wrap items-center gap-3 text-sm">
+				<Badge tone={String(result.tier) === 'unlimited' ? 'ok' : 'info'}>{enumLabel('tk', String(result.tier ?? ''))}</Badge>
+				{#if budget}
+					<div class="min-w-40 flex-1">
+						<StatBar items={[{ label: tr('query_budget'), value: budget.used, hint: `max ${budget.max}` }]} />
+					</div>
+					<span class="font-mono text-xs text-muted-foreground">{budget.used}/{budget.max}</span>
+				{/if}
+			</div>
+			<div class="space-y-3">
+				{#each resultRoots as r, i (i)}
+					<ResultTree value={r} />
+				{/each}
+			</div>
+			<JsonBlock class="mt-3" label={tr('query_raw')} value={result.results} />
+		</Section>
+	{/if}
+
+	{#if !session.signedIn}
+		<p class="text-xs text-muted-foreground">{tr('query_anon_hint')}</p>
+	{/if}
+</div>
+
+<svelte:head><title>{tr('query_title')} · SPD</title></svelte:head>

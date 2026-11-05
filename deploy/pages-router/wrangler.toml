@@ -1,0 +1,14 @@
+name = "spd-front-router"
+main = "router.js"
+compatibility_date = "2026-09-02"
+
+# Front door for the experimental frontend. Cloudflare Pages rejects .top
+# custom domains ("invalid TLD" 8000015), but Workers custom domains accept
+# them (d-api precedent) — so a pass-through Worker serves d-exp and forwards
+# every request to the Pages project over CF's internal routing.
+[[routes]]
+pattern = "d-exp.spicebio.top"
+custom_domain = true
+
+[vars]
+PAGES_ORIGIN = "https://spd-front-exp.pages.dev"

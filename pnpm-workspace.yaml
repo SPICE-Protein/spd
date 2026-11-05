@@ -1,0 +1,8 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@scarf/scarf': false
+  esbuild: true
+  # Mol* telemetry pinger — decline the install-time script.
+  workerd: true
+patchedDependencies:
+  kekule-svelte@0.1.2: patches/kekule-svelte@0.1.2.patch
