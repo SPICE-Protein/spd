@@ -16,29 +16,7 @@
   } from './utils/rowRender';
 
   // Svelte 5 props
-  let {
-    row,
-    dna = '',
-    showEnzymes = true,
-    showFeatures = true,
-    showTranslations = false,
-    restrictionSites = [],
-    geneFeatures = [],
-    parts = [],
-    primers = [],
-    selectionStart = $bindable(1),
-    selectionEnd = $bindable(1),
-    containerWidth = 700,
-    hoveredFeature = $bindable(null),
-    onMouseDown = (pos: number, e: MouseEvent) => {},
-    onMouseMove = (pos: number, e: MouseEvent) => {},
-    onMouseUp = () => {},
-    originOffset = 0,
-    relativeNumbering = false,
-    showSingleStrand = false,
-    colorTheme = 'monochrome',
-    modifiedRanges = [] as { start: number; end: number }[],
-  } = $props<{
+  type Props = {
     row: {
       rowIdx: number;
       start: number;
@@ -65,7 +43,30 @@
     showSingleStrand?: boolean;
     colorTheme?: string;
     modifiedRanges?: { start: number; end: number }[];
-  }>();
+  };
+  let {
+    row,
+    dna = '',
+    showEnzymes = true,
+    showFeatures = true,
+    showTranslations = false,
+    restrictionSites = [],
+    geneFeatures = [],
+    parts = [],
+    primers = [],
+    selectionStart = $bindable(1),
+    selectionEnd = $bindable(1),
+    containerWidth = 700,
+    hoveredFeature = $bindable(null),
+    onMouseDown = (pos: number, e: MouseEvent) => {},
+    onMouseMove = (pos: number, e: MouseEvent) => {},
+    onMouseUp = () => {},
+    originOffset = 0,
+    relativeNumbering = false,
+    showSingleStrand = false,
+    colorTheme = 'monochrome',
+    modifiedRanges = [] as { start: number; end: number }[],
+  }: Props = $props();
 
   let canvasEl = $state<HTMLCanvasElement | null>(null);
   let dpr = $state(1);

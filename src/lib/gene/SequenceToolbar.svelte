@@ -5,19 +5,20 @@
 
   import { Scissors, Milestone, Dna } from '@lucide/svelte';
 
-  let {
-    showEnzymes = $bindable(true),
-    showFeatures = $bindable(true),
-    showTranslations = $bindable(false),
-    proteinMode = false
-  } = $props<{
+  type Props = {
     showEnzymes: boolean;
     showFeatures: boolean;
     showTranslations: boolean;
     /** Protein chains have no cut sites and translate from nothing: the
      * corresponding toggles leave the toolbar in protein mode. */
     proteinMode?: boolean;
-  }>();
+  };
+  let {
+    showEnzymes = $bindable(true),
+    showFeatures = $bindable(true),
+    showTranslations = $bindable(false),
+    proteinMode = false
+  }: Props = $props();
 </script>
 
 <!-- Display toggles only — SPD's viewers are read-only, so the GUI's

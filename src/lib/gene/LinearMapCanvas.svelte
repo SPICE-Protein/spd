@@ -5,6 +5,19 @@
   import * as m from '$lib/paraglide/messages.js';
   import { calculateRowYOffsets } from '$lib/gene/utils/rowRender';
   type Tool = 'select' | 'pan' | 'rotate';
+  type Props = {
+    plasmidName: string;
+    dnaSeq: string;
+    geneFeatures: any[];
+    restrictionSites: any[];
+    activeFeatureId: number | null;
+    selectionStart: number;
+    selectionEnd: number;
+    exportPng: (() => Promise<void>) | null;
+    onEnzymeClick?: ((site: { name: string; pos: number }) => void) | null;
+    activeTool: Tool;
+    mapRef: { zoomIn: () => void; zoomOut: () => void; resetView: () => void } | null;
+  };
   let {
     plasmidName = 'plasmid',
     dnaSeq = $bindable(''),
@@ -17,19 +30,7 @@
     onEnzymeClick = null,
     activeTool = 'select',
     mapRef = $bindable<{ zoomIn: () => void; zoomOut: () => void; resetView: () => void } | null>(null)
-  } = $props<{
-    plasmidName: string;
-    dnaSeq: string;
-    geneFeatures: any[];
-    restrictionSites: any[];
-    activeFeatureId: number | null;
-    selectionStart: number;
-    selectionEnd: number;
-    exportPng: (() => Promise<void>) | null;
-    onEnzymeClick?: ((site: { name: string; pos: number }) => void) | null;
-    activeTool: Tool;
-    mapRef: { zoomIn: () => void; zoomOut: () => void; resetView: () => void } | null;
-  }>();
+  }: Props = $props();
   // Internal Canvas states
   let canvasEl = $state<HTMLCanvasElement | null>(null);
   let canvasW = $state(500);

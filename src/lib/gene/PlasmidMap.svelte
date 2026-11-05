@@ -11,6 +11,19 @@
   import LinearMapCanvas from './LinearMapCanvas.svelte';
 
   // Svelte 5 props
+  type Props = {
+    plasmidName: string;
+    dnaSeq: string;
+    geneFeatures: any[];
+    restrictionSites: any[];
+    primers: any[];
+    activeFeatureId: number | null;
+    selectionStart: number;
+    selectionEnd: number;
+    linear: boolean;
+    featuresZIndex?: number;
+    onFocusFeatures?: () => void;
+  };
   let {
     plasmidName = '',
     dnaSeq = $bindable(''),
@@ -23,19 +36,7 @@
     linear = false,
     featuresZIndex = 50,
     onFocusFeatures = () => {}
-  } = $props<{
-    plasmidName: string;
-    dnaSeq: string;
-    geneFeatures: any[];
-    restrictionSites: any[];
-    primers: any[];
-    activeFeatureId: number | null;
-    selectionStart: number;
-    selectionEnd: number;
-    linear: boolean;
-    featuresZIndex?: number;
-    onFocusFeatures?: () => void;
-  }>();
+  }: Props = $props();
 
   // Dialog state for cutting/linearizing plasmid
   let activeSite = $state<{ name: string; pos: number } | null>(null);

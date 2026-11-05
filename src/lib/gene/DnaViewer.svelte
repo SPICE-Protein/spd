@@ -23,28 +23,7 @@
   import SelectionToolkit from './SelectionToolkit.svelte';
   import { getCutsiteLabelHeight, getAnnotationLabelHeight, getAnnotationStackHeight, drawSequenceRowOnCanvas, calculateRowYOffsets } from './utils/rowRender';
 
-  let {
-    dnaSeq = $bindable(''),
-    plasmidName = $bindable(''),
-    codonHost = $bindable('ecoli'),
-    quickDbId = $bindable(''),
-    translatedProtein = '',
-    restrictionSites = [] as { name: string; pos: number; seq: string; color: string; methylated?: boolean; methylationType?: string }[],
-    geneFeatures = $bindable([] as { id: number; name: string; start: number; end: number; type: string; color: string; forward?: boolean; description?: string; residue?: string }[]),
-    parts = [] as { name: string; start: number; end: number }[],
-    primers = [] as { name: string; start: number; end: number; forward?: boolean }[],
-    selectionStart = $bindable(1),
-    selectionEnd = $bindable(1),
-    showSingleStrand = false,
-    colorTheme = 'monochrome',
-    modifiedRanges = [] as { start: number; end: number }[],
-    showEnzymes = $bindable(true),
-    showFeatures = $bindable(true),
-    showTranslations = $bindable(true),
-    mode = 'dna' as 'dna' | 'protein' | 'rna',
-    assertedMass = null as number | null,
-    assertedCrc64 = null as string | null
-  } = $props<{
+  type Props = {
     dnaSeq: string;
     plasmidName: string;
     codonHost?: 'ecoli' | 'yeast' | 'human';
@@ -72,7 +51,29 @@
      * the viewer displays what the record quotes, computes nothing. */
     assertedMass?: number | null;
     assertedCrc64?: string | null;
-  }>();
+  };
+  let {
+    dnaSeq = $bindable(''),
+    plasmidName = $bindable(''),
+    codonHost = $bindable('ecoli'),
+    quickDbId = $bindable(''),
+    translatedProtein = '',
+    restrictionSites = [] as { name: string; pos: number; seq: string; color: string; methylated?: boolean; methylationType?: string }[],
+    geneFeatures = $bindable([] as { id: number; name: string; start: number; end: number; type: string; color: string; forward?: boolean; description?: string; residue?: string }[]),
+    parts = [] as { name: string; start: number; end: number }[],
+    primers = [] as { name: string; start: number; end: number; forward?: boolean }[],
+    selectionStart = $bindable(1),
+    selectionEnd = $bindable(1),
+    showSingleStrand = false,
+    colorTheme = 'monochrome',
+    modifiedRanges = [] as { start: number; end: number }[],
+    showEnzymes = $bindable(true),
+    showFeatures = $bindable(true),
+    showTranslations = $bindable(true),
+    mode = 'dna' as 'dna' | 'protein' | 'rna',
+    assertedMass = null as number | null,
+    assertedCrc64 = null as string | null
+  }: Props = $props();
 
   const isProtein = $derived(mode === 'protein');
   const isRna = $derived(mode === 'rna');

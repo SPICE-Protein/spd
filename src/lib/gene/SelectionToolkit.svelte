@@ -1,18 +1,7 @@
 <script lang="ts">
   import * as m from '$lib/paraglide/messages.js';
   import Button from '../components/Button.svelte';
-  let {
-    selectionStart = 1,
-    selectionEnd = 1,
-    selectedGcContent = 0,
-    selectedTm = null as number | null,
-    proteinMode = false,
-    rnaMode = false,
-    selectedGravy = null as number | null,
-    onCopy = () => {},
-    onCopyAsImage = () => {},
-    onCancel = () => {}
-  } = $props<{
+  type Props = {
     selectionStart: number;
     selectionEnd: number;
     selectedGcContent: number;
@@ -25,7 +14,19 @@
     onCopy: () => void;
     onCopyAsImage: () => void;
     onCancel: () => void;
-  }>();
+  };
+  let {
+    selectionStart = 1,
+    selectionEnd = 1,
+    selectedGcContent = 0,
+    selectedTm = null as number | null,
+    proteinMode = false,
+    rnaMode = false,
+    selectedGravy = null as number | null,
+    onCopy = () => {},
+    onCopyAsImage = () => {},
+    onCancel = () => {}
+  }: Props = $props();
 </script>
 
 {#if selectionStart !== 1 || selectionEnd !== 1}

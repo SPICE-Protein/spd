@@ -1,6 +1,16 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
 
+  type Props = {
+    dna: string;
+    geneFeatures: any[];
+    selectionStart: number;
+    selectionEnd: number;
+    scrollTop: number;
+    totalContentH: number;
+    canvasH: number;
+    onMinimapClick: (pct: number) => void;
+  };
   let {
     dna = '',
     geneFeatures = [] as any[],
@@ -10,16 +20,7 @@
     totalContentH = 1000,
     canvasH = 300,
     onMinimapClick = (pct: number) => {}
-  } = $props<{
-    dna: string;
-    geneFeatures: any[];
-    selectionStart: number;
-    selectionEnd: number;
-    scrollTop: number;
-    totalContentH: number;
-    canvasH: number;
-    onMinimapClick: (pct: number) => void;
-  }>();
+  }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement | null>(null);
 

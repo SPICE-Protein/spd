@@ -19,6 +19,19 @@
     rotateBpsToPosition
   } from '$lib/genome';
   // Svelte 5 props
+  type Props = {
+    plasmidName: string;
+    dnaSeq: string;
+    geneFeatures: any[];
+    restrictionSites: any[];
+    primers: any[];
+    activeFeatureId: number | null;
+    selectionStart: number;
+    selectionEnd: number;
+    exportPng: (() => Promise<void>) | null;
+    activeTool: 'select' | 'pan' | 'rotate';
+    mapRef: { zoomIn: () => void; zoomOut: () => void; resetView: () => void } | null;
+  };
   let {
     plasmidName = '',
     dnaSeq = $bindable(''),
@@ -31,19 +44,7 @@
     exportPng = $bindable(null),
     activeTool = 'select',
     mapRef = $bindable<{ zoomIn: () => void; zoomOut: () => void; resetView: () => void } | null>(null)
-  } = $props<{
-    plasmidName: string;
-    dnaSeq: string;
-    geneFeatures: any[];
-    restrictionSites: any[];
-    primers: any[];
-    activeFeatureId: number | null;
-    selectionStart: number;
-    selectionEnd: number;
-    exportPng: (() => Promise<void>) | null;
-    activeTool: 'select' | 'pan' | 'rotate';
-    mapRef: { zoomIn: () => void; zoomOut: () => void; resetView: () => void } | null;
-  }>();
+  }: Props = $props();
  // OVE States
 let zoomLevel = $state(1);
 let rotationRadians = $state(0); // 0 radians is at 12 o'clock
