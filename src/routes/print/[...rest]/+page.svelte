@@ -46,8 +46,35 @@
 		void load(rest);
 	});
 
-	// The button opens this page with ?auto=1. Wait for the document and the
-	// serif face to paint before handing the page to the browser dialog.
+	function moleculeSettled(element: Element): Promise<void> {
+		const settled = () =>
+			element.getAttribute('data-molecule-ready') === 'true' ||
+			element.getAttribute('data-molecule-failed') === 'true';
+		if (settled()) return Promise.resolve();
+		return new Promise((resolve) => {
+			let observer: MutationObserver;
+			let timer: ReturnType<typeof setTimeout>;
+			const finish = () => {
+				observer?.disconnect();
+				clearTimeout(timer);
+				resolve();
+			};
+			observer = new MutationObserver(() => {
+				if (settled()) finish();
+			});
+			observer.observe(element, {
+				attributes: true,
+				attributeFilter: ['data-molecule-ready', 'data-molecule-failed']
+			});
+			// Kekule/OpenBabel can be slow on a cold first load. Never hold the
+			// print dialog forever if the viewer cannot initialize.
+			timer = setTimeout(finish, 15_000);
+		});
+	}
+
+	// The button opens this page with ?auto=1. Wait for the document, fonts,
+	// sequence images and 2D molecule canvases before handing the page to the
+	// browser dialog; an empty structure box is worse than a short wait.
 	$effect(() => {
 		if (!data || !auto || printed || typeof window === 'undefined') return;
 		printed = true;
@@ -60,7 +87,8 @@
 						img.addEventListener('error', () => resolve(), { once: true });
 					})
 		);
-		void Promise.all([fonts, ...images]).then(() => {
+		const molecules = [...document.querySelectorAll('[data-molecule-ready]')].map(moleculeSettled);
+		void Promise.all([fonts, ...images, ...molecules]).then(() => {
 			setTimeout(() => window.print(), 250);
 		});
 	});

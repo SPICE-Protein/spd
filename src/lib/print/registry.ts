@@ -49,12 +49,15 @@ import {
 } from '$lib/api/client';
 import { tr } from '$lib/i18n';
 import { asRecord, isRecord } from './format';
+import { reactionMolecules, reagentMolecules, type PrintMolecule } from './molecules';
 
 export interface PrintExtraSection {
 	title: string;
 	value?: unknown;
 	/** PNG data URLs rendered by the sequence viewer painter. */
 	images?: string[];
+	/** 2D chemical structures rendered by the shared molecule viewer. */
+	molecules?: PrintMolecule[];
 	/** Lets the print loader find the feature rows for a sequence image. */
 	kind?: 'gene-regions' | 'annotations' | 'sequence';
 }
@@ -156,6 +159,16 @@ async function sequenceExtras(id: string): Promise<PrintExtraSection[]> {
 	return [];
 }
 
+async function reagentExtras(record: Record<string, unknown>): Promise<PrintExtraSection[]> {
+	const molecules = reagentMolecules(record);
+	return molecules.length ? [{ title: tr('reagent_structure'), molecules }] : [];
+}
+
+async function reactionExtras(record: Record<string, unknown>): Promise<PrintExtraSection[]> {
+	const molecules = reactionMolecules(record);
+	return molecules.length ? [{ title: tr('reaction_structures_title'), molecules }] : [];
+}
+
 async function validationExtras(id: string): Promise<PrintPayload> {
 	const data = await validations.get(id);
 	const extras: PrintExtraSection[] = [];
@@ -205,11 +218,11 @@ export const PRINT_TARGETS: Record<string, PrintTarget> = {
 	constructs: { slug: 'constructs', ...simple('construct', 'browse_constructs', constructs.get) },
 	'enzyme-reactions': {
 		slug: 'enzyme-reactions',
-		...simple('reaction', 'browse_reactions', enzymeReactions.get)
+		...simple('reaction', 'browse_reactions', enzymeReactions.get, reactionExtras)
 	},
 	reactions: {
 		slug: 'reactions',
-		...simple('reaction', 'browse_reactions', enzymeReactions.get)
+		...simple('reaction', 'browse_reactions', enzymeReactions.get, reactionExtras)
 	},
 	enzymes: { slug: 'enzymes', ...simple('enzyme', 'browse_enzymes', enzymes.get) },
 	'restriction-enzymes': {
@@ -240,7 +253,10 @@ export const PRINT_TARGETS: Record<string, PrintTarget> = {
 		slug: 'condition-templates',
 		...simple('condition_template', 'browse_condition_templates', conditionTemplates.get)
 	},
-	reagents: { slug: 'reagents', ...simple('reagent', 'browse_reagents', reagents.get) },
+	reagents: {
+		slug: 'reagents',
+		...simple('reagent', 'browse_reagents', reagents.get, reagentExtras)
+	},
 	measurements: {
 		slug: 'measurements',
 		...simple('measurement', 'browse_measurements', measurements.get)

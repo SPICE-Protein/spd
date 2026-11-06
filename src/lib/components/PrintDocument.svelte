@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tr, enumLabel } from '$lib/i18n';
+	import MoleculeViewer from '$lib/components/MoleculeViewer.svelte';
 	import type { PrintExtraSection } from '$lib/print/registry';
 	import {
 		asRecord,
@@ -208,9 +209,21 @@
 		{/each}
 
 		{#each extras as extra, i (i)}
-			{#if extra.value != null || extra.images?.length}
+			{#if extra.value != null || extra.images?.length || extra.molecules?.length}
 				<section class="print-section">
 					<h2>{extra.title}</h2>
+					{#if extra.molecules?.length}
+						<div class="print-molecules">
+							{#each extra.molecules as molecule, j (j)}
+								<figure class="print-molecule" data-print-keep>
+									<MoleculeViewer smiles={molecule.smiles} height="300px" bare />
+									{#if molecule.caption}
+										<figcaption>{molecule.caption}</figcaption>
+									{/if}
+								</figure>
+							{/each}
+						</div>
+					{/if}
 					{#if extra.images?.length}
 						<div class="print-figure">
 							{#each extra.images as src, j (j)}
@@ -515,6 +528,29 @@
 
 	.print-figure {
 		margin: 2pt 0 12pt;
+	}
+
+	.print-molecules {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 10pt;
+		margin: 4pt 0 12pt;
+	}
+
+	.print-molecule {
+		margin: 0;
+		padding: 4pt;
+		border: 0.5pt solid #ddd;
+		background: #fff;
+		break-inside: avoid;
+	}
+
+	.print-molecule figcaption {
+		margin-top: 4pt;
+		color: #555;
+		font-family: var(--font-sans);
+		font-size: 8.5pt;
+		text-align: center;
 	}
 
 	.print-figure img {
