@@ -6,12 +6,15 @@
 	import Section from '$lib/components/Section.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Input from '$lib/components/Input.svelte';
+	import SeasonalNote from '$lib/components/SeasonalNote.svelte';
+	import { seasonal } from '$lib/state/seasonal.svelte';
 	import { SpdApiError } from '$lib/api/base';
 
 	let overview = $state<StatsOverview | null>(null);
 	let trending = $state<TrendingItem[]>([]);
 	let loadError = $state('');
 	let term = $state('');
+	const searchPlaceholder = $derived(seasonal.season === 'pi-day' ? tr('season_pi_search_placeholder') : tr('nav_search_placeholder'));
 
 	$effect(() => {
 		void (async () => {
@@ -72,7 +75,7 @@
 				if (term.trim()) location.href = `/search?q=${encodeURIComponent(term.trim())}`;
 			}}
 		>
-			<Input name="home_q" type="search" class="h-10 flex-1 px-4" placeholder={tr('nav_search_placeholder')} bind:value={term} />
+			<Input name="home_q" type="search" class="h-10 flex-1 px-4" placeholder={searchPlaceholder} bind:value={term} />
 			<Button type="submit">{tr('nav_search')}</Button>
 		</form>
 		<!-- example queries: a first-time visitor's real problem is not knowing what to type -->
@@ -87,6 +90,7 @@
 			<Button href="/help" variant="ghost" size="sm">{tr('nav_help')}</Button>
 			<Button href="/browse" variant="ghost" size="sm">{tr('nav_browse')}</Button>
 		</div>
+		<SeasonalNote />
 	</div>
 
 	<div class="grid gap-4 md:grid-cols-3">

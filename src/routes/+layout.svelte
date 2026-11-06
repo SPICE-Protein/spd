@@ -8,6 +8,8 @@
 	import Toaster from '$lib/components/Toaster.svelte';
 	import ApiStatus from '$lib/components/ApiStatus.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
+	import FoldEasterEgg from '$lib/components/FoldEasterEgg.svelte';
+	import { seasonal } from '$lib/state/seasonal.svelte';
 	import { BASE_URL } from '$lib/api/base';
 	import { tr, isZh } from '$lib/i18n';
 	import { browser } from '$app/environment';
@@ -15,6 +17,12 @@
 
 	let { children } = $props();
 	const printView = $derived(page.url.pathname.startsWith('/print/'));
+
+	// Seasonal garnish is client-only; `?season=` gives the team a preview
+	// switch without waiting for the calendar.
+	$effect(() => {
+		seasonal.sync(page.url.searchParams.get('season'));
+	});
 
 	// A printed record should read top to bottom, including the evidence that
 	// normally waits behind a disclosure triangle. Before the browser paints
@@ -74,6 +82,9 @@
 	</div>
 {/if}
 <Toaster />
+{#if !printView}
+	<FoldEasterEgg />
+{/if}
 <DebugPanel />
 
 <div style="display:none">

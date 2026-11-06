@@ -2986,5 +2986,20 @@
   "supplementary_zip_hint": "把原始记录、图像或分析文件打包成一个 .zip；评审通过后公开下载。",
   "supplementary_zip_only": "补充材料只接受 .zip 文件。",
   "supplementary_zip_invalid": "这个文件不是有效的 .zip 压缩包。",
-  "supplementary_public_note": "评审通过后可公开下载。"
+  "supplementary_public_note": "评审通过后可公开下载。",
+  "season_pi_search_placeholder": "π、蛋白、基因、物种、spd: 编号…",
+  "season_christmas_note": "SPD 祝你圣诞快乐。",
+  "season_lunar_new_year_note": "新春快乐。",
+  "season_pi_day_note": "π ≈ 3.141592653589793，圆周率日快乐。",
+  "season_dna_day_note": "DNA 日 · 双螺旋还在转。",
+  "season_mid_autumn_note": "中秋快乐。",
+  "season_winter_solstice_note": "冬至，夜最长。",
+  "error_404_title": "这个页面变性了。",
+  "error_404_body": "这个地址上没有记录。去搜索，或者回到首页。",
+  "error_title": "这个页面没能折叠。",
+  "error_body": "加载时出了点问题。再试一次，或者回到首页。",
+  "error_home": "回到首页",
+  "error_search": "搜索记录",
+  "egg_fold_title": "折叠完成。",
+  "egg_fold_body": "序列找到了低能量状态。"
 }

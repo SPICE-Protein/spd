@@ -2986,5 +2986,20 @@
   "supplementary_zip_hint": "Pack raw records, images or analysis files into one .zip; public download opens after review.",
   "supplementary_zip_only": "Supplementary material accepts .zip files only.",
   "supplementary_zip_invalid": "That file is not a valid .zip archive.",
-  "supplementary_public_note": "Public download opens after review."
+  "supplementary_public_note": "Public download opens after review.",
+  "season_pi_search_placeholder": "π, protein, gene, organism, spd: id…",
+  "season_christmas_note": "Merry Christmas from SPD.",
+  "season_lunar_new_year_note": "Happy Lunar New Year.",
+  "season_pi_day_note": "π ≈ 3.141592653589793 — happy Pi Day.",
+  "season_dna_day_note": "DNA Day · the double helix, still turning.",
+  "season_mid_autumn_note": "Happy Mid-Autumn Festival.",
+  "season_winter_solstice_note": "Winter solstice — the longest night.",
+  "error_404_title": "This page has denatured.",
+  "error_404_body": "No record lives at this address. Search the commons, or head back to the index.",
+  "error_title": "This page could not fold.",
+  "error_body": "Something went wrong while loading it. Try again, or head back to the index.",
+  "error_home": "Back to home",
+  "error_search": "Search records",
+  "egg_fold_title": "Folded.",
+  "egg_fold_body": "The chain found a low-energy state."
 }

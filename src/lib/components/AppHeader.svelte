@@ -7,8 +7,10 @@
 	import { tr } from '$lib/i18n';
 	import { session } from '$lib/state/session.svelte';
 	import { market } from '$lib/state/market.svelte';
+	import { seasonal } from '$lib/state/seasonal.svelte';
 	import Button from './Button.svelte';
 	import Input from './Input.svelte';
+	import SeasonalWordmark from './SeasonalWordmark.svelte';
 	import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 	import { cn } from '$lib/utils';
 
@@ -50,6 +52,7 @@
 		{ href: '/me', key: 'nav_account' }
 	]);
 	const onAccount = $derived(session.signedIn && accountLinks.some((l) => onPath(l.href)));
+	const searchPlaceholder = $derived(seasonal.season === 'pi-day' ? tr('season_pi_search_placeholder') : tr('nav_search_placeholder'));
 
 	async function signOut() {
 		await session.logout();
@@ -63,7 +66,7 @@
 >
 	<div class="mx-auto flex max-w-7xl items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4">
 		<a href="/" class="flex items-baseline gap-2 whitespace-nowrap">
-			<span class="text-lg font-bold tracking-tight">SPD</span>
+			<span class="text-lg font-bold tracking-tight"><SeasonalWordmark /></span>
 			<span class="hidden text-xs text-muted-foreground sm:inline">{tr('app_tagline')}</span>
 		</a>
 
@@ -74,7 +77,7 @@
 				if (term.trim()) location.href = resolve(`/search?q=${encodeURIComponent(term.trim())}`);
 			}}
 		>
-			<Input name="q" type="search" bind:value={term} placeholder={tr('nav_search_placeholder')} class="h-8 w-full max-w-md" />
+			<Input name="q" type="search" bind:value={term} placeholder={searchPlaceholder} class="h-8 w-full max-w-md" />
 		</form>
 
 		<nav class="ml-auto flex items-center gap-0.5 text-sm">

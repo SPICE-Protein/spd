@@ -8,6 +8,7 @@
 	import { tr, enumLabel } from '$lib/i18n';
 	import { fmtTime, jsonPreview, hitFields, hitTitle, shortPublicId } from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
+	import { seasonal } from '$lib/state/seasonal.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Input from '$lib/components/Input.svelte';
@@ -22,6 +23,7 @@
 	let count = $state<number | null>(null);
 	let loading = $state(false);
 	let error = $state('');
+	const searchPlaceholder = $derived(seasonal.season === 'pi-day' ? tr('season_pi_search_placeholder') : tr('search_placeholder'));
 
 	// Federated section state, separate from the local hit list on purpose:
 	// external rows never inflate `count` or satisfy the local empty state.
@@ -333,7 +335,7 @@
 			name="search_q"
 			type="search"
 			class="h-9 min-w-64 flex-1"
-			placeholder={tr('search_placeholder')}
+			placeholder={searchPlaceholder}
 			bind:value={term}
 		/>
 		<Select
