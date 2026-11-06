@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { search, external } from '$lib/api/client';
@@ -35,7 +36,16 @@
 
 	async function run() {
 		const q = term.trim();
-		if (!q) return;
+		if (!q) {
+			hits = [];
+			count = null;
+			extGeneration++;
+			extGroups = [];
+			extUnavailable = false;
+			extFailed = false;
+			extLoading = false;
+			return;
+		}
 		if (searchTermTooLong(q)) {
 			// D1 rejects the constructed LIKE pattern before any table is read;
 			// catch it here so the page explains the limit instead of echoing
@@ -51,8 +61,14 @@
 		error = '';
 		hits = [];
 		count = null;
-		// Fire externals immediately; they carry their own loading/error state.
-		void runExternals(q);
+		// External catalogs cost KV writes on a cache miss, so they are
+		// opt-in: a new local search clears the previous external section
+		// and waits for the explicit button below.
+		extGeneration++;
+		extGroups = [];
+		extUnavailable = false;
+		extFailed = false;
+		extLoading = false;
 		try {
 			const env = await search.run({ q, entityType: entityType || undefined, limit: 50 });
 			hits = Array.isArray(env.data) ? env.data : [];
@@ -155,17 +171,18 @@
 		}
 	}
 
-	$effect(() => {
+	// Search only on submit or on a deep link. Binding an effect to `term`
+	// would fire one search per keystroke; the input stays a draft until the
+	// form is submitted.
+	onMount(() => {
 		if (term.trim()) void run();
-		else {
-			hits = [];
-			count = null;
-			extGeneration++;
-			extGroups = [];
-			extUnavailable = false;
-			extLoading = false;
-		}
 	});
+
+	function searchExternals() {
+		const q = term.trim();
+		if (!q || extLoading) return;
+		void runExternals(q);
+	}
 
 	/** POST /search keys are dual-cased on the wire; grouped for humans, values stay API-style. */
 	const GROUPS: Array<{ key: string; types: string[] }> = [
@@ -381,6 +398,24 @@
 				</li>
 			{/each}
 		</ul>
+	{/if}
+
+	{#if !loading && term.trim() && externalSources(entityType).length > 0}
+		<div class="flex flex-wrap items-center gap-3 border border-dashed p-3">
+			<p class="text-xs text-muted-foreground">{tr('ext_search_hint')}</p>
+			<Button
+				class="ml-auto"
+				size="sm"
+				variant="outline"
+				disabled={extLoading}
+				onclick={searchExternals}
+				>{extLoading ? tr('common_loading') : tr('ext_search_button')}</Button
+			>
+		</div>
+	{/if}
+
+	{#if extGroups.length > 0 && !extLoading && !extUnavailable && extGroups.every((g) => (g.data?.items?.length ?? 0) === 0)}
+		<p class="text-sm text-muted-foreground">{tr('ext_no_results')}</p>
 	{/if}
 
 	{#if extLoading || extUnavailable || extGroups.some((g) => (g.data?.items?.length ?? 0) > 0)}
