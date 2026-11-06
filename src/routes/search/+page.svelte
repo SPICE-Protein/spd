@@ -61,7 +61,7 @@
 		error = '';
 		hits = [];
 		count = null;
-		// External catalogs cost KV writes on a cache miss, so they are
+		// External catalogs cost upstream quota on a cache miss, so they are
 		// opt-in: a new local search clears the previous external section
 		// and waits for the explicit button below.
 		extGeneration++;

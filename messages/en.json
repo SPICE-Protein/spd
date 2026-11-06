@@ -134,7 +134,7 @@
   "ext_section_title": "External databases",
   "ext_section_hint": "Results from UniProt, PDB, NCBI and other external catalogs. Import one and it becomes a local record.",
   "ext_search_button": "Search external databases",
-  "ext_search_hint": "External sources are queried only when you ask, because each miss costs upstream quota and KV writes.",
+  "ext_search_hint": "External sources are queried only when you ask, so a normal search never waits on them.",
   "ext_no_results": "No external records matched this query.",
   "ext_source_uniprot": "UniProt",
   "ext_source_pdb": "PDB",

@@ -134,7 +134,7 @@
   "ext_section_title": "外部数据库",
   "ext_section_hint": "来自 UniProt、PDB、NCBI 等外部目录的结果。导入后，它就成为本站记录。",
   "ext_search_button": "搜索外部数据库",
-  "ext_search_hint": "外部数据源只在你点击后查询，避免每次搜索都消耗上游配额和 KV 写入。",
+  "ext_search_hint": "外部数据源只在你点击后查询，普通搜索不会请求外部数据库。",
   "ext_no_results": "外部数据库没有匹配到记录。",
   "ext_source_uniprot": "UniProt",
   "ext_source_pdb": "PDB",
