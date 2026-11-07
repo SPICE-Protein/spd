@@ -43,7 +43,6 @@
 		{tr('nav_submit')}
 		<InfoTip text={tr('submit_browse_only_note')} label={`${tr('nav_submit')} — ${tr('common_more_info')}`} class="mt-1" />
 	</h1>
-	<p class="max-w-3xl text-sm text-muted-foreground">{tr('submit_intro')}</p>
 
 	{#if !session.signedIn}
 		<div
@@ -65,13 +64,13 @@
 	<Section title={tr('submit_core_title')}>
 		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{#each chains as c (c.href)}
-				<a
-					href={c.href}
-					class="rounded-none border p-4 transition-colors hover:border-primary/60 hover:bg-accent/30"
-				>
-					<h2 class="font-semibold">{tr(c.key)}</h2>
-					<p class="mt-1 text-xs text-muted-foreground">{tr(c.descKey)}</p>
-				</a>
+				<div class="flex items-start justify-between gap-2 rounded-none border p-4 transition-colors hover:border-primary/60 hover:bg-accent/30">
+					<a class="font-semibold underline-offset-4 hover:underline" href={c.href}>{tr(c.key)}</a>
+					<InfoTip
+						text={tr(c.descKey)}
+						label={`${tr(c.key)} — ${tr('common_more_info')}`}
+					/>
+				</div>
 			{/each}
 		</div>
 	</Section>
@@ -79,13 +78,13 @@
 	<Section title={tr('submit_singles_title')}>
 		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 			{#each singles as c (c.href)}
-				<a
-					href={c.href}
-					class="rounded-none border p-4 transition-colors hover:border-primary/60 hover:bg-accent/30"
-				>
-					<h2 class="font-semibold">{tr(c.key)}</h2>
-					<p class="mt-1 text-xs text-muted-foreground">{tr(c.descKey)}</p>
-				</a>
+				<div class="flex items-start justify-between gap-2 rounded-none border p-4 transition-colors hover:border-primary/60 hover:bg-accent/30">
+					<a class="font-semibold underline-offset-4 hover:underline" href={c.href}>{tr(c.key)}</a>
+					<InfoTip
+						text={tr(c.descKey)}
+						label={`${tr(c.key)} — ${tr('common_more_info')}`}
+					/>
+				</div>
 			{/each}
 		</div>
 	</Section>
@@ -95,13 +94,16 @@
 			<Section title={tr(`submit_group_${grp.g}`)}>
 				<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 					{#each grp.entries as e (e.slug)}
-						<a
-							href="/submit/{e.slug}"
-							class="rounded-none border p-4 transition-colors hover:border-primary/60 hover:bg-accent/30"
-						>
-							<h2 class="font-semibold">{tr(e.titleKey)}</h2>
-							<p class="mt-1 text-xs text-muted-foreground">{tr(e.descKey)}</p>
-						</a>
+						<div class="flex items-start justify-between gap-2 rounded-none border p-4 transition-colors hover:border-primary/60 hover:bg-accent/30">
+							<a
+								class="font-semibold underline-offset-4 hover:underline"
+								href="/submit/{e.slug}">{tr(e.titleKey)}</a
+							>
+							<InfoTip
+								text={tr(e.descKey)}
+								label={`${tr(e.titleKey)} — ${tr('common_more_info')}`}
+							/>
+						</div>
 					{/each}
 				</div>
 			</Section>

@@ -82,9 +82,9 @@
 		</div>
 	{/if}
 
-	<p class="text-xs text-muted-foreground">
-		{tr('validation_after_note')}
+	<p class="flex items-center gap-1 text-xs text-muted-foreground">
 		<a class="underline" href="/leaderboard">{tr('lb_title')}</a>
+		<InfoTip text={tr('validation_after_note')} label={tr('common_more_info')} />
 	</p>
 </div>
 

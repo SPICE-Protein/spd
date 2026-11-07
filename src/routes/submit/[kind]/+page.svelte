@@ -6,6 +6,7 @@
 	import { catalogBy } from '$lib/submit/registry';
 	import type { CatalogEntry } from '$lib/submit/registry';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import TargetPicker from '$lib/components/TargetPicker.svelte';
@@ -107,10 +108,14 @@
 		<p class="text-sm text-muted-foreground">{tr('submit_kind_not_found')}</p>
 		<Button size="sm" href="/submit">{tr('nav_submit')}</Button>
 	{:else}
-		<div>
-			<h1 class="text-2xl font-bold">{tr(entry.titleKey)}</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{tr(entry.descKey)}</p>
-		</div>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr(entry.titleKey)}
+			<InfoTip
+				text={tr(entry.descKey)}
+				label={`${tr(entry.titleKey)} — ${tr('common_more_info')}`}
+				class="mt-1"
+			/>
+		</h1>
 
 		{#if error}
 			<p class="rounded-none bg-destructive/10 p-2 text-sm text-destructive">{error}</p>
@@ -131,8 +136,7 @@
 			<p class="text-sm text-muted-foreground">{tr('submit_browse_only')}</p>
 			<Button size="sm" variant="outline" href="/{entry.route}">{tr('submit_view_list')}</Button>
 		{:else if session.signedIn}
-			<Section title={tr(entry.titleKey)}>
-				<p class="mb-3 text-xs text-muted-foreground">{tr('submit_kind_intro')}</p>
+			<Section>
 				{#if entry.picksTarget}
 					{#each [page.params.kind ?? ''] as kindKey (kindKey)}
 						<p class="mb-1 text-xs text-muted-foreground">{tr('target_picker_label')}</p>

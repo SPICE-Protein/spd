@@ -6,6 +6,7 @@
 	import { toastOk } from '$lib/state/toast.svelte';
 	import { shortPublicId } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
@@ -239,8 +240,14 @@
 </script>
 
 <div class="mx-auto max-w-3xl space-y-4">
-	<h1 class="text-2xl font-bold">{tr('submit_design')}</h1>
-	<p class="text-sm text-muted-foreground">{tr('design_intro')}</p>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('submit_design')}
+		<InfoTip
+			text={tr('design_intro')}
+			label={`${tr('submit_design')} — ${tr('common_more_info')}`}
+			class="mt-1"
+		/>
+	</h1>
 
 	{#if !session.signedIn}
 		<div class="flex items-center gap-3 rounded-none border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-3 text-sm">

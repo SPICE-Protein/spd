@@ -44,14 +44,20 @@
 </script>
 
 <div class="mx-auto max-w-2xl space-y-4">
-	<h1 class="text-2xl font-bold">{tr('submit_organization')}</h1>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('submit_organization')}
+		<InfoTip
+			text={tr('org_claim_intro')}
+			label={`${tr('submit_organization')} — ${tr('common_more_info')}`}
+			class="mt-1"
+		/>
+	</h1>
 	<Section>
 		{#if !session.signedIn}
 			<div class="flex items-center gap-3 text-sm">
 				{tr('submit_login_needed')} <Button size="sm" onclick={() => session.signIn()}>{tr('nav_login')}</Button>
 			</div>
 		{:else}
-			<p class="mb-3 text-sm text-muted-foreground">{tr('org_claim_intro')}</p>
 			<p class="mb-3 text-xs text-muted-foreground">
 				<a class="underline" href="/organizations">{tr('org_dir_link')}</a>
 			</p>
