@@ -5,6 +5,7 @@
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
 	import { downloadText } from '$lib/export/download';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import Badge from '$lib/components/Badge.svelte';
@@ -150,8 +151,10 @@
 <div class="space-y-4">
 	<div class="flex flex-wrap items-start justify-between gap-3">
 		<div>
-			<h1 class="text-2xl font-bold">{tr('feature_label_title')}</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{tr('feature_label_intro')}</p>
+			<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+				{tr('feature_label_title')}
+				<InfoTip text={tr('feature_label_intro')} label={`${tr('feature_label_title')} — ${tr('common_more_info')}`} class="mt-1" />
+			</h1>
 		</div>
 		<div class="flex flex-wrap items-center gap-2">
 			<PageTools withPrint={false} />
@@ -254,6 +257,7 @@
 	bind:open={dialogOpen}
 	onclose={() => (editing = null)}
 	title={editing ? tr('feature_label_edit') : tr('feature_label_add')}
+	hint={tr('feature_label_key_immutable')}
 >
 	<div class="space-y-3">
 		<div class="grid gap-3 sm:grid-cols-2">
@@ -290,7 +294,6 @@
 				placeholder={tr('feature_label_description_placeholder')}
 			/>
 		</label>
-		<p class="text-xs text-muted-foreground">{tr('feature_label_key_immutable')}</p>
 		<div class="flex justify-end gap-2">
 			<Button variant="outline" onclick={() => (dialogOpen = false)} disabled={saving}>
 				{tr('common_cancel')}

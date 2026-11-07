@@ -6,6 +6,7 @@
 	import { tr } from '$lib/i18n';
 	import { BIOMOLECULE_CHARS } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
@@ -235,8 +236,10 @@
 </script>
 
 <div class="mx-auto max-w-3xl space-y-4">
-	<h1 class="text-2xl font-bold">{tr('submit_fold')}</h1>
-	<p class="text-sm text-muted-foreground">{tr('fold_wizard_intro')}</p>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('submit_fold')}
+		<InfoTip text={tr('fold_wizard_intro')} label={`${tr('submit_fold')} — ${tr('common_more_info')}`} class="mt-1" />
+	</h1>
 
 	{#if error}
 		<p class="rounded-none bg-destructive/10 p-2 text-sm text-destructive">{error}</p>

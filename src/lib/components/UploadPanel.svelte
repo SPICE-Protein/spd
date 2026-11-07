@@ -4,6 +4,7 @@
 	import { tr } from '$lib/i18n';
 	import { toastOk } from '$lib/state/toast.svelte';
 	import Section from './Section.svelte';
+	import InfoTip from './InfoTip.svelte';
 	import Button from './Button.svelte';
 	import Badge from './Badge.svelte';
 	import Input from './Input.svelte';
@@ -210,7 +211,15 @@
 		<div class="space-y-3">
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				<label class="block text-sm">
-					<span class="text-xs text-muted-foreground">{tr('upload_file')}</span>
+					<span class="flex items-center gap-1 text-xs text-muted-foreground">
+						{tr('upload_file')}
+						{#if isZipLane}
+							<InfoTip
+								text={tr('supplementary_zip_hint')}
+								label={`${tr('upload_file')} — ${tr('common_more_info')}`}
+							/>
+						{/if}
+					</span>
 					<input
 						type="file"
 						accept={isZipLane ? '.zip,application/zip' : undefined}
@@ -268,10 +277,6 @@
 				</div>
 			</div>
 
-			{#if isZipLane}
-				<p class="text-xs text-muted-foreground">{tr('supplementary_zip_hint')}</p>
-			{/if}
-
 			{#if stage !== 'idle' && stage !== 'done'}
 				<div class="flex flex-wrap gap-2 text-xs">
 					{#each stages as s, i (s)}
@@ -298,7 +303,6 @@
 					</Button>
 				</div>
 			{/if}
-			<p class="text-xs text-muted-foreground">{tr('upload_note')}</p>
 		</div>
 	{/if}
 {/snippet}

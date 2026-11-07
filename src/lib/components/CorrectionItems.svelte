@@ -4,6 +4,7 @@
 	import Textarea from './Textarea.svelte';
 	import Button from './Button.svelte';
 	import Select from './Select.svelte';
+	import InfoTip from './InfoTip.svelte';
 	import { parseVal, cellText } from './json-coerce';
 	import type { TargetFields } from '$lib/submit/field-options';
 
@@ -163,7 +164,6 @@
 			>
 		</div>
 	{:else}
-		<p class="text-xs text-muted-foreground">{tr('ci_hint')}</p>
 		{#if fieldOptions.loading}
 			<p class="text-xs text-muted-foreground">{tr('ci_fields_loading')}</p>
 		{/if}
@@ -171,7 +171,13 @@
 			<div class="space-y-2 rounded-none border bg-muted/20 p-2.5">
 				<div class="flex items-start gap-2">
 					<div class="min-w-0 flex-1">
-						<span class="text-[11px] font-medium text-muted-foreground">{tr('ci_field')}</span>
+						<span class="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+							{tr('ci_field')}
+							<InfoTip
+								text={tr('ci_hint')}
+								label={`${tr('ci_field')} — ${tr('common_more_info')}`}
+							/>
+						</span>
 						<Select
 							name={`${name}-f${i}`}
 							class="mt-1 h-9"

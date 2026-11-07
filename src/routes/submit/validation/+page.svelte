@@ -6,6 +6,7 @@
 	import { tr } from '$lib/i18n';
 	import { shortPublicId } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import ValidationForm from '$lib/components/ValidationForm.svelte';
@@ -48,12 +49,14 @@
 
 <div class="mx-auto max-w-3xl space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('submit_validation')}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tr('submit_validation_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('submit_validation')}
+			<InfoTip text={tr('submit_validation_intro')} label={`${tr('submit_validation')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 	</div>
 
 	{#if session.signedIn}
-		<Section title={tr('validation_step_fold')}>
+		<Section title={tr('validation_step_fold')} hint={tr('validation_find_fold')}>
 			<TargetPicker
 				entityType="fold"
 				initial={foldId ? { id: foldId } : undefined}
@@ -65,7 +68,6 @@
 					<span class="ml-1 font-mono">{preview}</span>
 				</p>
 			{/if}
-			<p class="mt-2 text-xs text-muted-foreground">{tr('validation_find_fold')}</p>
 		</Section>
 
 		{#if checkedId}

@@ -563,8 +563,7 @@
 				{:else}<DataTable rows={features} columns={featureColumns} />{/if}
 			</Section>
 		{:else if tab === 'map'}
-			<Section title={tr('vector_tab_map')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('vector_map_hint')}</p>
+			<Section title={tr('vector_tab_map')} hint={tr('vector_map_hint')}>
 				{#if TOTAL_LEN === 0 || placed.length === 0}
 					<p class="text-sm text-muted-foreground">{tr('vector_no_coords')}</p>
 					{#if features.length}
@@ -632,8 +631,7 @@
 				{/if}
 			</Section>
 		{:else if tab === 'derived'}
-			<Section title={tr('vector_tab_derived')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('vector_derived_hint')}</p>
+			<Section title={tr('vector_tab_derived')} hint={tr('vector_derived_hint')}>
 				{#if constructs.length === 0}
 					<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
 				{:else}

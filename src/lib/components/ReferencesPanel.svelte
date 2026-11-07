@@ -6,6 +6,7 @@
 	import { toastErr, toastOk } from '$lib/state/toast.svelte';
 	import { linkForReference, looksLikeReferenceId, normalizeExternalId } from '$lib/references';
 	import Section from './Section.svelte';
+	import InfoTip from './InfoTip.svelte';
 	import Button from './Button.svelte';
 	import Badge from './Badge.svelte';
 	import Input from './Input.svelte';
@@ -153,7 +154,7 @@
 				{/if}
 			</div>
 			{#if resolvable}
-				<p class="text-xs text-muted-foreground">{tr('refs_only_id_hint')}</p>
+				<InfoTip text={tr('refs_only_id_hint')} label={`${tr('refs_lookup')} — ${tr('common_more_info')}`} />
 				{#if form.externalId.trim() && !looksLikeReferenceId(form.source, form.externalId)}
 					<p class="text-xs text-amber-600 dark:text-amber-400">{tr('refs_shape_hint')}</p>
 				{/if}

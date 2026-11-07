@@ -147,13 +147,12 @@
 </script>
 
 {#if data && data.candidates.length > 0}
-	<Section title={tr('protein_structure_candidates')}>
+	<Section title={tr('protein_structure_candidates')} hint={tr('protein_structure_candidates_hint')}>
 		{#snippet actions()}
 			{#if loading}
 				<span class="text-xs text-muted-foreground">{tr('common_loading')}</span>
 			{/if}
 		{/snippet}
-		<p class="text-xs text-muted-foreground">{tr('protein_structure_candidates_hint')}</p>
 		<ul class="mt-2 divide-y">
 			{#each data.candidates as c (rowKey(c))}
 				<li class="py-2.5">

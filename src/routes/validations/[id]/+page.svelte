@@ -1322,9 +1322,9 @@
 		open={!!rvEditTarget}
 		onclose={() => (rvEditTarget = null)}
 		title={tr('admin_review_edit')}
+		hint={tr('admin_review_edit_hint')}
 	>
 		<div class="space-y-3">
-			<p class="text-xs text-muted-foreground">{tr('admin_review_edit_hint')}</p>
 			<label class="block">
 				<span class="text-xs text-muted-foreground">{tr('review_comment')}</span>
 				<Textarea name="rv_edit_comment" rows={5} bind:value={rvEditComment} />

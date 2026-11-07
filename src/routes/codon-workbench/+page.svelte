@@ -21,6 +21,7 @@
 		type OptimizeResult
 	} from '$lib/codonOptimize';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import Textarea from '$lib/components/Textarea.svelte';
@@ -419,11 +420,16 @@
 
 <div class="space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('cw_title')}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tr('cw_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('cw_title')}
+			<InfoTip text={tr('cw_intro')} label={`${tr('cw_title')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 	</div>
 
-	<Section title={tr('cw_mode_title')}>
+	<Section
+		title={tr('cw_mode_title')}
+		hint={mode === 'protein' ? tr('cw_mode_hint_protein') : tr('cw_mode_hint_dna')}
+	>
 		<div class="flex flex-wrap gap-2">
 			<Button
 				size="sm"
@@ -436,10 +442,6 @@
 				onclick={() => setMode('dna')}>{tr('cw_mode_dna')}</Button
 			>
 		</div>
-		<p class="mt-2 text-xs text-muted-foreground">
-			{mode === 'protein' ? tr('cw_mode_hint_protein') : tr('cw_mode_hint_dna')}
-		</p>
-
 		<label class="mt-3 block text-xs">
 			<span class="mb-1 block text-muted-foreground">
 				{mode === 'protein' ? tr('cw_seq_label_protein') : tr('cw_seq_label_dna')}
@@ -536,8 +538,10 @@
 		{/if}
 
 		<div class="mt-4 border-t pt-3">
-			<p class="text-xs font-medium">{tr('cw_taxon_title')}</p>
-			<p class="mb-2 text-xs text-muted-foreground">{tr('cw_taxon_hint')}</p>
+			<p class="mb-2 flex items-center gap-1.5 text-xs font-medium">
+				{tr('cw_taxon_title')}
+				<InfoTip text={tr('cw_taxon_hint')} label={`${tr('cw_taxon_title')} — ${tr('common_more_info')}`} />
+			</p>
 			<div class="flex flex-wrap items-end gap-2">
 				<label class="block text-xs">
 					<span class="mb-1 block text-muted-foreground">{tr('cw_taxon_label')}</span>
@@ -671,8 +675,7 @@
 		</Section>
 
 		{#if run.mode === 'dna'}
-			<Section title={tr('cw_table_codons_title')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('cw_table_codons_hint')}</p>
+			<Section title={tr('cw_table_codons_title')} hint={tr('cw_table_codons_hint')}>
 				<div class="w-full overflow-x-auto">
 					<table class="w-full border-collapse text-xs">
 						<thead>
@@ -711,8 +714,7 @@
 				</div>
 			</Section>
 		{:else}
-			<Section title={tr('cw_table_choices_title')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('cw_table_choices_hint')}</p>
+			<Section title={tr('cw_table_choices_title')} hint={tr('cw_table_choices_hint')}>
 				<div class="w-full overflow-x-auto">
 					<table class="w-full border-collapse text-xs">
 						<thead>

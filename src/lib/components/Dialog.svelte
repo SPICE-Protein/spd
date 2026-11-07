@@ -10,17 +10,22 @@
 		DialogTitle
 	} from '$lib/components/ui/dialog';
 	import { cn } from '$lib/utils';
+	import InfoTip from '$lib/components/InfoTip.svelte';
+	import { tr } from '$lib/i18n';
 
 	let {
 		open = $bindable(false),
 		onclose,
 		title = '',
+		hint = '',
 		width = 'max-w-lg',
 		children
 	}: {
 		open?: boolean;
 		onclose?: () => void;
 		title?: string;
+		/** supporting copy for the dialog title; rendered behind an info affordance */
+		hint?: string;
 		width?: string;
 		children: import('svelte').Snippet;
 	} = $props();
@@ -43,7 +48,10 @@
 	<DialogContent class={cn('max-h-[80vh] overflow-y-auto', width)}>
 		{#if title}
 			<DialogHeader>
-				<DialogTitle>{title}</DialogTitle>
+				<DialogTitle class="flex items-center gap-1.5">
+					<span>{title}</span>
+					{#if hint}<InfoTip text={hint} label={`${title} — ${tr('common_more_info')}`} />{/if}
+				</DialogTitle>
 			</DialogHeader>
 		{/if}
 		{@render children()}

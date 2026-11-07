@@ -250,7 +250,7 @@
 			</Section>
 
 			{#if config.protein}
-				<Section title={tr('protein_link_title')}>
+				<Section title={tr('protein_link_title')} hint={tr('protein_link_hint')}>
 					<div class="flex flex-wrap items-center gap-2 text-sm">
 						{#if currentProtein}
 							<IdLink id={currentProtein} />
@@ -270,15 +270,14 @@
 							{/if}
 						{/if}
 					</div>
-					<p class="mt-1 text-xs text-muted-foreground">{tr('protein_link_hint')}</p>
 				</Section>
 
 				<Dialog
 					bind:open={showProtein}
 					title={currentProtein ? tr('protein_link_rebind') : tr('protein_link_bind')}
+					hint={tr('protein_link_hint')}
 				>
 					<div class="space-y-3">
-						<p class="text-xs text-muted-foreground">{tr('protein_link_hint')}</p>
 						<TargetPicker
 							entityType="protein"
 							initial={currentProtein ? { id: currentProtein } : undefined}

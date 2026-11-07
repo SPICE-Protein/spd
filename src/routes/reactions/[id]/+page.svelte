@@ -623,7 +623,7 @@
 
 		{#if tab === 'overview'}
 			{#if hasInfo}
-				<Section title={tr('reaction_information_title')}>
+				<Section title={tr('reaction_information_title')} hint={tr('reaction_equation_hint')}>
 					{#if row.equation?.trim() || canComposeEquation}
 						<div class="border-b pb-3">
 							<p class="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
@@ -643,9 +643,6 @@
 										{/each}
 									</div>
 								</div>
-								<p class="mt-1 text-[10px] text-muted-foreground">
-									{tr('reaction_equation_hint')}
-								</p>
 							{:else}
 								<code class="mt-1 block font-mono text-sm leading-6 break-words whitespace-pre-wrap"
 									>{row.equation}</code

@@ -220,8 +220,12 @@
 	<EditorialCorrectionDialog {entityType} {entityId} bind:open={showOfficial} />
 {/if}
 
-<Dialog bind:open={showRetract} title={tr('issue_cta_retraction')} width="max-w-lg">
-	<p class="mb-3 text-xs text-muted-foreground">{tr('issue_retraction_hint')}</p>
+<Dialog
+	bind:open={showRetract}
+	title={tr('issue_cta_retraction')}
+	hint={tr('issue_retraction_hint')}
+	width="max-w-lg"
+>
 	<div class="space-y-3">
 		<label class="block">
 			<span class="text-xs text-muted-foreground">{tr('issue_reason')} <span class="text-destructive">*</span></span>

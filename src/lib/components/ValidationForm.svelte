@@ -7,6 +7,7 @@
 	import { VALIDATION_TYPES, RELATIONSHIPS, ENVIRONMENT_MATCHES, LICENSES } from '$lib/format';
 	import Button from './Button.svelte';
 	import Badge from './Badge.svelte';
+	import InfoTip from './InfoTip.svelte';
 	import StatusBadge from './StatusBadge.svelte';
 	import IdLink from './IdLink.svelte';
 	import Textarea from './Textarea.svelte';
@@ -296,12 +297,17 @@
 				class="rounded-none border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 p-3"
 			>
 				<div class="flex flex-wrap items-center justify-between gap-2">
-					<h3 class="text-sm font-semibold">{tr('revision_responses_title')}</h3>
+					<h3 class="flex items-center gap-1 text-sm font-semibold">
+						{tr('revision_responses_title')}
+						<InfoTip
+							text={tr('revision_responses_intro')}
+							label={`${tr('revision_responses_title')} — ${tr('common_more_info')}`}
+						/>
+					</h3>
 					<Badge tone={answeredCount === actionable.length ? 'ok' : 'warn'}>
 						{tr('revision_responses_progress', { done: answeredCount, total: actionable.length })}
 					</Badge>
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">{tr('revision_responses_intro')}</p>
 				<ol class="mt-2 space-y-3">
 					{#each actionable as r, i (r.id)}
 						<li class="border-t pt-2">

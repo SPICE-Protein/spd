@@ -6,6 +6,7 @@
 	import { fmtTime } from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
 	import DataTable from '$lib/components/DataTable.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import type { Column } from '$lib/components/table';
 	import Button from '$lib/components/Button.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
@@ -97,8 +98,10 @@
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<div>
-			<h1 class="text-2xl font-bold">{tr('pdb_title')}</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{tr('pdb_intro')}</p>
+			<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+				{tr('pdb_title')}
+				<InfoTip text={tr('pdb_intro')} label={`${tr('pdb_title')} — ${tr('common_more_info')}`} class="mt-1" />
+			</h1>
 		</div>
 		<PageTools withPrint={false} />
 		{#if session.signedIn}
@@ -121,9 +124,8 @@
 	{:else}<DataTable rows={shown} {columns} hrefFor={(r) => `/pdb-entries/${r.pdbId}`} />{/if}
 </div>
 
-<Dialog bind:open={showCreate} title={tr('pdb_import')} width="max-w-2xl">
+<Dialog bind:open={showCreate} title={tr('pdb_import')} hint={tr('pdb_upsert_hint')} width="max-w-2xl">
 	<div class="space-y-3">
-		<p class="text-xs text-muted-foreground">{tr('pdb_upsert_hint')}</p>
 		{#if formError}<p class="rounded-none bg-destructive/10 p-2 text-xs text-destructive">{formError}</p>{/if}
 		<FormFields fields={FIELDS} bind:values columns={2} />
 		<div class="flex justify-end gap-2">

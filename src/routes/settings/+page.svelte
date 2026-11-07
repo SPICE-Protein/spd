@@ -5,6 +5,7 @@
 	import { display } from '$lib/state/display.svelte';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 
@@ -42,8 +43,11 @@
 		<label class="mt-4 flex items-center gap-2 text-sm">
 			<Checkbox name="full_ids" checked={display.fullIds} onchange={(c) => display.setFullIds(c)} />
 			{tr('settings_full_ids')}
+			<InfoTip
+				text={tr('settings_full_ids_hint')}
+				label={`${tr('settings_full_ids')} — ${tr('common_more_info')}`}
+			/>
 		</label>
-		<p class="mt-1 text-xs text-muted-foreground">{tr('settings_full_ids_hint')}</p>
 	</Section>
 
 	<Section title={tr('settings_language')}>
@@ -62,17 +66,13 @@
 					<Button size="sm" variant="outline" href="/admin">{tr('nav_admin')}</Button>
 				{/if}
 			</div>
-			<p class="mt-2 text-xs text-muted-foreground">{tr('settings_account_hint')}</p>
 		{:else}
 			<Button size="sm" onclick={() => session.signIn()}>{tr('nav_login')}</Button>
-			<p class="mt-2 text-xs text-muted-foreground">{tr('settings_account_signed_out_hint')}</p>
 		{/if}
-		<p class="mt-2 text-xs text-muted-foreground">{tr('settings_graph_hint')}</p>
 	</Section>
 
-	<Section title={tr('settings_license')}>
-		<p class="text-sm leading-relaxed text-muted-foreground">{tr('settings_license_hint')}</p>
-		<div class="mt-3">
+	<Section title={tr('settings_license')} hint={tr('settings_license_hint')}>
+		<div>
 			<Button size="sm" variant="outline" href="/license">{tr('settings_license_open')}</Button>
 		</div>
 	</Section>

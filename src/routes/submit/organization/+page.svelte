@@ -4,6 +4,7 @@
 	import { tr } from '$lib/i18n';
 	import { toastOk } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
@@ -59,8 +60,13 @@
 				<p class="rounded-none bg-emerald-50 dark:bg-emerald-500/10 p-3 text-sm text-emerald-900 dark:text-emerald-200">
 					{tr('org_claim_submitted')} · verification id <code class="font-mono break-all">{result}</code>
 				</p>
-				<p class="mt-2 text-xs text-muted-foreground">{tr('org_claim_next_hint')}</p>
-				<div class="mt-2"><Button size="sm" variant="outline" href="/organizations">→ {tr('nav_organizations')}</Button></div>
+				<div class="mt-2 flex items-center gap-1">
+					<Button size="sm" variant="outline" href="/organizations">→ {tr('nav_organizations')}</Button>
+					<InfoTip
+						text={tr('org_claim_next_hint')}
+						label={tr('common_more_info')}
+					/>
+				</div>
 			{:else}
 				<FormFields fields={FIELDS} bind:values />
 				<div class="mt-3 flex justify-end"><Button onclick={submit} disabled={saving}>{tr('common_submit')}</Button></div>

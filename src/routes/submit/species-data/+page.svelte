@@ -7,6 +7,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { toastErr, toastOk } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Field from '$lib/components/Field.svelte';
 	import Input from '$lib/components/Input.svelte';
@@ -94,21 +95,22 @@
 
 <div class="mx-auto max-w-3xl space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('submit_species_data')}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tr('submit_species_data_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('submit_species_data')}
+			<InfoTip text={tr('submit_species_data_intro')} label={`${tr('submit_species_data')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 	</div>
 
 	{#if session.signedIn}
-		<Section title={tr('species_data_step_enzyme')}>
+		<Section title={tr('species_data_step_enzyme')} hint={tr('species_data_enzyme_hint')}>
 			<TargetPicker
 				entityType="enzyme"
 				initial={enzymeId ? { id: enzymeId } : undefined}
 				onpick={pick}
 			/>
-			<p class="mt-2 text-xs text-muted-foreground">{tr('species_data_enzyme_hint')}</p>
 		</Section>
 
-		<Section title={tr('species_data_step_values')}>
+		<Section title={tr('species_data_step_values')} hint={tr('species_data_units_hint')}>
 			<div class="space-y-3">
 				<Field name="species_organism" label={tr('species_data_organism')} required>
 					<Input
@@ -151,7 +153,6 @@
 					/>
 				</Field>
 
-				<p class="text-xs text-muted-foreground">{tr('species_data_units_hint')}</p>
 				{#if error}
 					<p class="text-sm text-destructive">{error}</p>
 				{/if}

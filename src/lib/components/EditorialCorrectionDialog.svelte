@@ -102,8 +102,7 @@
 	}
 </script>
 
-<Dialog bind:open title={tr('admin_official_correction')} width="max-w-xl">
-	<p class="mb-3 text-xs text-muted-foreground">{tr('admin_official_hint')}</p>
+<Dialog bind:open title={tr('admin_official_correction')} hint={tr('admin_official_hint')} width="max-w-xl">
 	<div class="space-y-3">
 		<label class="block">
 			<span class="text-xs text-muted-foreground">{tr('issue_reason')} <span class="text-destructive">*</span></span>
@@ -113,7 +112,6 @@
 			<span class="text-xs text-muted-foreground">{tr('issue_proposed')} <span class="text-destructive">*</span></span>
 			<CorrectionItems name="ed_corr_items" bind:value={items} fieldOptions={fields} />
 		</label>
-		<p class="text-xs text-muted-foreground">{tr('admin_official_audit_note')}</p>
 		<div class="flex justify-end gap-2">
 			<Button variant="ghost" onclick={() => (open = false)}>{tr('common_cancel')}</Button>
 			<Button onclick={submit} disabled={busy || !reason.trim() || !itemsReady}>{tr('admin_official_submit')}</Button>

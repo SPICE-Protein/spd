@@ -501,8 +501,7 @@
 				{/if}
 			</Section>
 		{:else if tab === 'identifiers'}
-			<Section title={tr('tab_identifiers')}>
-				<p class="mb-3 text-xs text-muted-foreground">{tr('reagent_identifiers_hint')}</p>
+			<Section title={tr('tab_identifiers')} hint={tr('reagent_identifiers_hint')}>
 				<div class="overflow-x-auto">
 					<table class="w-full text-sm">
 						<thead>

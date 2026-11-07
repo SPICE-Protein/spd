@@ -8,6 +8,7 @@
 	import { fmtNumber, fmtTime } from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -375,7 +376,6 @@
 					{/if}
 					{#if isLeader}
 						<div class="mt-3 border-t pt-3">
-							<p class="mb-1 text-xs text-muted-foreground">{tr('peers_nominate_hint')}</p>
 							<div class="flex gap-2">
 								<Select
 									name="org_nominate"
@@ -385,6 +385,10 @@
 									options={[{ value: '', label: tr('peers_nominate') }, ...home.members.filter((m) => m.role !== 'leader').map((m) => ({ value: String(m.id), label: `${m.displayName || m.id} · ${m.id}` }))]}
 								/>
 								<Button size="sm" onclick={doNominate} disabled={!nominateOrcid}>{tr('peers_nominate')}</Button>
+								<InfoTip
+									text={tr('peers_nominate_hint')}
+									label={`${tr('peers_nominate')} — ${tr('common_more_info')}`}
+								/>
 							</div>
 						</div>
 					{/if}
@@ -393,8 +397,12 @@
 		{/if}
 	</div>
 
-	<Dialog bind:open={showProfileEditor} title={tr('org_edit_profile')} width="max-w-2xl">
-		<p class="mb-2 text-xs text-muted-foreground">{tr('org_profile_editor_hint')}</p>
+	<Dialog
+		bind:open={showProfileEditor}
+		title={tr('org_edit_profile')}
+		hint={tr('org_profile_editor_hint')}
+		width="max-w-2xl"
+	>
 		<div class="space-y-2">
 			{#each profileRows as r, i (i)}
 				<div class="flex items-center gap-2">

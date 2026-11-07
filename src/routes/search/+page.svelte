@@ -13,6 +13,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Select from '$lib/components/Select.svelte';
 	import SaveViewButton from '$lib/components/SaveViewButton.svelte';
 	import { searchTermTooLong } from '$lib/search-limit';
@@ -323,7 +324,10 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="text-2xl font-bold">{tr('nav_search')}</h1>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('nav_search')}
+		<InfoTip text={tr('search_where_hint')} label={`${tr('nav_search')} — ${tr('common_more_info')}`} class="mt-1" />
+	</h1>
 	<form
 		class="flex flex-wrap gap-2"
 		onsubmit={(e) => {
@@ -356,8 +360,6 @@
 		<Button type="submit" disabled={loading}>{tr('nav_search')}</Button>
 		<SaveViewButton />
 	</form>
-	<p class="text-xs text-muted-foreground">{tr('search_where_hint')}</p>
-
 	{#if error}
 		<p
 			class="rounded-none border border-destructive/30 bg-destructive/10 p-2 text-sm text-destructive"
@@ -404,7 +406,7 @@
 
 	{#if !loading && term.trim() && externalSources(entityType).length > 0}
 		<div class="flex flex-wrap items-center gap-3 border border-dashed p-3">
-			<p class="text-xs text-muted-foreground">{tr('ext_search_hint')}</p>
+			<InfoTip text={tr('ext_search_hint')} label={`${tr('ext_search_button')} — ${tr('common_more_info')}`} />
 			<Button
 				class="ml-auto"
 				size="sm"
@@ -421,8 +423,7 @@
 	{/if}
 
 	{#if extLoading || extUnavailable || extGroups.some((g) => (g.data?.items?.length ?? 0) > 0)}
-		<Section title={tr('ext_section_title')}>
-			<p class="text-xs text-muted-foreground">{tr('ext_section_hint')}</p>
+		<Section title={tr('ext_section_title')} hint={tr('ext_section_hint')}>
 			{#if extLoading}
 				<p class="mt-2 text-sm text-muted-foreground">{tr('common_loading')}</p>
 			{:else if extUnavailable}
@@ -479,7 +480,6 @@
 						</div>
 					{/if}
 				{/each}
-				<p class="mt-3 text-xs text-muted-foreground">{tr('ext_already_local_hint')}</p>
 			{/if}
 		</Section>
 	{/if}

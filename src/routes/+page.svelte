@@ -4,6 +4,7 @@
 	import { tr } from '$lib/i18n';
 	import { fmtNumber, entityHref, shortPublicId } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import SeasonalNote from '$lib/components/SeasonalNote.svelte';
@@ -101,8 +102,13 @@
 		] as step (step.n)}
 			<a href={step.href} class="group rounded-none border bg-card p-4 transition-colors hover:border-primary/50">
 				<p class="text-xs font-medium text-muted-foreground">{tr('home_step_n', { n: step.n })}</p>
-				<p class="mt-1 text-base font-semibold">{step.icon} {tr(`home_step${step.n}_title`)}</p>
-				<p class="mt-1 text-sm leading-relaxed text-muted-foreground">{tr(`home_step${step.n}_body`)}</p>
+				<p class="mt-1 flex items-center gap-1.5 text-base font-semibold">
+					<span>{step.icon} {tr(`home_step${step.n}_title`)}</span>
+					<InfoTip
+						text={tr(`home_step${step.n}_body`)}
+						label={`${tr(`home_step${step.n}_title`)} — ${tr('common_more_info')}`}
+					/>
+				</p>
 			</a>
 		{/each}
 	</div>

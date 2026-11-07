@@ -12,6 +12,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { toastOk } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import EntityBreadcrumb from '$lib/components/EntityBreadcrumb.svelte';
 	import Badge from '$lib/components/Badge.svelte';
@@ -129,9 +130,8 @@
 
 		<div class="flex justify-end"><PageTools /></div>
 
-		<Section title={tr('genetic_code_table_title')}>
+		<Section title={tr('genetic_code_table_title')} hint={tr('genetic_code_hint')}>
 			<p class="mb-1 text-xs text-muted-foreground">NCBI {row.ncbiTableId}</p>
-			<p class="mb-3 text-xs text-muted-foreground">{tr('genetic_code_hint')}</p>
 			<div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
 				<span class="text-muted-foreground">{tr('genetic_code_start')}</span>
 				{#each row.startCodons ?? [] as c (c)}<code class="font-mono">{c}</code>{/each}
@@ -176,8 +176,7 @@
 			</div>
 		</Section>
 
-		<Section title={tr('genetic_code_species_title')}>
-			<p class="mb-2 text-xs text-muted-foreground">{tr('genetic_code_species_hint')}</p>
+		<Section title={tr('genetic_code_species_title')} hint={tr('genetic_code_species_hint')}>
 			{#if bindings.length}
 				<ul class="divide-y text-sm">
 					{#each bindings as b (b.taxonId)}
@@ -197,8 +196,13 @@
 			{/if}
 
 			<div class="mt-4 border-t pt-3">
-				<h3 class="text-sm font-semibold">{tr('genetic_code_bind_title')}</h3>
-				<p class="mt-1 text-xs text-muted-foreground">{tr('genetic_code_bind_hint')}</p>
+				<h3 class="flex items-center gap-1 text-sm font-semibold">
+					{tr('genetic_code_bind_title')}
+					<InfoTip
+						text={tr('genetic_code_bind_hint')}
+						label={`${tr('genetic_code_bind_title')} — ${tr('common_more_info')}`}
+					/>
+				</h3>
 				{#if session.signedIn}
 					<div class="mt-2 flex flex-wrap items-end gap-2">
 						<label class="text-xs">

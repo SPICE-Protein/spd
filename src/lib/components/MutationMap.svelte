@@ -10,6 +10,7 @@
 	} from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Button from '$lib/components/Button.svelte';
 
@@ -82,11 +83,15 @@
 			</span>
 		</div>
 
-		<p class="mt-1.5 text-xs text-muted-foreground">{tr('protein_mutation_map_structure_hint')}</p>
-
 		{#if data.structures.length}
 			<div class="mt-1 flex flex-wrap items-center gap-2 text-xs">
-				<span class="text-muted-foreground">{tr('protein_mutation_map_structure_entities')}:</span>
+				<span class="flex items-center gap-1 text-muted-foreground">
+					{tr('protein_mutation_map_structure_entities')}:
+					<InfoTip
+						text={tr('protein_mutation_map_structure_hint')}
+						label={`${tr('protein_mutation_map_structure_entities')} — ${tr('common_more_info')}`}
+					/>
+				</span>
 				{#each data.structures as s (`${s.pdbId}:${s.entityId}`)}
 					<a class="font-mono underline" href={`/pdb-entries/${s.pdbId}`}>{s.pdbId}</a>
 					<span class="text-muted-foreground">

@@ -58,7 +58,7 @@
 	}
 </script>
 
-<Section title={tr('protein_link_title')}>
+<Section title={tr('protein_link_title')} hint={tr('protein_link_hint')}>
 	<div class="flex flex-wrap items-center gap-2 text-sm">
 		{#if current}
 			<IdLink id={current} />
@@ -74,12 +74,14 @@
 			{/if}
 		{/if}
 	</div>
-	<p class="mt-1 text-xs text-muted-foreground">{tr('protein_link_hint')}</p>
 </Section>
 
-<Dialog bind:open={showProtein} title={current ? tr('protein_link_rebind') : tr('protein_link_bind')}>
+<Dialog
+	bind:open={showProtein}
+	title={current ? tr('protein_link_rebind') : tr('protein_link_bind')}
+	hint={tr('protein_link_hint')}
+>
 	<div class="space-y-3">
-		<p class="text-xs text-muted-foreground">{tr('protein_link_hint')}</p>
 		<TargetPicker
 			entityType="protein"
 			initial={current ? { id: current } : undefined}

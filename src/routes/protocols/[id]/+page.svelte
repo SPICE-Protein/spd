@@ -332,8 +332,7 @@
 			</Section>
 		{/if}
 
-		<Section title={tr('validation_tab_reviews')}>
-			<p class="mb-2 text-xs text-muted-foreground">{tr('protocol_publication_rule')}</p>
+		<Section title={tr('validation_tab_reviews')} hint={tr('protocol_publication_rule')}>
 			{#if reviews.length === 0}<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
 			{:else}
 				<ul class="divide-y text-sm">
@@ -577,9 +576,13 @@
 	</div>
 </Dialog>
 
-<Dialog open={!!rvEditTarget} onclose={() => (rvEditTarget = null)} title={tr('admin_review_edit')}>
+<Dialog
+	open={!!rvEditTarget}
+	onclose={() => (rvEditTarget = null)}
+	title={tr('admin_review_edit')}
+	hint={tr('admin_review_edit_hint')}
+>
 	<div class="space-y-3">
-		<p class="text-xs text-muted-foreground">{tr('admin_review_edit_hint')}</p>
 		<label class="block">
 			<span class="text-xs text-muted-foreground">{tr('protocol_review_comments')}</span>
 			<Textarea name="pr_edit_comments" rows={4} bind:value={rvEditComments} />

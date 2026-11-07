@@ -9,6 +9,7 @@
 	import ApiStatus from '$lib/components/ApiStatus.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import FoldEasterEgg from '$lib/components/FoldEasterEgg.svelte';
+	import { Provider as TooltipProvider } from '$lib/components/ui/tooltip';
 	import { seasonal } from '$lib/state/seasonal.svelte';
 	import { BASE_URL } from '$lib/api/base';
 	import { tr, isZh } from '$lib/i18n';
@@ -58,6 +59,7 @@
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 </svelte:head>
 
+<TooltipProvider>
 <div class="flex min-h-dvh flex-col">
 	{#if !printView}
 		<AppHeader />
@@ -92,3 +94,4 @@
 		<a href={localizeHref(page.url.pathname, { locale: loc })}>{loc}</a>
 	{/each}
 </div>
+</TooltipProvider>

@@ -2,6 +2,7 @@
 	import { tr } from '$lib/i18n';
 	import { session } from '$lib/state/session.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import { SUBMITTABLE } from '$lib/submit/registry';
 
@@ -38,7 +39,10 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="text-2xl font-bold">{tr('nav_submit')}</h1>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('nav_submit')}
+		<InfoTip text={tr('submit_browse_only_note')} label={`${tr('nav_submit')} — ${tr('common_more_info')}`} class="mt-1" />
+	</h1>
 	<p class="max-w-3xl text-sm text-muted-foreground">{tr('submit_intro')}</p>
 
 	{#if !session.signedIn}
@@ -104,7 +108,6 @@
 		{/if}
 	{/each}
 
-	<p class="max-w-3xl text-xs text-muted-foreground">{tr('submit_browse_only_note')}</p>
 	{/if}
 </div>
 

@@ -6,6 +6,7 @@
 	import { tr, enumLabel } from '$lib/i18n';
 	import { toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import JsonBlock from '$lib/components/JsonBlock.svelte';
@@ -134,11 +135,17 @@
 
 <div class="mx-auto max-w-4xl space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('query_title')}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tr('query_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('query_title')}
+			<InfoTip
+				text={session.signedIn ? tr('query_intro') : `${tr('query_intro')} ${tr('query_anon_hint')}`}
+				label={`${tr('query_title')} — ${tr('common_more_info')}`}
+				class="mt-1"
+			/>
+		</h1>
 	</div>
 
-	<Section title={tr('query_token_title')}>
+	<Section title={tr('query_token_title')} hint={tr('query_token_hint')}>
 		<div class="flex flex-wrap items-end gap-2">
 			<label class="min-w-64 flex-1 text-sm">
 				<span class="text-xs text-muted-foreground">{tr('query_token_label')}</span>
@@ -155,9 +162,8 @@
 			<Button size="sm" variant="ghost" onclick={() => (tokenRevealed = !tokenRevealed)}>{tokenRevealed ? tr('query_token_hide') : tr('query_token_show')}</Button>
 			{#if queryToken.value}<Button size="sm" variant="outline" onclick={clearToken}>{tr('query_token_clear')}</Button>{/if}
 		</div>
-		<p class="mt-2 text-xs text-muted-foreground">
-			{tr('query_token_hint')}
-			<a class="underline" href="/me">{tr('query_token_mint')}</a>.
+		<p class="mt-2 text-xs">
+			<a class="underline" href="/me">{tr('query_token_mint')}</a>
 		</p>
 		{#if usingToken}
 			<p class="mt-1 text-xs text-emerald-700 dark:text-emerald-300">{tr('query_token_active')}</p>
@@ -186,7 +192,10 @@
 						onclick={() => roots.push(newSpec('protein'))}
 					>＋ {tr('query_add_root')}</Button>
 				{/if}
-				<p class="text-xs text-muted-foreground">{tr('query_roots_hint')}</p>
+				<InfoTip
+					text={tr('query_roots_hint')}
+					label={`${tr('query_add_root')} — ${tr('common_more_info')}`}
+				/>
 			</div>
 		{:else}
 			<Textarea name="query_raw" bind:value={rawText} spellcheck={false} monospace class="h-64 w-full p-3 text-xs" />
@@ -242,9 +251,6 @@
 		</Section>
 	{/if}
 
-	{#if !session.signedIn}
-		<p class="text-xs text-muted-foreground">{tr('query_anon_hint')}</p>
-	{/if}
 </div>
 
 <svelte:head><title>{tr('query_title')} · SPD</title></svelte:head>

@@ -19,6 +19,7 @@
 	import Input from '$lib/components/Input.svelte';
 	import MarketCard from '$lib/components/MarketCard.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Select from '$lib/components/Select.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 
@@ -291,13 +292,15 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center gap-2">
-		<h1 class="text-2xl font-bold">{tr('market_title')}</h1>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('market_title')}
+			<InfoTip text={tr('market_intro')} label={`${tr('market_title')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 		<Badge tone="info">{tr('market_local_only')}</Badge>
 		{#if mounted && market.items.length > 0}
 			<span class="text-xs tabular-nums text-muted-foreground">{market.items.length}</span>
 		{/if}
 	</div>
-	<p class="max-w-3xl text-sm text-muted-foreground">{tr('market_intro')}</p>
 
 	<Tabs items={tabItems} bind:active={tab} />
 
@@ -371,7 +374,7 @@
 			{/if}
 		</Section>
 	{:else}
-		<Section title={tr('market_tab_discover')}>
+		<Section title={tr('market_tab_discover')} hint={tr('market_discover_hint')}>
 			<div class="flex flex-wrap items-end gap-2">
 				<label class="block min-w-48 text-xs">
 					<span class="mb-1 block text-muted-foreground">{tr('market_filter_type')}</span>
@@ -388,8 +391,6 @@
 					/>
 				</label>
 			</div>
-			<p class="mt-2 text-xs text-muted-foreground">{tr('market_discover_hint')}</p>
-
 			{#if discoverLoading}
 				<p class="mt-3 text-sm text-muted-foreground">{tr('common_loading')}</p>
 			{:else if discoverError}

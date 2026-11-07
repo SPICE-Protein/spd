@@ -6,6 +6,7 @@
 	import { tr, enumLabel } from '$lib/i18n';
 	import { fmtTime } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import EntityBreadcrumb from '$lib/components/EntityBreadcrumb.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import IssuePanel from '$lib/components/IssuePanel.svelte';
@@ -120,7 +121,7 @@
 
 		{#if tab === 'overview'}
 			<div class="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-				<Section title={tr('protein_observed_structure')}>
+				<Section title={tr('protein_observed_structure')} hint={tr('pdb_viewer_hint')}>
 					{#snippet actions()}
 						{#if row?.coordinatesArtifactId}
 							<a
@@ -132,7 +133,6 @@
 					{/snippet}
 					{#if viewerArtifacts.length}
 						<MolViewer artifacts={viewerArtifacts} height={560} />
-						<p class="mt-2 text-xs text-muted-foreground">{tr('pdb_viewer_hint')}</p>
 					{:else}
 						<p class="text-sm text-muted-foreground">{tr('pdb_viewer_missing')}</p>
 					{/if}
@@ -212,11 +212,10 @@
 				</div>
 			</div>
 		{:else if tab === 'entities'}
-			<Section title={tr('pdb_entities_title')}>
+			<Section title={tr('pdb_entities_title')} hint={tr('pdb_entities_hint')}>
 				{#if entities.length === 0}
 					<p class="text-sm text-muted-foreground">{tr('pdb_entities_none')}</p>
 				{:else}
-					<p class="mb-2 text-xs text-muted-foreground">{tr('pdb_entities_hint')}</p>
 					<div class="divide-y">
 						{#each entities as ent (ent.entityId)}
 							<details class="group">
@@ -250,7 +249,13 @@
 								<div class="grid gap-4 pb-4 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
 									{#if ent.sequence}
 										<div>
-											<p class="mb-1 text-xs text-muted-foreground">{tr('pdb_entity_sequence')}</p>
+											<p class="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
+												{tr('pdb_entity_sequence')}
+												<InfoTip
+													text={tr('pdb_chain_verbatim')}
+													label={`${tr('pdb_entity_sequence')} — ${tr('common_more_info')}`}
+												/>
+											</p>
 											<div class="gene-view" style="height: 280px;">
 												<DnaViewer
 													dnaSeq={ent.sequence}
@@ -263,7 +268,6 @@
 													primers={[]}
 												/>
 											</div>
-											<p class="mt-1 text-xs text-muted-foreground">{tr('pdb_chain_verbatim')}</p>
 										</div>
 									{:else}
 										<p class="text-sm text-muted-foreground">{tr('pdb_entity_no_sequence')}</p>

@@ -184,8 +184,7 @@
 		<IssuePanel entityType="codon_usage" entityId={row.id} />
 
 		{#if tablesUsed.length}
-			<Section title={tr('codon_code_title')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('codon_code_hint')}</p>
+			<Section title={tr('codon_code_title')} hint={tr('codon_code_hint')}>
 				<ul class="space-y-1 text-sm">
 					{#each tablesUsed as t (t.id)}
 						<li class="flex flex-wrap items-center gap-2">
@@ -202,8 +201,10 @@
 			</Section>
 		{/if}
 
-		<Section title={isMulti ? tr('codon_species_title') : tr('codon_table_title')}>
-			<p class="mb-3 text-xs text-muted-foreground">{tr('codon_bar_hint')}</p>
+		<Section
+			title={isMulti ? tr('codon_species_title') : tr('codon_table_title')}
+			hint={tr('codon_bar_hint')}
+		>
 			{#if views.every((v) => v.groups.length === 0)}
 				<p class="text-sm text-muted-foreground">{tr('codon_no_map')}</p>
 			{:else}

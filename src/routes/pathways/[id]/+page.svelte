@@ -349,8 +349,7 @@
 				</Section>
 			{/if}
 		{:else if tab === 'steps'}
-			<Section title={tr('pathway_steps')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('pathway_steps_spd_hint')}</p>
+			<Section title={tr('pathway_steps')} hint={tr('pathway_steps_spd_hint')}>
 
 				{#if filedId}
 					<p
@@ -468,7 +467,6 @@
 						>
 						<Textarea name="pw_steps_reason" rows={2} bind:value={reason} />
 					</label>
-					<p class="mt-2 text-xs text-muted-foreground">{tr('pathway_steps_research_note')}</p>
 					<div class="mt-2 flex flex-wrap items-center gap-2">
 						<Button size="sm" onclick={submitSteps} disabled={saving || !reason.trim()}
 							>{tr('pathway_steps_submit')}</Button
@@ -515,8 +513,6 @@
 						<Button class="mt-3" size="sm" variant="outline" onclick={startEdit}
 							>{tr('pathway_steps_edit')}</Button
 						>
-					{:else if session.signedIn}
-						<p class="mt-2 text-xs text-muted-foreground">{tr('pathway_steps_research_note')}</p>
 					{/if}
 				{/if}
 			</Section>

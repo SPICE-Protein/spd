@@ -1314,11 +1314,9 @@
 			{#if boundSequence}
 				<MutationMap data={mutationMapData} loading={boundLoading} sequenceId={boundSequence.id} />
 			{/if}
-			<Section title={tr('evidence_chain_title')}>
+			<Section title={tr('evidence_chain_title')} hint={tr('evidence_chain_hint')}>
 				<EvidenceChain nodes={chainNodes} />
-				<p class="mt-2 text-xs text-muted-foreground">{tr('evidence_chain_hint')}</p>
 			</Section>
-			<p class="text-xs text-muted-foreground">{tr('protein_overview_hint')}</p>
 		{:else if tab === 'features'}
 			<Section title={tr('tab_features')}>
 				{#snippet actions()}
@@ -1721,10 +1719,10 @@
 				</div>
 			{/if}
 		{:else if tab === 'evidence'}
-			<Section title={tr('protein_tab_evidence')}>
-				<p class="mb-2 text-xs text-muted-foreground">
-					{tr('protein_evidence_hint', { n: evidenceWindow })}
-				</p>
+			<Section
+				title={tr('protein_tab_evidence')}
+				hint={tr('protein_evidence_hint', { n: evidenceWindow })}
+			>
 				{#if evidenceLoading}
 					<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 				{:else if evidence.length === 0}
@@ -1829,7 +1827,7 @@
 						</ul>
 					{/if}
 				</Section>
-				<Section title={tr('protein_related_interactions')}>
+				<Section title={tr('protein_related_interactions')} hint={tr('protein_related_hint')}>
 					{#if interRows.length === 0}
 						<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
 					{:else}
@@ -1870,7 +1868,6 @@
 					{/if}
 				</Section>
 			</div>
-			<p class="text-xs text-muted-foreground">{tr('protein_related_hint')}</p>
 		{:else if tab === 'community'}
 			<Section title={tr('protein_community_ledger')}>
 				{#if ledgerLoading}
@@ -1925,7 +1922,7 @@
 		</div>
 	</Dialog>
 
-	<Dialog bind:open={showFeature} title={tr('protein_add_feature')}>
+	<Dialog bind:open={showFeature} title={tr('protein_add_feature')} hint={tr('protein_feature_hint')}>
 		<div class="space-y-3">
 			{#if !canonicalSeqText}
 				<p class="rounded-none bg-destructive/10 p-2 text-xs text-destructive">
@@ -1936,7 +1933,6 @@
 					{featureError}
 				</p>{/if}
 			<FormFields fields={FEATURE_FIELDS} bind:values={featureValues} />
-			<p class="text-xs text-muted-foreground">{tr('protein_feature_hint')}</p>
 			<div class="flex justify-end gap-2">
 				<Button variant="ghost" onclick={() => (showFeature = false)}>{tr('common_cancel')}</Button>
 				<Button onclick={addFeature} disabled={savingFeature || !canonicalSeqText}

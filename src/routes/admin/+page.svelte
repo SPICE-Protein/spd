@@ -19,6 +19,7 @@
 	import IdLink from '$lib/components/IdLink.svelte';
 	import FilingDetail from '$lib/components/FilingDetail.svelte';
 	import CorrectionItems from '$lib/components/CorrectionItems.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import Textarea from '$lib/components/Textarea.svelte';
 	import { fetchTargetFields, type TargetFields } from '$lib/submit/field-options';
@@ -755,7 +756,6 @@
 							</div>
 						{:else if String(dTask.taskType) === 'contribution_review' && entityId}
 							{#if entityType === 'correction' || entityType === 'retraction'}
-								<p class="mb-2 text-xs text-muted-foreground">{tr('admin_filing_task_hint')}</p>
 								<!-- the filing itself, read as what it claims; a hidden
 								     one answers "record not found" — restore it from the
 								     filings tab first -->
@@ -822,7 +822,7 @@
 					onchange={() => { appOpen = ''; loadApplications(); }}
 				/>
 				<Button size="sm" variant="ghost" onclick={loadApplications}>⟳</Button>
-				<p class="text-xs text-muted-foreground">{tr('admin_applications_hint')}</p>
+				<InfoTip text={tr('admin_applications_hint')} label={`${tr('admin_tab_applications')} — ${tr('common_more_info')}`} />
 			</div>
 			{#if applications.length === 0}
 				<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
@@ -885,7 +885,7 @@
 					onchange={() => loadClaims()}
 				/>
 				<Button size="sm" variant="ghost" onclick={loadClaims}>⟳</Button>
-				<p class="text-xs text-muted-foreground">{tr('admin_claims_hint')}</p>
+				<InfoTip text={tr('admin_claims_hint')} label={`${tr('admin_tab_claims')} — ${tr('common_more_info')}`} />
 			</div>
 			{#if claims.length === 0}
 				<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
@@ -937,7 +937,7 @@
 					onchange={loadFilings}
 				/>
 				<Button size="sm" variant="ghost" onclick={loadFilings} disabled={filingLoading}>⟳</Button>
-				<p class="text-xs text-muted-foreground">{tr('admin_filings_hint')}</p>
+				<InfoTip text={tr('admin_filings_hint')} label={`${tr('admin_tab_filings')} — ${tr('common_more_info')}`} />
 			</div>
 			{#if filingRows.length === 0}
 				<p class="text-sm text-muted-foreground">{filingLoading ? tr('common_loading') : tr('common_empty')}</p>
@@ -1053,8 +1053,7 @@
 				/>
 				<span class="text-xs text-muted-foreground">{tr('dispatch_shortfall_note', { n: dispatchTarget })}</span>
 			</div>
-			<Section title={tr('admin_tab_dispatch')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('dispatch_round_hint')}</p>
+			<Section title={tr('admin_tab_dispatch')} hint={tr('dispatch_round_hint')}>
 				{#if dispatchItems.length === 0}
 					<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
 				{:else}
@@ -1082,7 +1081,7 @@
 				{/if}
 			</Section>
 			<div class="grid gap-4 lg:grid-cols-2">
-				<Section title={tr('dispatch_manual_title')}>
+				<Section title={tr('dispatch_manual_title')} hint={tr('dispatch_due_hint')}>
 					<div class="space-y-2 text-sm">
 						<Select name="md_entity_type" bind:value={mdEntityType} options={[{ value: 'wet_lab_validation', label: tr('et_wet_lab_validation') }, { value: 'protocol', label: tr('et_protocol') }]} />
 						<Input name="md_entity_id" class="h-8 w-full font-mono text-xs" placeholder={tr('dispatch_f_entityId')} bind:value={mdEntityId} />
@@ -1091,12 +1090,10 @@
 							{tr('dispatch_due_days')}
 							<Input name="md_due_days" type="number" min={1} max={90} class="h-8 w-24 text-xs" bind:value={mdDueDays} />
 						</label>
-						<p class="text-[11px] text-muted-foreground">{tr('dispatch_due_hint')}</p>
 						<Button size="sm" onclick={doManualDispatch} disabled={!mdEntityId.trim() || !mdOrcid.trim()}>{tr('dispatch_submit')}</Button>
 					</div>
 				</Section>
-				<Section title={tr('dispatch_quota_title')}>
-					<p class="mb-2 text-xs text-muted-foreground">{tr('dispatch_quota_hint')}</p>
+				<Section title={tr('dispatch_quota_title')} hint={tr('dispatch_quota_hint')}>
 					<div class="space-y-2 text-sm">
 						<Input name="q_org" class="h-8 w-full font-mono text-xs" placeholder={tr('dispatch_quota_org')} bind:value={qOrg} />
 						<div class="flex gap-2">
@@ -1111,8 +1108,7 @@
 		{:else if tab === 'reviewers'}
 			<!-- 0032 reviewer performance roster (OJS "Add Reviewer" past
 			     assignments): completions, turnaround, punctuality. -->
-			<Section title={tr('admin_tab_reviewers')}>
-				<p class="mb-2 text-xs text-muted-foreground">{tr('admin_roster_hint')}</p>
+			<Section title={tr('admin_tab_reviewers')} hint={tr('admin_roster_hint')}>
 				{#if roster.length === 0}
 					<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
 				{:else}
@@ -1145,8 +1141,7 @@
 				{/if}
 			</Section>
 		{:else if tab === 'tokens'}
-			<Section title={tr('admin_tokens_tab')}>
-				<p class="mb-3 text-xs text-muted-foreground">{tr('admin_token_tier_intro')}</p>
+			<Section title={tr('admin_tokens_tab')} hint={tr('admin_token_tier_intro')}>
 				<div class="flex flex-wrap items-end gap-2 text-sm">
 					<label class="block">
 						<span class="text-xs text-muted-foreground">{tr('admin_token_id')}</span>
@@ -1175,11 +1170,13 @@
 	</div>
 {/if}
 
-<Dialog open={moder !== null} onclose={() => (moder = null)} title={moder?.mode === 'restore' ? tr('admin_record_restore') : tr('admin_record_hide')}>
+<Dialog
+	open={moder !== null}
+	onclose={() => (moder = null)}
+	title={moder?.mode === 'restore' ? tr('admin_record_restore') : tr('admin_record_hide')}
+	hint={moder?.mode === 'restore' ? tr('admin_restore_hint') : tr('admin_hide_hint')}
+>
 	<div class="space-y-3">
-		<p class="text-xs text-muted-foreground">
-			{moder?.mode === 'restore' ? tr('admin_restore_hint') : tr('admin_hide_hint')}
-		</p>
 		<label class="block">
 			<span class="text-xs text-muted-foreground">{tr('field_reason')} <span class="text-destructive">*</span></span>
 			<Input name="ad_mod_reason" class="mt-1 h-8 w-full" bind:value={moderReason} />
@@ -1194,21 +1191,29 @@
 	</div>
 </Dialog>
 
-<Dialog open={decide !== null} onclose={() => (decide = null)} title={decide?.mode === 'apply' ? tr('admin_record_apply') : tr('admin_record_reject')} width="max-w-xl">
+<Dialog
+	open={decide !== null}
+	onclose={() => (decide = null)}
+	title={decide?.mode === 'apply' ? tr('admin_record_apply') : tr('admin_record_reject')}
+	hint={decide?.mode === 'apply' ? tr('admin_apply_hint') : tr('admin_reject_hint')}
+	width="max-w-xl"
+>
 	{#if decide}
 		<div class="space-y-3">
-			<p class="text-xs text-muted-foreground">
-				{decide.mode === 'apply' ? tr('admin_apply_hint') : tr('admin_reject_hint')}
-			</p>
 			{#if decide.mode === 'apply' && !decideApplyable}
 				<p class="rounded-none border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
 					{tr('admin_apply_not_correctable')}
 				</p>
 			{:else if decide.mode === 'apply'}
 				<label class="block">
-					<span class="text-xs text-muted-foreground">{tr('filing_items_title')} <span class="text-destructive">*</span></span>
+					<span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+						{tr('filing_items_title')} <span class="text-destructive">*</span>
+						<InfoTip
+							text={tr('admin_items_override_hint')}
+							label={`${tr('filing_items_title')} — ${tr('common_more_info')}`}
+						/>
+					</span>
 					<CorrectionItems name="ad_decide_items" bind:value={decideItemsText} fieldOptions={decideFields} />
-					<span class="mt-1 block text-xs text-muted-foreground">{tr('admin_items_override_hint')}</span>
 				</label>
 			{:else if decide.items.length}
 				<div class="overflow-x-auto rounded-none border">

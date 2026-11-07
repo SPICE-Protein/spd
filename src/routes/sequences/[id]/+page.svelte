@@ -317,9 +317,11 @@
 			</Section>
 		{:else if tab === 'folds'}
 			<div class="space-y-4">
-				<Section title={tr('sequence_stability_domain')}>
+				<Section
+					title={tr('sequence_stability_domain')}
+					hint={tr('sequence_stability_domain_hint')}
+				>
 					{#if stabilityDomain?.stabilityDomain}
-						<p class="text-xs text-muted-foreground">{tr('sequence_stability_domain_hint')}</p>
 						<div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
 							{#if stabilityDomain.foldId}
 								<a class="underline" href={`/folds/${stabilityDomain.foldId}`}

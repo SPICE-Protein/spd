@@ -192,12 +192,16 @@
 		{/if}
 	</div>
 
-	<Dialog bind:open={dialogOpen} title={tr('gene_refresh_title')} width="max-w-3xl">
+	<Dialog
+		bind:open={dialogOpen}
+		title={tr('gene_refresh_title')}
+		hint={tr('gene_refresh_hint')}
+		width="max-w-3xl"
+	>
 		{#if proposal}
 			<div class="space-y-3">
 				<p class="text-xs text-muted-foreground">
-					{tr('gene_refresh_hint')}
-					<span class="ml-2">{tr('gene_source_fetched')} {fmtTime(proposal.fetchedAt)}</span>
+					{tr('gene_source_fetched')} {fmtTime(proposal.fetchedAt)}
 				</p>
 				<div class="overflow-x-auto">
 					<table class="w-full text-sm">

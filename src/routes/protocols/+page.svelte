@@ -9,6 +9,7 @@
 	import type { Column } from '$lib/components/table';
 	import Button from '$lib/components/Button.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import { buildSafe } from '$lib/components/form-values';
@@ -77,7 +78,14 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-2">
-		<h1 class="text-2xl font-bold">{tr('nav_protocols')}</h1>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('nav_protocols')}
+			<InfoTip
+				text={tr('protocol_publish_note')}
+				label={`${tr('nav_protocols')} — ${tr('common_more_info')}`}
+				class="mt-1"
+			/>
+		</h1>
 		<PageTools withPrint={false} />
 		{#if session.signedIn}
 			<Button size="sm" onclick={() => (showCreate = true)}>{tr('common_create')}</Button>
@@ -85,7 +93,6 @@
 	</div>
 	{#if loading}<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 	{:else}<DataTable {rows} {columns} hrefFor={(r) => `/protocols/${r.id}`} />{/if}
-	<p class="text-xs text-muted-foreground">{tr('protocol_publish_note')}</p>
 </div>
 
 <Dialog bind:open={showCreate} title={tr('protocol_create')} width="max-w-3xl">

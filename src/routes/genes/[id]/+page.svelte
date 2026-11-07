@@ -7,6 +7,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { toastOk, toastInfo, toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
@@ -587,7 +588,7 @@
 				<EvidenceChain nodes={chainNodes} />
 			</Section>
 			<div class="grid gap-4 lg:grid-cols-2">
-				<Section title={tr('gene_key_facts')}>
+				<Section title={tr('gene_key_facts')} hint={tr('gene_hint_one_model')}>
 					<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
 						<dt class="text-muted-foreground">{tr('f_name')}</dt>
 						<dd>{displayName}</dd>
@@ -604,9 +605,6 @@
 						<dt class="text-muted-foreground">{tr('f_createdAt')}</dt>
 						<dd>{row.createdAt != null ? fmtTime(Number(row.createdAt)) : '—'}</dd>
 					</dl>
-					<p class="mt-3 border-t pt-2 text-xs text-muted-foreground">
-						{tr('gene_hint_one_model')}
-					</p>
 				</Section>
 				<div class="space-y-4">
 					<Section title={tr('common_details')}>
@@ -713,7 +711,7 @@
 			{/if}
 		{:else if tab === 'regions'}
 			{#if dnaSeq}
-				<Section title={`DNA · ${dnaSeq.length} nt`}>
+				<Section title={`DNA · ${dnaSeq.length} nt`} hint={tr('gene_dna_sites_hint')}>
 					<div class="gene-view" style="height: 420px;">
 						<DnaViewer
 							mode="dna"
@@ -725,7 +723,6 @@
 							primers={[]}
 						/>
 					</div>
-					<p class="mt-1 text-xs text-muted-foreground">{tr('gene_dna_sites_hint')}</p>
 				</Section>
 			{/if}
 			{#if rnaSeq}
@@ -768,7 +765,15 @@
 									<th class="py-1.5 pr-3 font-medium">{tr('f_molecule')}</th>
 									<th class="py-1.5 pr-3 font-medium">{tr('f_regionType')}</th>
 									<th class="py-1.5 pr-3 font-medium">{tr('f_featureKey')}</th>
-									<th class="py-1.5 pr-3 font-medium">{tr('gene_col_range')}</th>
+									<th class="py-1.5 pr-3 font-medium">
+										<span class="inline-flex items-center gap-1">
+											{tr('gene_col_range')}
+											<InfoTip
+												text={tr('gene_unplaced_hint')}
+												label={`${tr('gene_col_range')} — ${tr('common_more_info')}`}
+											/>
+										</span>
+									</th>
 									<th class="py-1.5 pr-3 font-medium">{tr('f_strand')}</th>
 									<th class="py-1.5 pr-3 font-medium">{tr('f_description')}</th>
 									<th class="py-1.5 pr-3 font-medium">{tr('f_proteinId')}</th>
@@ -887,9 +892,6 @@
 							</tbody>
 						</table>
 					</div>
-					{#if unplacedCount}
-						<p class="mt-2 text-xs text-muted-foreground">{tr('gene_unplaced_hint')}</p>
-					{/if}
 				{/if}
 			</Section>
 
@@ -897,9 +899,9 @@
 				open={linkRegion !== null}
 				onclose={() => (linkRegion = null)}
 				title={linkRegion?.proteinId ? tr('protein_link_rebind') : tr('protein_link_bind')}
+				hint={tr('protein_link_hint')}
 			>
 				<div class="space-y-3">
-					<p class="text-xs text-muted-foreground">{tr('protein_link_hint')}</p>
 					<TargetPicker
 						entityType="protein"
 						initial={linkRegion?.proteinId ? { id: linkRegion.proteinId } : undefined}

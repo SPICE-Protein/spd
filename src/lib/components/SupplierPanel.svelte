@@ -142,8 +142,7 @@
 	{/if}
 </Section>
 
-<Dialog bind:open={showSupplier} title={tr('supplier_add')}>
-	<p class="mb-2 text-xs text-muted-foreground">{tr('supplier_hint_leader')}</p>
+<Dialog bind:open={showSupplier} title={tr('supplier_add')} hint={tr('supplier_hint_leader')}>
 	<div class="space-y-2 text-sm">
 		<label class="block">
 			<span class="text-xs text-muted-foreground">{tr('supplier_org_label')} *</span>

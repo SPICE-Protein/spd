@@ -3,6 +3,7 @@
 	import { session } from '$lib/state/session.svelte';
 	import { tr } from '$lib/i18n';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
@@ -46,16 +47,16 @@
 
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-2">
-		<h1 class="text-2xl font-bold">{tr('nav_organizations')}</h1>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('nav_organizations')}
+			<InfoTip text={tr('org_page_intro')} label={`${tr('nav_organizations')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 		<!-- visible to everyone: the wizard itself gates on sign-in, so the
 		     entry point should never depend on having signed in first -->
 		<PageTools withPrint={false} />
 		<Button size="sm" href="/submit/organization">{tr('org_create_claim')}</Button>
 	</div>
-	<p class="text-sm text-muted-foreground">{tr('org_page_intro')}</p>
-
-	<Section title={tr('org_dir_title')}>
-		<p class="mb-3 text-xs text-muted-foreground">{tr('org_dir_intro')}</p>
+	<Section title={tr('org_dir_title')} hint={tr('org_dir_intro')}>
 		{#if dirLoading}
 			<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 		{:else if all.length === 0}

@@ -7,6 +7,7 @@
 	import { tr } from '$lib/i18n';
 	import { mode } from 'mode-watcher';
 	import Button from './Button.svelte';
+	import InfoTip from './InfoTip.svelte';
 
 	/**
 	 * SPD-owned pathway diagram.
@@ -314,7 +315,7 @@
 
 <div class="space-y-2">
 	<div class="flex flex-wrap items-center justify-between gap-2">
-		<p class="text-xs text-muted-foreground">{tr('pathway_diagram_hint')}</p>
+		<InfoTip text={tr('pathway_diagram_hint')} label={tr('common_more_info')} />
 		<div class="flex items-center gap-1">
 			<Button size="xs" variant="outline" onclick={() => zoomBy(1.25)}
 				>{tr('pathway_diagram_zoom_in')}</Button

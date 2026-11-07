@@ -81,12 +81,10 @@
 	}
 </script>
 
-<Section title={tr('token_title')}>
+<Section title={tr('token_title')} hint={tr('token_intro')}>
 	{#snippet actions()}
 		{#if session.signedIn}<Button size="xs" variant="outline" onclick={() => load()} disabled={loading}>{tr('common_reload')}</Button>{/if}
 	{/snippet}
-
-	<p class="mb-3 text-xs text-muted-foreground">{tr('token_intro')}</p>
 
 	{#if freshToken}
 		<div class="mb-3 rounded-none border-2 border-emerald-500/70 bg-emerald-50 dark:bg-emerald-500/10 p-3">

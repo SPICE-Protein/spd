@@ -3,6 +3,7 @@
 	import { SpdApiError } from '$lib/api/base';
 	import { tr } from '$lib/i18n';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import JsonBlock from '$lib/components/JsonBlock.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Select from '$lib/components/Select.svelte'
@@ -77,8 +78,10 @@
 
 <div class="mx-auto max-w-3xl space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('schema_title')}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tr('schema_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('schema_title')}
+			<InfoTip text={tr('schema_intro')} label={`${tr('schema_title')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 	</div>
 
 	<div class="flex flex-wrap items-center gap-2">

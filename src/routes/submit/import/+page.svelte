@@ -16,6 +16,7 @@
 	} from '$lib/import/kinds';
 	import type { Column } from '$lib/components/table';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Select from '$lib/components/Select.svelte';
 	import Textarea from '$lib/components/Textarea.svelte';
@@ -204,15 +205,13 @@
 
 <div class="mx-auto max-w-4xl space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('import_title')}</h1>
-		<p class="mt-1 text-sm text-muted-foreground">{tr('import_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('import_title')}
+			<InfoTip text={tr('import_intro')} label={`${tr('import_title')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 	</div>
 
-	<p
-		class="rounded-none border border-sky-300 bg-sky-50 p-2 text-xs text-sky-900 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-200"
-	>
-		{tr('import_local_only')} · {tr('import_not_submission')}
-	</p>
+	<p class="text-xs text-muted-foreground">{tr('import_not_submission')}</p>
 
 	{#if !session.signedIn}
 		<div
@@ -261,7 +260,7 @@
 		{/if}
 	</Section>
 
-	<Section title={tr('import_file')}>
+	<Section title={tr('import_file')} hint={tr('import_paste_hint')}>
 		<div class="flex flex-wrap items-center gap-2">
 			<Button size="sm" variant="outline" disabled={running} onclick={() => fileInput?.click()}>
 				{tr('import_file')}
@@ -293,9 +292,6 @@
 			placeholder="name,partType,sequence,description"
 			oninput={resetRun}
 		/>
-		<p class="mt-1 text-xs text-muted-foreground">
-			{tr('import_paste_hint')}
-		</p>
 	</Section>
 
 	{#if parseError}
@@ -340,8 +336,7 @@
 	{/if}
 
 	{#if table && totalRows > 0 && missingRequired.length === 0}
-		<Section title={tr('import_start')}>
-			<p class="mb-3 text-xs text-muted-foreground">{tr('import_sequential')}</p>
+		<Section title={tr('import_start')} hint={tr('import_sequential')}>
 			<div class="flex flex-wrap items-center gap-3">
 				<Button onclick={start} disabled={!canStart || !session.signedIn}>
 					{tr('import_start')}

@@ -26,6 +26,7 @@
 	} from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -659,11 +660,16 @@
 				<p class="mt-3 text-xs text-muted-foreground">{tr('fold_artifacts_immutable')}</p>
 				{#if session.signedIn}
 					<div class="mt-3 space-y-2 border-t pt-3">
-						<p class="text-xs text-muted-foreground">{tr('fold_artifacts_append_hint')}</p>
 						<UploadPicker multiple bind:value={appendIds} />
-						<Button size="sm" disabled={!appendIds || appending} onclick={appendArtifacts}>
-							{tr('fold_artifacts_append')}
-						</Button>
+						<div class="flex items-center gap-1">
+							<Button size="sm" disabled={!appendIds || appending} onclick={appendArtifacts}>
+								{tr('fold_artifacts_append')}
+							</Button>
+							<InfoTip
+								text={tr('fold_artifacts_append_hint')}
+								label={`${tr('fold_artifacts_append')} — ${tr('common_more_info')}`}
+							/>
+						</div>
 					</div>
 				{/if}
 			</Section>

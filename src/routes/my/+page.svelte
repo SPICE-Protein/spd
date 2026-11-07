@@ -7,6 +7,7 @@
 	import { tr, enumLabel } from '$lib/i18n';
 	import { fmtTime, entityHref, shortPublicId } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -249,8 +250,14 @@
 <div class="mx-auto max-w-4xl space-y-4">
 	<div class="flex flex-wrap items-start justify-between gap-2">
 		<div>
-			<h1 class="text-2xl font-bold">{tr('my_title')}</h1>
-			<p class="mt-1 max-w-2xl text-sm text-muted-foreground">{tr('my_intro')}</p>
+			<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+				{tr('my_title')}
+				<InfoTip
+					text={tr('my_intro')}
+					label={`${tr('my_title')} — ${tr('common_more_info')}`}
+					class="mt-1"
+				/>
+			</h1>
 		</div>
 		<div class="flex gap-2">
 			{#if session.canWrite}<Button size="sm" variant="outline" href="/submit">{tr('nav_submit')}</Button>{/if}
@@ -499,6 +506,7 @@
 							collapsible
 							open={inReview.length <= 5}
 							title={`${tr('my_in_review')} · ${inReview.length}`}
+							hint={tr('my_in_review_note')}
 						>
 							<ul class="divide-y">
 								{#each inReview as r (r.id)}
@@ -516,7 +524,6 @@
 									</li>
 								{/each}
 							</ul>
-							<p class="mt-2 text-xs text-muted-foreground">{tr('my_in_review_note')}</p>
 						</Section>
 					{/if}
 

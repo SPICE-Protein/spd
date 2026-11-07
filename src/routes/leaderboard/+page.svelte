@@ -4,6 +4,7 @@
 	import { SpdApiError } from '$lib/api/base';
 	import { tr } from '$lib/i18n';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 
 	let rows = $state<LeaderboardItem[]>([]);
@@ -30,8 +31,10 @@
 
 <div class="mx-auto max-w-3xl space-y-4">
 	<div>
-		<h1 class="text-2xl font-bold">{tr('lb_title')}</h1>
-		<p class="mt-1 max-w-2xl text-sm text-muted-foreground">{tr('lb_intro')}</p>
+		<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+			{tr('lb_title')}
+			<InfoTip text={tr('lb_intro')} label={`${tr('lb_title')} — ${tr('common_more_info')}`} class="mt-1" />
+		</h1>
 	</div>
 
 	{#if loading}
@@ -44,7 +47,7 @@
 			<a class="underline" href="/submit/validation">{tr('submit_validation')}</a>
 		</p>
 	{:else}
-		<Section title={tr('lb_title')}>
+		<Section title={tr('lb_title')} hint={tr('lb_method')}>
 			<ul class="divide-y">
 				{#each rows as r, i (r.userId)}
 					<li class="flex items-center gap-3 py-2.5 text-sm">
@@ -69,7 +72,6 @@
 				{/each}
 			</ul>
 		</Section>
-		<p class="text-xs text-muted-foreground">{tr('lb_method')}</p>
 	{/if}
 
 	<div class="flex gap-2">

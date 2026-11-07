@@ -17,6 +17,7 @@
 		type CodonMode
 	} from '$lib/codons';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Select from '$lib/components/Select.svelte';
 	import Textarea from '$lib/components/Textarea.svelte';
@@ -252,8 +253,10 @@
 </script>
 
 <div class="mx-auto max-w-4xl space-y-4">
-	<h1 class="text-2xl font-bold">{tr('submit_codon')}</h1>
-	<p class="text-sm text-muted-foreground">{tr('submit_codon_desc')}</p>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('submit_codon')}
+		<InfoTip text={tr('submit_codon_desc')} label={`${tr('submit_codon')} — ${tr('common_more_info')}`} class="mt-1" />
+	</h1>
 
 	{#if !session.signedIn}
 		<Section>
@@ -269,8 +272,10 @@
 				<a class="ml-1 font-mono text-xs underline" href="/codon-usage/{result.id}">{result.id}</a>
 			</p>
 			{#if result.sha}
-				<p class="mt-2 break-all font-mono text-[10px] text-muted-foreground">{result.sha}</p>
-				<p class="mt-1 text-xs text-muted-foreground">{tr('codon_sha_note')}</p>
+				<p class="mt-2 flex items-center gap-1 break-all font-mono text-[10px] text-muted-foreground">
+					{result.sha}
+					<InfoTip text={tr('codon_sha_note')} label={`${tr('f_sha256')} — ${tr('common_more_info')}`} />
+				</p>
 			{/if}
 			<div class="mt-3 flex flex-wrap gap-2">
 				<Button size="sm" href="/codon-usage/{result.id}">{tr('codon_view_cta')}</Button>
@@ -286,7 +291,10 @@
 			</div>
 		</Section>
 	{:else}
-		<Section title={tr('codon_step_meta')}>
+		<Section
+			title={tr('codon_step_meta')}
+			hint={datasetMode === 'multi' ? tr('codon_mode_hint_multi') : tr('codon_mode_hint_single')}
+		>
 			<DraftNote k="submit/codon-usage" {values} blank={BLANK} />
 			<div class="mb-3 flex flex-wrap gap-2">
 				<Button
@@ -300,14 +308,17 @@
 					onclick={() => (datasetMode = 'multi')}>{tr('codon_mode_multi')}</Button
 				>
 			</div>
-			<p class="mb-2 text-xs text-muted-foreground">
-				{datasetMode === 'multi' ? tr('codon_mode_hint_multi') : tr('codon_mode_hint_single')}
-			</p>
 			<FormFields fields={metaFields} bind:values columns={2} />
 			{#if datasetMode === 'single'}
 				<div class="mt-3 grid gap-2 sm:grid-cols-2">
 					<label class="text-xs">
-						<span class="mb-1 block text-muted-foreground">{tr('codon_field_code')}</span>
+						<span class="mb-1 flex items-center gap-1 text-muted-foreground">
+							{tr('codon_field_code')}
+							<InfoTip
+								text={tr('codon_hint_code')}
+								label={`${tr('codon_field_code')} — ${tr('common_more_info')}`}
+							/>
+						</span>
 						<Select
 							name="codon_code_table"
 							bind:value={values.genetic_code_table_id}
@@ -316,14 +327,12 @@
 						/>
 					</label>
 				</div>
-				<p class="mt-1 text-xs text-muted-foreground">{tr('codon_hint_code')}</p>
 			{/if}
 			<p class="mt-2 text-xs text-muted-foreground">{enumLabel('cmx', mode)}</p>
 		</Section>
 
 		{#if datasetMode === 'multi'}
-			<Section title={tr('codon_multi_title')}>
-				<p class="mb-3 text-xs text-muted-foreground">{tr('codon_multi_hint')}</p>
+			<Section title={tr('codon_multi_title')} hint={tr('codon_multi_hint')}>
 				<div class="space-y-3">
 					{#each speciesRows as sp, i (i)}
 						<div class="space-y-2 border p-3">
@@ -383,15 +392,13 @@
 				<div class="mt-3">
 					<Button size="sm" variant="outline" onclick={addSpecies}>{tr('codon_multi_add')}</Button>
 				</div>
-				<p class="mt-3 text-xs text-muted-foreground">{tr('codon_sha_note')}</p>
 				{#if error}<p class="mt-2 rounded-none bg-destructive/10 p-2 text-xs text-destructive">{error}</p>{/if}
 				<div class="mt-3 flex justify-end">
 					<Button onclick={submit} disabled={saving}>{tr('common_submit')}</Button>
 				</div>
 			</Section>
 		{:else}
-		<Section title={tr('codon_step_table')}>
-			<p class="mb-2 text-xs text-muted-foreground">{tr('codon_paste_hint')}</p>
+		<Section title={tr('codon_step_table')} hint={tr('codon_paste_hint')}>
 			<Textarea
 				name="codon_table"
 				bind:value={values.codon_table}
@@ -497,7 +504,6 @@
 				</div>
 			{/if}
 
-			<p class="mt-3 text-xs text-muted-foreground">{tr('codon_sha_note')}</p>
 			{#if error}<p class="mt-2 rounded-none bg-destructive/10 p-2 text-xs text-destructive">{error}</p>{/if}
 			<div class="mt-3 flex justify-end">
 				<Button onclick={submit} disabled={saving}>{tr('common_submit')}</Button>

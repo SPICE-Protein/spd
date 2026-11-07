@@ -5,6 +5,7 @@
 	import { tr, enumLabel } from '$lib/i18n';
 	import { fmtTime, hitFields, hitTitle, shortPublicId } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import StatusBadge from '$lib/components/StatusBadge.svelte';
 	import Button from '$lib/components/Button.svelte';
@@ -45,8 +46,10 @@
 <div class="space-y-4">
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<div>
-			<h1 class="text-2xl font-bold">{tr('validations_title')}</h1>
-			<p class="mt-1 text-sm text-muted-foreground">{tr('validations_intro')}</p>
+			<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+				{tr('validations_title')}
+				<InfoTip text={tr('validations_intro')} label={`${tr('validations_title')} — ${tr('common_more_info')}`} class="mt-1" />
+			</h1>
 		</div>
 		<div class="flex gap-2">
 			<PageTools withPrint={false} />

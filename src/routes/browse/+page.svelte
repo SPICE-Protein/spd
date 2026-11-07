@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tr } from '$lib/i18n';
 	import Section from '$lib/components/Section.svelte';
+	import InfoTip from '$lib/components/InfoTip.svelte';
 
 	const groups: Array<{
 		id: string;
@@ -98,11 +99,12 @@
 </script>
 
 <div class="space-y-4">
-	<h1 class="text-2xl font-bold">{tr('nav_browse')}</h1>
-	<p class="text-sm text-muted-foreground">{tr('browse_intro')}</p>
+	<h1 class="flex items-center gap-1.5 text-2xl font-bold">
+		{tr('nav_browse')}
+		<InfoTip text={tr('browse_intro')} label={`${tr('nav_browse')} — ${tr('common_more_info')}`} class="mt-1" />
+	</h1>
 	{#each groups as g (g.id)}
-		<Section title={tr(g.titleKey)}>
-			<p class="mb-3 text-sm text-muted-foreground">{tr(g.descKey)}</p>
+		<Section title={tr(g.titleKey)} hint={tr(g.descKey)}>
 			<div class="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				{#each g.items as item (item.href)}
 					<a
