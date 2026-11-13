@@ -17,6 +17,7 @@
 	import ReferencesPanel from './ReferencesPanel.svelte';
 	import IssuePanel from './IssuePanel.svelte';
 	import ProvenancePanel from './ProvenancePanel.svelte';
+	import RecordContextBar from './RecordContextBar.svelte';
 	import SupplierPanel from './SupplierPanel.svelte';
 	import TargetPicker from './TargetPicker.svelte';
 	import Input from './Input.svelte';
@@ -228,6 +229,14 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if config.entityType}
+			<RecordContextBar
+				entityType={config.entityType}
+				entityId={String(row.id ?? config.id)}
+				name={String(row.name ?? row.title ?? row.preferredName ?? config.title)}
+			/>
+		{/if}
 
 		{#if tabItems.length > 1}
 			<Tabs bind:active={tab} items={tabItems} />

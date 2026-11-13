@@ -101,6 +101,19 @@ export function specHeight(spec: NodeSpec): number {
 }
 
 /**
+ * Copy a tree with expansions below `maxDepth` removed. Seed links can carry a
+ * template built for a signed-in tier; an anonymous reader still gets the
+ * shallow part instead of a builder that refuses to run.
+ */
+export function trimToDepth(spec: NodeSpec, maxDepth: number): NodeSpec {
+	if (maxDepth <= 1) return { ...spec, edges: [] };
+	return {
+		...spec,
+		edges: spec.edges.map((e) => ({ ...e, child: trimToDepth(e.child, maxDepth - 1) }))
+	};
+}
+
+/**
  * Conservative minimum of resolutions the walk will charge: every structural
  * node counts 1, every list edge pays 1 for the fetch itself. Unknown child
  * cardinality is what makes this a floor, not a prediction.

@@ -26,6 +26,7 @@
 	import EvidenceChain from '$lib/components/EvidenceChain.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import RecordActions from '$lib/components/RecordActions.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import DnaViewer from '$lib/gene/DnaViewer.svelte';
 	import { fileStem, GENE, regionFeatureType, toFasta, toGenbank, toSbol3 } from '$lib/export/bio';
 	import {
@@ -530,6 +531,8 @@
 				{/if}
 			</div>
 		</div>
+
+		<RecordContextBar entityType="gene" entityId={String(row.id)} name={displayName} />
 
 		<div class="grid grid-cols-5 gap-2">
 			<Button

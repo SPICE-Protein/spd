@@ -12,6 +12,7 @@
 	import IssuePanel from '$lib/components/IssuePanel.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import RecordActions from '$lib/components/RecordActions.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import IdLink from '$lib/components/IdLink.svelte';
 	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
@@ -108,6 +109,12 @@
 				record={row}
 			/>
 		</div>
+
+		<RecordContextBar
+			entityType="pdb-entry"
+			entityId={String(row.publicId ?? row.id ?? '')}
+			name={String(row.title || row.pdbId)}
+		/>
 
 		<Tabs
 			bind:active={tab}

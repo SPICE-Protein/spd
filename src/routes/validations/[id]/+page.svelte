@@ -41,6 +41,7 @@
 	import IssuePanel from '$lib/components/IssuePanel.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
 	import { buildSafe } from '$lib/components/form-values';
@@ -662,6 +663,8 @@
 				/>
 			</div>
 		</div>
+
+		<RecordContextBar entityType="validation" entityId={val.id} name="" />
 
 		<Tabs
 			bind:active={tab}

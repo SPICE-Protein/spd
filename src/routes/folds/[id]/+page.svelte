@@ -34,6 +34,7 @@
 	import IdLink from '$lib/components/IdLink.svelte';
 	import DataView from '$lib/components/DataView.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
 	import { buildSafe } from '$lib/components/form-values';
@@ -382,6 +383,8 @@
 				{/if}
 			</div>
 		</div>
+
+		<RecordContextBar entityType="fold" entityId={fold.id} name="" />
 
 		<Tabs
 			bind:active={tab}

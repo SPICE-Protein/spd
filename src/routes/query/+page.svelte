@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { graphQuery } from '$lib/api/client';
 	import { SpdApiError } from '$lib/api/base';
 	import { session } from '$lib/state/session.svelte';
@@ -16,11 +17,13 @@
 	import Input from '$lib/components/Input.svelte';
 	import Textarea from '$lib/components/Textarea.svelte'
 	import {
+		NODE_TYPES,
 		TIERS,
 		tierFor,
 		specsToInput,
 		inputToSpecs,
 		specHeight,
+		trimToDepth,
 		treesMinResolutions,
 		newSpec,
 		presetProtein,
@@ -28,6 +31,7 @@
 		presetLineage,
 		type NodeSpec
 	} from '$lib/graph/registry';
+	import { QUERY_TEMPLATES } from '$lib/graph/templates';
 
 	// Presets are builder trees, not JSON strings — the visual path is the
 	// primary one; raw JSON stays as the power-user tab.
@@ -43,6 +47,35 @@
 	let running = $state(false);
 	let result = $state<Record<string, unknown> | null>(null);
 	let error = $state('');
+
+	// Template cards and record pages link here with `?template=…`, optionally
+	// plus `rootType`/`rootId` so "query from this record" starts from the
+	// record instead of an empty root. Apply once per mount so a later builder
+	// edit is never overwritten by the effect re-running.
+	let templateApplied = false;
+	$effect(() => {
+		if (templateApplied) return;
+		const templateId = page.url.searchParams.get('template');
+		const rootType = page.url.searchParams.get('rootType')?.trim() ?? '';
+		const rootId = page.url.searchParams.get('rootId')?.trim() ?? '';
+		if (!templateId && !rootType) return;
+		templateApplied = true;
+		if (templateId) {
+			const template = QUERY_TEMPLATES.find((t) => t.id === templateId);
+			if (!template) return;
+			roots = template.build();
+		} else {
+			if (!(NODE_TYPES as readonly string[]).includes(rootType)) return;
+			roots = [newSpec(rootType)];
+		}
+		if (rootId && roots.length) roots[0].id = rootId;
+		// A template is built for the standard tier. Anonymous readers get the
+		// part their depth allows instead of a Run button that always refuses.
+		const depth = TIERS[tierFor(session.signedIn)].depth;
+		roots = roots.map((root) => trimToDepth(root, depth));
+		mode = 'visual';
+		error = '';
+	});
 
 	const tier = $derived(TIERS[tierFor(session.signedIn)]);
 	// A bearer token the caller brought decides the real tier server-side; the
@@ -171,6 +204,8 @@
 	</Section>
 
 	<div class="flex flex-wrap gap-2">
+		<Button size="xs" variant="outline" href="/query/templates">{tr('query_templates')}</Button>
+		<span class="mx-2 border-l"></span>
 		{#each PRESETS as p (p.key)}
 			<Button size="xs" variant="outline" onclick={() => usePreset(p.key)}>{tr(`query_preset_${p.key}`)}</Button>
 		{/each}

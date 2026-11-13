@@ -15,6 +15,7 @@
 	import WikiPanel from '$lib/components/WikiPanel.svelte';
 	import ReferencesPanel from '$lib/components/ReferencesPanel.svelte';
 	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import ProteinLinkPanel from '$lib/components/ProteinLinkPanel.svelte';
 	import SupplierPanel from '$lib/components/SupplierPanel.svelte';
 	import AttachmentList from '$lib/components/AttachmentList.svelte';
@@ -583,6 +584,13 @@
 				<IssuePanel entityType="enzyme" entityId={String(row.id)} />
 			</div>
 		</div>
+
+		<RecordContextBar
+			entityType="enzyme"
+			entityId={String(row.id)}
+			name={String(row.name ?? '')}
+			showIdentifiers={false}
+		/>
 
 		<Tabs
 			bind:active={tab}

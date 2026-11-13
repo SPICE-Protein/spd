@@ -15,6 +15,7 @@
 	import WikiPanel from '$lib/components/WikiPanel.svelte';
 	import ReferencesPanel from '$lib/components/ReferencesPanel.svelte';
 	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import PathwayViewer from '$lib/components/PathwayViewer.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import Textarea from '$lib/components/Textarea.svelte';
@@ -304,6 +305,12 @@
 					>{/if}
 			</div>
 		</div>
+
+		<RecordContextBar
+			entityType="pathway"
+			entityId={String(row.id)}
+			name={String(row.name ?? '')}
+		/>
 
 		<Tabs
 			bind:active={tab}

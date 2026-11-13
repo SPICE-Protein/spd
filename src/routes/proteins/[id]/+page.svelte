@@ -50,6 +50,7 @@
 	import IssuePanel from '$lib/components/IssuePanel.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import RecordActions from '$lib/components/RecordActions.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
@@ -1105,6 +1106,8 @@
 				{/if}
 			</div>
 		</div>
+
+		<RecordContextBar entityType="protein" entityId={protein.id} name={protein.preferredName} />
 
 		<!-- at-a-glance counters (PDB summary strip): each tile jumps to its tab -->
 		<div class="grid grid-cols-3 gap-2 sm:grid-cols-6">

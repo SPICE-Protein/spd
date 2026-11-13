@@ -18,6 +18,7 @@
 	import WikiPanel from '$lib/components/WikiPanel.svelte';
 	import ReferencesPanel from '$lib/components/ReferencesPanel.svelte';
 	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import ExternalIdentifiersPanel from '$lib/components/ExternalIdentifiersPanel.svelte';
 
 	/**
@@ -316,6 +317,12 @@
 				<IssuePanel entityType="cell_line" entityId={String(row.id)} />
 			</div>
 		</div>
+
+		<RecordContextBar
+			entityType="cell-line"
+			entityId={String(row.id)}
+			name={String(row.name || row.id)}
+		/>
 
 		<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
 			<Button

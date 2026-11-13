@@ -17,6 +17,7 @@
 	import IssuePanel from '$lib/components/IssuePanel.svelte';
 	import PageTools from '$lib/components/PageTools.svelte';
 	import RecordActions from '$lib/components/RecordActions.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import PlasmidMap from '$lib/gene/PlasmidMap.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
@@ -488,6 +489,12 @@
 				<p class="truncate text-[10px] text-muted-foreground">{tr('vector_glance_constructs')}</p>
 			</Button>
 		</div>
+
+		<RecordContextBar
+			entityType="vector"
+			entityId={String(row.id)}
+			name={String(row.name ?? row.id)}
+		/>
 
 		<Tabs
 			bind:active={tab}

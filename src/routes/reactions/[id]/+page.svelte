@@ -15,6 +15,7 @@
 	import WikiPanel from '$lib/components/WikiPanel.svelte';
 	import ReferencesPanel from '$lib/components/ReferencesPanel.svelte';
 	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import MoleculeViewer from '$lib/components/MoleculeViewer.svelte';
 
 	const id = $derived(page.params.id ?? '');
@@ -583,6 +584,12 @@
 			<PageTools />
 			<IssuePanel entityType="reaction" entityId={String(row.id)} />
 		</div>
+
+		<RecordContextBar
+			entityType="reaction"
+			entityId={String(row.id)}
+			name={String(row.name ?? '')}
+		/>
 
 		<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
 			<Button

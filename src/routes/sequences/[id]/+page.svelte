@@ -36,6 +36,7 @@
 	import Tabs from '$lib/components/Tabs.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import RecordActions from '$lib/components/RecordActions.svelte';
+	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import { fileStem, toFasta } from '$lib/export/bio';
 
 	const id = $derived(page.params.id ?? '');
@@ -196,6 +197,12 @@
 				</div>
 			{/if}
 		</div>
+
+		<RecordContextBar
+			entityType="sequence"
+			entityId={seq.id}
+			name={parentProtein?.preferredName ?? seq.id}
+		/>
 
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<h2 class="text-sm font-semibold">{tr('aa_chain_title')}</h2>
