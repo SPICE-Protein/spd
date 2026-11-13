@@ -55,6 +55,10 @@
 	let templateApplied = false;
 	$effect(() => {
 		if (templateApplied) return;
+		// The session resolves after mount. Trimming before it lands would cut
+		// a signed-in reader down to the anonymous depth and never re-expand,
+		// so wait for the real tier before applying the template.
+		if (session.loading) return;
 		const templateId = page.url.searchParams.get('template');
 		const rootType = page.url.searchParams.get('rootType')?.trim() ?? '';
 		const rootId = page.url.searchParams.get('rootId')?.trim() ?? '';
