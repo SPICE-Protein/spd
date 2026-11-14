@@ -18,7 +18,16 @@
 	 * The panel fetches its own data: the relation graph changes independently
 	 * of the record body a detail page already loaded.
 	 */
-	let { entityType, entityId }: { entityType: string; entityId: string } = $props();
+	/**
+	 * `onCount` lets a page that already shows this panel supply its own
+	 * "connections" counter instead of fetching the same graph a second time
+	 * to count it.
+	 */
+	let {
+		entityType,
+		entityId,
+		onCount
+	}: { entityType: string; entityId: string; onCount?: (count: number) => void } = $props();
 
 	let rows = $state<EntityRelation[]>([]);
 	let loading = $state(true);
@@ -39,7 +48,10 @@
 			rows = [];
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
-			if (run === generation) loading = false;
+			if (run === generation) {
+				loading = false;
+				onCount?.(rows.length);
+			}
 		}
 	}
 
@@ -47,6 +59,7 @@
 		if (!entityId) {
 			rows = [];
 			loading = false;
+			onCount?.(0);
 			return;
 		}
 		void load();

@@ -531,6 +531,8 @@ export interface ReactionRow {
 		name?: string;
 		ecNumber?: string;
 		reviewed?: boolean;
+		/** Set when SPD already holds this accession's protein record. */
+		proteinId?: string | null;
 	}>;
 	source?: unknown;
 	[key: string]: unknown;

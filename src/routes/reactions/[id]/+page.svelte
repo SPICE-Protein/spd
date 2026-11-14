@@ -408,14 +408,37 @@
 	 * "amidase". Without an organism column they are indistinguishable to the
 	 * reader, so group by the only fields the table actually shows and keep a
 	 * representative accession for the open action.
+	 *
+	 * A group is "held" once any member is: the backend marks each entry whose
+	 * accession already exists in SPD, and the duplicate members that read the
+	 * same are exactly the ones a reader would expect to lead to the same
+	 * record.
 	 */
 	const enzymeGroups = $derived.by(() => {
-		const groups = new Map<string, { enzyme: (typeof enzymes)[number]; count: number }>();
+		type Group = {
+			enzyme: (typeof enzymes)[number];
+			count: number;
+			proteinId?: string | null;
+			linkedAccession?: string;
+		};
+		const groups = new Map<string, Group>();
 		for (const enzyme of enzymes) {
 			const key = `${enzyme.name ?? ''}|${enzyme.ecNumber ?? ''}|${enzyme.reviewed ?? ''}`;
 			const existing = groups.get(key);
-			if (existing) existing.count += 1;
-			else groups.set(key, { enzyme, count: 1 });
+			if (existing) {
+				existing.count += 1;
+				if (!existing.proteinId && enzyme.proteinId) {
+					existing.proteinId = enzyme.proteinId;
+					existing.linkedAccession = enzyme.accession;
+				}
+				continue;
+			}
+			groups.set(key, {
+				enzyme,
+				count: 1,
+				proteinId: enzyme.proteinId ?? undefined,
+				linkedAccession: enzyme.proteinId ? enzyme.accession : undefined
+			});
 		}
 		return [...groups.values()];
 	});
@@ -798,7 +821,24 @@
 										{@const e = group.enzyme}
 										<tr class="border-b border-b/60 last:border-0">
 											<td class="py-1.5 pr-3">
-												{e.name || tr('reaction_protein_unnamed')}
+												{#if group.proteinId}
+													<a
+														class="text-primary underline-offset-2 hover:underline"
+														href={`/proteins/${group.proteinId}`}
+														>{e.name || tr('reaction_protein_unnamed')}</a
+													>
+												{:else}
+													{e.name || tr('reaction_protein_unnamed')}
+												{/if}
+												{#if group.proteinId && group.linkedAccession}
+													<span class="ml-1.5 font-mono text-[11px] text-muted-foreground"
+														>{group.linkedAccession}</span
+													>
+												{:else if e.accession}
+													<span class="ml-1.5 font-mono text-[11px] text-muted-foreground"
+														>{e.accession}</span
+													>
+												{/if}
 												{#if group.count > 1}
 													<span class="ml-1.5 font-mono text-[11px] text-muted-foreground"
 														>×{group.count}</span
@@ -816,7 +856,12 @@
 												{/if}
 											</td>
 											<td class="py-1.5 pr-3 text-right">
-												{#if e.accession}
+												{#if group.proteinId}
+													<a
+														class="text-xs text-primary underline-offset-2 hover:underline"
+														href={`/proteins/${group.proteinId}`}>{tr('catalog_in_spd')}</a
+													>
+												{:else if e.accession}
 													<Button
 														size="xs"
 														variant="ghost"

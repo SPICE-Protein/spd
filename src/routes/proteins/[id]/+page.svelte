@@ -9,8 +9,6 @@
 		interactions,
 		comparisons,
 		firstArray,
-		enzymes,
-		restrictionEnzymes,
 		genes
 	} from '$lib/api/client';
 	import { SpdApiError } from '$lib/api/base';
@@ -143,7 +141,6 @@
 		void geneRegionsP.then((gs) => {
 			if (!gs || protein?.id !== pid) return;
 			geneRows = firstArray<GeneRegionRow>(gs, 'items');
-			cdsRows = geneRows;
 			const geneId = geneRows[0]?.geneId;
 			if (!geneId) {
 				if (protein) findCandidateGene(protein);
@@ -802,28 +799,17 @@
 	// ---------------------------------------------------------------- related --
 	// Interactions / comparisons bind folds, not proteins — filter the corpus
 	// client-side (list endpoints cap at the catalog, so this stays bounded).
-	// Enzyme rows (§54) bind THIS protein directly via ?protein_id= and load
-	// regardless of folds: a molecule with no predicted structure can still
-	// be an enzyme.
+	// Everything else that points at this protein (its enzymes, restriction
+	// enzymes, gene and CDS regions, structures) is a relation and is read by
+	// RelationsPanel, so this wave only carries the fold-bound analyses that
+	// are not edges.
 	let interRows = $state<InteractionRow[]>([]);
 	let compRows = $state<ComparisonRow[]>([]);
 	let relatedError = $state('');
-	interface EnzymeLinkRow {
-		id: string;
-		name: string;
-		ecNumber?: string | null;
-		enzymeClass?: string;
-		sourceOrganism?: string | null;
-		recognitionSite?: string;
-		cutPosition?: string;
-	}
-	let enzymeRows = $state<EnzymeLinkRow[]>([]);
-	let restrictionRows = $state<EnzymeLinkRow[]>([]);
-	// §55: the gene side of the same assertion — RNA CDS regions that name
-	// this protein as their product. The claim lives on the region row.
-	let cdsRows = $state<GeneRegionRow[]>([]);
-	// The record chain also needs the gene record behind the first region,
-	// not just the CDS rows the related tab lists.
+	// Filled by the relations panel once it has the graph; one panel fetch
+	// answers both the counter and the list.
+	let relationCount = $state(0);
+	// The record chain needs the gene record behind the first region.
 	let geneRows = $state<GeneRegionRow[]>([]);
 	let geneRecord = $state<GeneRecord | null>(null);
 	// Gene regions only reach the protein through an explicit CDS → protein
@@ -833,21 +819,14 @@
 	let candidateGene = $state<GeneListRow | null>(null);
 
 	async function loadRelated() {
-		const pid = protein?.id;
 		const foldIds = new Set(expFolds.map((f) => f.foldId));
-		// Enzyme links key off the protein; interactions/comparisons key off
-		// its folds. All four are independent, so one wave instead of two.
-		const [ez, rz, ix, cp] = await Promise.allSettled([
-			pid ? enzymes.list(undefined, pid) : Promise.resolve(null),
-			pid ? restrictionEnzymes.list(pid) : Promise.resolve(null),
-			foldIds.size ? interactions.list() : Promise.resolve(null),
-			foldIds.size ? comparisons.list() : Promise.resolve(null)
-		]);
-		if (ez.status === 'fulfilled' && ez.value)
-			enzymeRows = firstArray<EnzymeLinkRow>(ez.value, 'enzymes', 'items');
-		if (rz.status === 'fulfilled' && rz.value)
-			restrictionRows = firstArray<EnzymeLinkRow>(rz.value, 'enzymes', 'items');
 		if (foldIds.size === 0) return;
+		// Interactions and comparisons key off folds; they are independent, so
+		// one wave instead of two.
+		const [ix, cp] = await Promise.allSettled([
+			interactions.list(),
+			comparisons.list()
+		]);
 		relatedError = '';
 		if (ix.status === 'fulfilled' && ix.value) {
 			interRows = firstArray<InteractionRow>(ix.value, 'interactions', 'items').filter(
@@ -923,12 +902,7 @@
 		folds: expFolds.length,
 		envs: new Set(expFolds.map((f) => f.environmentId).filter(Boolean)).size,
 		evidence: evidence.length,
-		related:
-			interRows.length +
-			compRows.length +
-			enzymeRows.length +
-			restrictionRows.length +
-			cdsRows.length,
+		related: relationCount + interRows.length + compRows.length,
 		ledger: ledger.length
 	});
 
@@ -1312,7 +1286,11 @@
 			</div>
 			<div class="grid gap-4 lg:grid-cols-2">
 				<ExternalIdentifiersPanel entityType="protein" entityId={protein.id} />
-				<RelationsPanel entityType="protein" entityId={protein.id} />
+				<RelationsPanel
+					entityType="protein"
+					entityId={protein.id}
+					onCount={(n) => (relationCount = n)}
+				/>
 			</div>
 			{#if boundSequence}
 				<MutationMap data={mutationMapData} loading={boundLoading} sequenceId={boundSequence.id} />
@@ -1768,68 +1746,24 @@
 				{/if}
 			</Section>
 		{:else if tab === 'related'}
+			<!-- Enzymes, restriction enzymes and CDS regions used to be printed
+			     here by hand from separate list calls. They are all edges the
+			     relations panel already resolves (with the far side's own name),
+			     so this tab shows that one graph and keeps only the fold-bound
+			     analyses, which are not edges. -->
+			<RelationsPanel
+				entityType="protein"
+				entityId={protein.id}
+				onCount={(n) => (relationCount = n)}
+			/>
 			{#if relatedError}
 				<p
-					class="rounded-none bg-amber-50 dark:bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-300"
+					class="mt-4 rounded-none bg-amber-50 dark:bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-300"
 				>
 					{relatedError}
 				</p>
 			{/if}
-			<div class="grid gap-4 lg:grid-cols-2">
-				<Section title={tr('protein_related_enzymes')}>
-					{#if enzymeRows.length === 0}
-						<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
-					{:else}
-						<ul class="divide-y text-sm">
-							{#each enzymeRows as r (r.id)}
-								<li class="flex flex-wrap items-center gap-2 py-1.5">
-									<a class="underline" href="/enzymes/{r.id}">{r.name || shortPublicId(r.id)}</a>
-									{#if r.ecNumber}<span>{r.ecNumber}</span>{/if}
-									{#if r.enzymeClass}<span>{enumLabel('ec', r.enzymeClass)}</span>{/if}
-									{#if r.sourceOrganism}<span class="text-xs text-muted-foreground"
-											>{r.sourceOrganism}</span
-										>{/if}
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</Section>
-				<Section title={tr('protein_related_restriction_enzymes')}>
-					{#if restrictionRows.length === 0}
-						<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
-					{:else}
-						<ul class="divide-y text-sm">
-							{#each restrictionRows as r (r.id)}
-								<li class="flex flex-wrap items-center gap-2 py-1.5">
-									<a class="underline" href="/restriction-enzymes/{r.id}"
-										>{r.name || shortPublicId(r.id)}</a
-									>
-									{#if r.recognitionSite}<code class="text-[10px]"
-											>{r.recognitionSite}{r.cutPosition ? ' · ' + r.cutPosition : ''}</code
-										>{/if}
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</Section>
-				<Section title={tr('gene_related_cds')}>
-					{#if cdsRows.length === 0}
-						<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
-					{:else}
-						<ul class="divide-y text-sm">
-							{#each cdsRows as r (r.id)}
-								<li class="flex flex-wrap items-center gap-2 py-1.5">
-									<a class="underline" href="/genes/{r.geneId}">{shortPublicId(r.geneId)}</a>
-									<Badge tone="muted">{enumLabel('grt', r.regionType)}</Badge>
-									{#if r.startPosition != null && r.endPosition != null}
-										<code class="text-[10px]">{r.startPosition}..{r.endPosition}</code>
-									{/if}
-									<span class="text-xs text-muted-foreground">{r.description}</span>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</Section>
+			<div class="mt-4 grid gap-4 lg:grid-cols-2">
 				<Section title={tr('protein_related_interactions')} hint={tr('protein_related_hint')}>
 					{#if interRows.length === 0}
 						<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
