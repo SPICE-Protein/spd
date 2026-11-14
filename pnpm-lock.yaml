@@ -121,6 +121,9 @@ importers:
       openapi-typescript:
         specifier: ^7.13.0
         version: 7.13.0(typescript@6.0.3)
+      opencc-js:
+        specifier: ^1.4.2
+        version: 1.4.2
       playwright:
         specifier: ^1.64.1
         version: 1.64.1
@@ -2727,6 +2730,9 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: ^5.x
+
+  opencc-js@1.4.2:
+    resolution: {integrity: sha512-EdcspgdROiCCZDM+jZR6Pa670xW+EW2QhctPBQ8gRjg6lrx4IHEl+2s+kt5izk/TkxVRgdWuFgaGkaEdIUfdaw==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -6309,6 +6315,8 @@ snapshots:
       supports-color: 10.2.2
       typescript: 6.0.3
       yargs-parser: 21.1.1
+
+  opencc-js@1.4.2: {}
 
   optionator@0.9.4:
     dependencies:

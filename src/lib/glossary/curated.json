@@ -1,0 +1,912 @@
+{
+  "3D-structure": {
+    "zh": "三维结构",
+    "category": "keyword",
+    "id": "KW-0002"
+  },
+  "ATP-binding": {
+    "zh": "ATP 结合",
+    "category": "keyword",
+    "id": "KW-0067"
+  },
+  "Acetylation": {
+    "zh": "乙酰化",
+    "category": "keyword",
+    "id": "KW-0007"
+  },
+  "Activator": {
+    "zh": "激活因子",
+    "category": "keyword",
+    "id": "KW-0010"
+  },
+  "Acyltransferase": {
+    "zh": "酰基转移酶",
+    "category": "keyword",
+    "id": "KW-0012"
+  },
+  "Adaptive immunity": {
+    "zh": "适应性免疫",
+    "category": "keyword"
+  },
+  "Alternative splicing": {
+    "zh": "可变剪接",
+    "category": "keyword",
+    "note": "同一基因经不同剪接产生多条转录本"
+  },
+  "Amino-acid biosynthesis": {
+    "zh": "氨基酸生物合成",
+    "category": "keyword"
+  },
+  "Antibiotic resistance": {
+    "zh": "抗生素抗性",
+    "category": "keyword"
+  },
+  "Apoptosis": {
+    "zh": "细胞凋亡",
+    "category": "keyword"
+  },
+  "Arginine biosynthesis": {
+    "zh": "精氨酸生物合成",
+    "category": "keyword"
+  },
+  "Autocatalytic cleavage": {
+    "zh": "自催化切割",
+    "category": "keyword"
+  },
+  "Biological rhythms": {
+    "zh": "生物节律",
+    "category": "keyword"
+  },
+  "Calcium": {
+    "zh": "钙",
+    "category": "keyword"
+  },
+  "Calmodulin-binding": {
+    "zh": "钙调蛋白结合",
+    "category": "keyword"
+  },
+  "Capsid protein": {
+    "zh": "衣壳蛋白",
+    "category": "keyword"
+  },
+  "Cardiomyopathy": {
+    "zh": "心肌病",
+    "category": "keyword"
+  },
+  "Cell adhesion": {
+    "zh": "细胞黏附",
+    "category": "keyword"
+  },
+  "Cell cycle": {
+    "zh": "细胞周期",
+    "category": "keyword"
+  },
+  "Cell division": {
+    "zh": "细胞分裂",
+    "category": "keyword"
+  },
+  "Cell membrane": {
+    "zh": "细胞膜",
+    "category": "keyword"
+  },
+  "Cell projection": {
+    "zh": "细胞突起",
+    "category": "keyword"
+  },
+  "Chromosome": {
+    "zh": "染色体",
+    "category": "keyword"
+  },
+  "Coiled coil": {
+    "zh": "卷曲螺旋",
+    "category": "keyword"
+  },
+  "Cytoplasm": {
+    "zh": "细胞质",
+    "category": "keyword"
+  },
+  "Cytoplasmic vesicle": {
+    "zh": "胞质囊泡",
+    "category": "keyword"
+  },
+  "Cytoskeleton": {
+    "zh": "细胞骨架",
+    "category": "keyword"
+  },
+  "DNA damage": {
+    "zh": "DNA 损伤",
+    "category": "keyword"
+  },
+  "DNA recombination": {
+    "zh": "DNA 重组",
+    "category": "keyword"
+  },
+  "DNA repair": {
+    "zh": "DNA 修复",
+    "category": "keyword"
+  },
+  "DNA replication": {
+    "zh": "DNA 复制",
+    "category": "keyword"
+  },
+  "DNA-binding": {
+    "zh": "DNA 结合",
+    "category": "keyword"
+  },
+  "Differentiation": {
+    "zh": "分化",
+    "category": "keyword"
+  },
+  "Dioxygenase": {
+    "zh": "双加氧酶",
+    "category": "keyword"
+  },
+  "Direct protein sequencing": {
+    "zh": "直接蛋白质测序",
+    "category": "keyword",
+    "note": "序列来自实测而非基因推导"
+  },
+  "Disease variant": {
+    "zh": "疾病相关变异",
+    "category": "keyword"
+  },
+  "Disulfide bond": {
+    "zh": "二硫键",
+    "category": "keyword"
+  },
+  "Endonuclease": {
+    "zh": "核酸内切酶",
+    "category": "keyword"
+  },
+  "Endoplasmic reticulum": {
+    "zh": "内质网",
+    "category": "keyword"
+  },
+  "Endosome": {
+    "zh": "内体",
+    "category": "keyword"
+  },
+  "Fanconi anemia": {
+    "zh": "范可尼贫血",
+    "category": "keyword"
+  },
+  "Fatty acid biosynthesis": {
+    "zh": "脂肪酸生物合成",
+    "category": "keyword"
+  },
+  "Fatty acid metabolism": {
+    "zh": "脂肪酸代谢",
+    "category": "keyword"
+  },
+  "Glycation": {
+    "zh": "糖化",
+    "category": "keyword",
+    "note": "非酶促的糖基加成，与糖基化（glycosylation）不同"
+  },
+  "Glycoprotein": {
+    "zh": "糖蛋白",
+    "category": "keyword"
+  },
+  "Glycosidase": {
+    "zh": "糖苷酶",
+    "category": "keyword"
+  },
+  "Helicase": {
+    "zh": "解旋酶",
+    "category": "keyword"
+  },
+  "Hemagglutinin": {
+    "zh": "血凝素",
+    "category": "keyword"
+  },
+  "Heme": {
+    "zh": "血红素",
+    "category": "keyword"
+  },
+  "Host cell receptor for virus entry": {
+    "zh": "病毒入侵所需的宿主受体",
+    "category": "keyword"
+  },
+  "Host nucleus": {
+    "zh": "宿主细胞核",
+    "category": "keyword"
+  },
+  "Host-virus interaction": {
+    "zh": "宿主—病毒互作",
+    "category": "keyword"
+  },
+  "Hydrogen ion transport": {
+    "zh": "氢离子转运",
+    "category": "keyword"
+  },
+  "Hydrolase": {
+    "zh": "水解酶",
+    "category": "keyword"
+  },
+  "Immunity": {
+    "zh": "免疫",
+    "category": "keyword"
+  },
+  "Immunoglobulin domain": {
+    "zh": "免疫球蛋白结构域",
+    "category": "keyword"
+  },
+  "Intron homing": {
+    "zh": "内含子归巢",
+    "category": "keyword"
+  },
+  "Ion channel impairing toxin": {
+    "zh": "离子通道抑制型毒素",
+    "category": "keyword"
+  },
+  "Ion transport": {
+    "zh": "离子转运",
+    "category": "keyword"
+  },
+  "Iron": {
+    "zh": "铁",
+    "category": "keyword"
+  },
+  "Isomerase": {
+    "zh": "异构酶",
+    "category": "keyword"
+  },
+  "Isopeptide bond": {
+    "zh": "异肽键",
+    "category": "keyword"
+  },
+  "Kinase": {
+    "zh": "激酶",
+    "category": "keyword"
+  },
+  "Late protein": {
+    "zh": "晚期蛋白",
+    "category": "keyword"
+  },
+  "Limb-girdle muscular dystrophy": {
+    "zh": "肢带型肌营养不良症",
+    "category": "keyword"
+  },
+  "Lipid biosynthesis": {
+    "zh": "脂质生物合成",
+    "category": "keyword"
+  },
+  "Lipid metabolism": {
+    "zh": "脂质代谢",
+    "category": "keyword"
+  },
+  "Lipid-binding": {
+    "zh": "脂质结合",
+    "category": "keyword"
+  },
+  "Lipoprotein": {
+    "zh": "脂蛋白",
+    "category": "keyword"
+  },
+  "Lissencephaly": {
+    "zh": "无脑回畸形",
+    "category": "keyword"
+  },
+  "Lyase": {
+    "zh": "裂合酶",
+    "category": "keyword",
+    "note": "EC 4 类，非水解地断裂化学键"
+  },
+  "Magnesium": {
+    "zh": "镁",
+    "category": "keyword"
+  },
+  "Meiosis": {
+    "zh": "减数分裂",
+    "category": "keyword"
+  },
+  "Membrane": {
+    "zh": "膜",
+    "category": "keyword"
+  },
+  "Metal-binding": {
+    "zh": "金属结合",
+    "category": "keyword"
+  },
+  "Microsome": {
+    "zh": "微粒体",
+    "category": "keyword"
+  },
+  "Microtubule": {
+    "zh": "微管",
+    "category": "keyword"
+  },
+  "Mitochondrion": {
+    "zh": "线粒体",
+    "category": "keyword"
+  },
+  "Mitochondrion outer membrane": {
+    "zh": "线粒体外膜",
+    "category": "keyword"
+  },
+  "Mitosis": {
+    "zh": "有丝分裂",
+    "category": "keyword"
+  },
+  "Motor protein": {
+    "zh": "马达蛋白",
+    "category": "keyword"
+  },
+  "Multifunctional enzyme": {
+    "zh": "多功能酶",
+    "category": "keyword"
+  },
+  "Myofibrillar myopathy": {
+    "zh": "肌原纤维肌病",
+    "category": "keyword"
+  },
+  "NADP": {
+    "zh": "NADP",
+    "category": "keyword",
+    "note": "烟酰胺腺嘌呤二核苷酸磷酸"
+  },
+  "Neurodegeneration": {
+    "zh": "神经退行性变",
+    "category": "keyword"
+  },
+  "Neurogenesis": {
+    "zh": "神经发生",
+    "category": "keyword"
+  },
+  "Neurotoxin": {
+    "zh": "神经毒素",
+    "category": "keyword"
+  },
+  "Nuclease": {
+    "zh": "核酸酶",
+    "category": "keyword"
+  },
+  "Nucleotide-binding": {
+    "zh": "核苷酸结合",
+    "category": "keyword"
+  },
+  "Nucleus": {
+    "zh": "细胞核",
+    "category": "keyword"
+  },
+  "Oxidoreductase": {
+    "zh": "氧化还原酶",
+    "category": "keyword"
+  },
+  "Oxygen transport": {
+    "zh": "氧转运",
+    "category": "keyword"
+  },
+  "Palmitate": {
+    "zh": "棕榈酸",
+    "category": "keyword"
+  },
+  "Peroxidase": {
+    "zh": "过氧化物酶",
+    "category": "keyword"
+  },
+  "Phosphoprotein": {
+    "zh": "磷蛋白",
+    "category": "keyword"
+  },
+  "Plasmid": {
+    "zh": "质粒",
+    "category": "keyword"
+  },
+  "Primosome": {
+    "zh": "引发体",
+    "category": "keyword"
+  },
+  "Proline biosynthesis": {
+    "zh": "脯氨酸生物合成",
+    "category": "keyword"
+  },
+  "Prostaglandin biosynthesis": {
+    "zh": "前列腺素生物合成",
+    "category": "keyword"
+  },
+  "Prostaglandin metabolism": {
+    "zh": "前列腺素代谢",
+    "category": "keyword"
+  },
+  "Protein splicing": {
+    "zh": "蛋白质剪接",
+    "category": "keyword"
+  },
+  "Proteomics identification": {
+    "zh": "蛋白质组学鉴定",
+    "category": "keyword"
+  },
+  "RNA-binding": {
+    "zh": "RNA 结合",
+    "category": "keyword"
+  },
+  "RNA-mediated gene silencing": {
+    "zh": "RNA 介导的基因沉默",
+    "category": "keyword"
+  },
+  "Receptor": {
+    "zh": "受体",
+    "category": "keyword"
+  },
+  "Reference proteome": {
+    "zh": "参考蛋白质组",
+    "category": "keyword"
+  },
+  "Repeat": {
+    "zh": "重复序列",
+    "category": "keyword"
+  },
+  "Repressor": {
+    "zh": "阻遏蛋白",
+    "category": "keyword"
+  },
+  "Ribonucleoprotein": {
+    "zh": "核糖核蛋白",
+    "category": "keyword"
+  },
+  "Ribosomal protein": {
+    "zh": "核糖体蛋白",
+    "category": "keyword"
+  },
+  "Ribosome biogenesis": {
+    "zh": "核糖体生物发生",
+    "category": "keyword"
+  },
+  "S-nitrosylation": {
+    "zh": "S-亚硝基化",
+    "category": "keyword"
+  },
+  "Secreted": {
+    "zh": "分泌型",
+    "category": "keyword",
+    "note": "带信号肽、被分泌到胞外"
+  },
+  "Serine/threonine-protein kinase": {
+    "zh": "丝氨酸/苏氨酸蛋白激酶",
+    "category": "keyword"
+  },
+  "Signal": {
+    "zh": "信号肽",
+    "category": "keyword",
+    "note": "UniProt 的 Signal 指分泌信号肽，不是“信号通路”"
+  },
+  "Spermatogenesis": {
+    "zh": "精子发生",
+    "category": "keyword"
+  },
+  "Stress response": {
+    "zh": "应激反应",
+    "category": "keyword"
+  },
+  "Synapse": {
+    "zh": "突触",
+    "category": "keyword"
+  },
+  "TPR repeat": {
+    "zh": "TPR 重复",
+    "category": "keyword",
+    "note": "三十四肽重复"
+  },
+  "Topoisomerase": {
+    "zh": "拓扑异构酶",
+    "category": "keyword"
+  },
+  "Toxin": {
+    "zh": "毒素",
+    "category": "keyword"
+  },
+  "Transcription": {
+    "zh": "转录",
+    "category": "keyword"
+  },
+  "Transcription antitermination": {
+    "zh": "转录抗终止",
+    "category": "keyword"
+  },
+  "Transcription regulation": {
+    "zh": "转录调控",
+    "category": "keyword"
+  },
+  "Transcription termination": {
+    "zh": "转录终止",
+    "category": "keyword"
+  },
+  "Transferase": {
+    "zh": "转移酶",
+    "category": "keyword"
+  },
+  "Translation regulation": {
+    "zh": "翻译调控",
+    "category": "keyword"
+  },
+  "Translocase": {
+    "zh": "转位酶",
+    "category": "keyword",
+    "note": "EC 7 类，跨膜或跨复合体移动分子"
+  },
+  "Transmembrane": {
+    "zh": "跨膜",
+    "category": "keyword"
+  },
+  "Transmembrane helix": {
+    "zh": "跨膜螺旋",
+    "category": "keyword"
+  },
+  "Transport": {
+    "zh": "转运",
+    "category": "keyword"
+  },
+  "Tumor suppressor": {
+    "zh": "抑癌因子",
+    "category": "keyword"
+  },
+  "Ubl conjugation": {
+    "zh": "泛素样蛋白缀合",
+    "category": "keyword",
+    "note": "泛素及 SUMO 等类泛素蛋白的共价连接"
+  },
+  "Ubl conjugation pathway": {
+    "zh": "泛素样缀合通路",
+    "category": "keyword"
+  },
+  "Vacuole": {
+    "zh": "液泡",
+    "category": "keyword"
+  },
+  "Viral attachment to host adhesion receptor": {
+    "zh": "病毒吸附宿主黏附受体",
+    "category": "keyword"
+  },
+  "Viral attachment to host cell": {
+    "zh": "病毒吸附宿主细胞",
+    "category": "keyword"
+  },
+  "Virion": {
+    "zh": "病毒颗粒",
+    "category": "keyword"
+  },
+  "Virus entry into host cell": {
+    "zh": "病毒进入宿主细胞",
+    "category": "keyword"
+  },
+  "Voltage-gated sodium channel impairing toxin": {
+    "zh": "电压门控钠通道抑制型毒素",
+    "category": "keyword"
+  },
+  "WD repeat": {
+    "zh": "WD 重复",
+    "category": "keyword"
+  },
+  "Zinc": {
+    "zh": "锌",
+    "category": "keyword"
+  },
+  "Zinc-finger": {
+    "zh": "锌指",
+    "category": "keyword"
+  },
+  "rRNA-binding": {
+    "zh": "rRNA 结合",
+    "category": "keyword"
+  },
+  "X-RAY DIFFRACTION": {
+    "zh": "X 射线衍射",
+    "category": "method"
+  },
+  "SOLUTION NMR": {
+    "zh": "溶液核磁共振",
+    "category": "method"
+  },
+  "SOLID-STATE NMR": {
+    "zh": "固体核磁共振",
+    "category": "method"
+  },
+  "ELECTRON MICROSCOPY": {
+    "zh": "电子显微镜",
+    "category": "method"
+  },
+  "ELECTRON CRYSTALLOGRAPHY": {
+    "zh": "电子晶体学",
+    "category": "method"
+  },
+  "NEUTRON DIFFRACTION": {
+    "zh": "中子衍射",
+    "category": "method"
+  },
+  "POWDER DIFFRACTION": {
+    "zh": "粉末衍射",
+    "category": "method"
+  },
+  "FIBER DIFFRACTION": {
+    "zh": "纤维衍射",
+    "category": "method"
+  },
+  "FLUORESCENCE TRANSFER": {
+    "zh": "荧光能量转移",
+    "category": "method"
+  },
+  "INFRARED SPECTROSCOPY": {
+    "zh": "红外光谱",
+    "category": "method"
+  },
+  "EPR": {
+    "zh": "电子顺磁共振",
+    "category": "method"
+  },
+  "THEORETICAL MODEL": {
+    "zh": "理论模型",
+    "category": "method"
+  },
+  "HYBRID": {
+    "zh": "混合方法",
+    "category": "method"
+  },
+  "SOLUTION SCATTERING": {
+    "zh": "溶液散射",
+    "category": "method"
+  },
+  "Homo sapiens": {
+    "zh": "人",
+    "category": "organism"
+  },
+  "Mus musculus": {
+    "zh": "小鼠",
+    "category": "organism"
+  },
+  "Rattus norvegicus": {
+    "zh": "大鼠",
+    "category": "organism"
+  },
+  "Arabidopsis thaliana": {
+    "zh": "拟南芥",
+    "category": "organism"
+  },
+  "Oryza sativa": {
+    "zh": "水稻",
+    "category": "organism"
+  },
+  "Vicia narbonensis": {
+    "zh": "法国野豌豆",
+    "category": "organism"
+  },
+  "Saccharomyces cerevisiae": {
+    "zh": "酿酒酵母",
+    "category": "organism"
+  },
+  "Schizosaccharomyces pombe": {
+    "zh": "粟酒裂殖酵母",
+    "category": "organism"
+  },
+  "Escherichia coli": {
+    "zh": "大肠杆菌",
+    "category": "organism"
+  },
+  "Bacillus subtilis": {
+    "zh": "枯草芽孢杆菌",
+    "category": "organism"
+  },
+  "Mycobacterium tuberculosis": {
+    "zh": "结核分枝杆菌",
+    "category": "organism"
+  },
+  "Mycobacterium xenopi": {
+    "zh": "蟾分枝杆菌",
+    "category": "organism"
+  },
+  "Streptomyces antibioticus": {
+    "zh": "抗生素链霉菌",
+    "category": "organism"
+  },
+  "Rhodococcus jostii": {
+    "zh": "乔氏红球菌",
+    "category": "organism"
+  },
+  "Saccharolobus solfataricus": {
+    "zh": "硫磺矿硫化叶菌",
+    "category": "organism"
+  },
+  "Vibrio vulnificus": {
+    "zh": "创伤弧菌",
+    "category": "organism"
+  },
+  "Drosophila melanogaster": {
+    "zh": "黑腹果蝇",
+    "category": "organism"
+  },
+  "Caenorhabditis elegans": {
+    "zh": "秀丽隐杆线虫",
+    "category": "organism"
+  },
+  "Danio rerio": {
+    "zh": "斑马鱼",
+    "category": "organism"
+  },
+  "Xenopus laevis": {
+    "zh": "非洲爪蟾",
+    "category": "organism"
+  },
+  "Gallus gallus": {
+    "zh": "原鸡",
+    "category": "organism"
+  },
+  "Sus scrofa": {
+    "zh": "猪",
+    "category": "organism"
+  },
+  "Bos taurus": {
+    "zh": "牛",
+    "category": "organism"
+  },
+  "Physeter macrocephalus": {
+    "zh": "抹香鲸",
+    "category": "organism"
+  },
+  "Paramecium tetraurelia": {
+    "zh": "四膜虫",
+    "category": "organism"
+  },
+  "Nematostella vectensis": {
+    "zh": "星海葵",
+    "category": "organism"
+  },
+  "Olivierus martensii": {
+    "zh": "马氏钳蝎",
+    "category": "organism"
+  },
+  "Influenza A virus": {
+    "zh": "甲型流感病毒",
+    "category": "organism"
+  },
+  "Human adenovirus": {
+    "zh": "人腺病毒",
+    "category": "organism"
+  },
+  "encodes": {
+    "zh": "编码",
+    "category": "relation",
+    "note": "基因区域 → 蛋白"
+  },
+  "encoded_by": {
+    "zh": "由…编码",
+    "category": "relation"
+  },
+  "sequence_of": {
+    "zh": "序列属于",
+    "category": "relation"
+  },
+  "variant_of": {
+    "zh": "…的变异体",
+    "category": "relation"
+  },
+  "fold_of": {
+    "zh": "…的折叠结构",
+    "category": "relation"
+  },
+  "structure_of": {
+    "zh": "…的实验结构",
+    "category": "relation"
+  },
+  "represented_by": {
+    "zh": "由…代表",
+    "category": "relation",
+    "note": "目录条目 → 它的实体蛋白"
+  },
+  "pathway_step": {
+    "zh": "通路步骤",
+    "category": "relation"
+  },
+  "vector_of": {
+    "zh": "载体关联",
+    "category": "relation"
+  },
+  "member_of": {
+    "zh": "属于",
+    "category": "relation"
+  },
+  "participates_in": {
+    "zh": "参与",
+    "category": "relation"
+  },
+  "references": {
+    "zh": "引用",
+    "category": "relation"
+  },
+  "CC-BY-4.0": {
+    "zh": "知识共享 署名 4.0",
+    "category": "license"
+  },
+  "CC-BY-SA-4.0": {
+    "zh": "知识共享 署名—相同方式共享 4.0",
+    "category": "license"
+  },
+  "CC-BY-NC-4.0": {
+    "zh": "知识共享 署名—非商业 4.0",
+    "category": "license"
+  },
+  "CC0-1.0": {
+    "zh": "知识共享 零权利奉献 1.0",
+    "category": "license"
+  },
+  "MIT": {
+    "zh": "MIT 许可",
+    "category": "license"
+  },
+  "Apache-2.0": {
+    "zh": "Apache 2.0 许可",
+    "category": "license"
+  },
+  "ATP": {
+    "zh": "腺苷三磷酸",
+    "category": "chemistry",
+    "note": "细胞的通用能量货币"
+  },
+  "ADP": {
+    "zh": "腺苷二磷酸",
+    "category": "chemistry"
+  },
+  "AMP": {
+    "zh": "腺苷一磷酸",
+    "category": "chemistry"
+  },
+  "GTP": {
+    "zh": "鸟苷三磷酸",
+    "category": "chemistry"
+  },
+  "GDP": {
+    "zh": "鸟苷二磷酸",
+    "category": "chemistry"
+  },
+  "NAD+": {
+    "zh": "NAD⁺（辅酶 I）",
+    "category": "chemistry"
+  },
+  "NADH": {
+    "zh": "还原型 NAD",
+    "category": "chemistry"
+  },
+  "NADP+": {
+    "zh": "NADP⁺",
+    "category": "chemistry"
+  },
+  "NADPH": {
+    "zh": "还原型 NADP",
+    "category": "chemistry"
+  },
+  "FAD": {
+    "zh": "黄素腺嘌呤二核苷酸",
+    "category": "chemistry"
+  },
+  "FMN": {
+    "zh": "黄素单核苷酸",
+    "category": "chemistry"
+  },
+  "coenzyme A": {
+    "zh": "辅酶 A",
+    "category": "chemistry"
+  },
+  "water": {
+    "zh": "水",
+    "category": "chemistry"
+  },
+  "oxygen": {
+    "zh": "氧",
+    "category": "chemistry"
+  },
+  "hydrogen peroxide": {
+    "zh": "过氧化氢",
+    "category": "chemistry"
+  },
+  "pyruvate": {
+    "zh": "丙酮酸",
+    "category": "chemistry"
+  },
+  "ammonia": {
+    "zh": "氨",
+    "category": "chemistry"
+  },
+  "carbon dioxide": {
+    "zh": "二氧化碳",
+    "category": "chemistry"
+  }
+}
