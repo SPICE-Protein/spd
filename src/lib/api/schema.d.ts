@@ -6340,9 +6340,10 @@ export interface components {
             id: string;
             /**
              * @description Upstream catalog for a root whose `id` is not an SPD public id.
-             *     Any source whose import writes this node type works (`uniprot` →
-             *     protein, `ncbi` → gene, `cellosaurus` → cell-line, `pubchem` →
-             *     reagent, `rhea` → reaction, `reactome` → pathway, `brenda` → enzyme);
+             *     Any source that can put a record of this node type behind an address
+             *     works (`uniprot` → protein, `ncbi` → gene, `cellosaurus` → cell-line,
+             *     `pubchem` → reagent, `rhea` → reaction, `reactome` → pathway or a
+             *     reaction its pathway projection materialized, `brenda` → enzyme);
              *     `pdb` imports a `pdb-entry`, which is not a node. When omitted, an id
              *     shaped like a UniProt accession on a protein root is resolved through
              *     UniProt automatically; an SPD `spd:…` id never goes upstream.
