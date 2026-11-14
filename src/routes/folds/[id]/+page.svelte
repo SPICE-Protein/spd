@@ -39,6 +39,7 @@
 	import type { FormField } from '$lib/components/form';
 	import { buildSafe } from '$lib/components/form-values';
 	import MolViewer from '$lib/components/mol/MolViewer.svelte';
+	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
 	import WikiPanel from '$lib/components/WikiPanel.svelte';
 	import ReferencesPanel from '$lib/components/ReferencesPanel.svelte';
 	import ProvenancePanel from '$lib/components/ProvenancePanel.svelte';
@@ -679,6 +680,7 @@
 		{/if}
 
 		<div class="grid gap-4 lg:grid-cols-2">
+			<RelationsPanel entityType="fold" entityId={fold.id} />
 			<WikiPanel entityType="fold" entityId={fold.id} />
 			<ReferencesPanel entityType="fold" entityId={fold.id} />
 

@@ -2,14 +2,21 @@
 	import { relations } from '$lib/api/client';
 	import type { EntityRelation, EntityRef } from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
+	import { shortPublicId } from '$lib/format';
 	import Section from './Section.svelte';
 	import Badge from './Badge.svelte';
 	import IdLink from './IdLink.svelte';
 
 	/**
-	 * Typed relation edges around this entity, split by direction. The panel
-	 * fetches its own data: the relation graph changes independently of the
-	 * record body a detail page already loaded.
+	 * What this record is connected to, grouped by the type on the far end —
+	 * the shape a reader follows when leaving a detail page (its gene, its
+	 * sequences, the structures that solved it, the enzymes an EC number ties
+	 * it to). The backend resolves each far side's own name, so an edge reads
+	 * "Encoded by · Brca1" rather than a public-id tail; the id stays in the
+	 * tooltip and as the fallback when a label is missing.
+	 *
+	 * The panel fetches its own data: the relation graph changes independently
+	 * of the record body a detail page already loaded.
 	 */
 	let { entityType, entityId }: { entityType: string; entityId: string } = $props();
 
@@ -45,22 +52,59 @@
 		void load();
 	});
 
-	const outgoing = $derived(rows.filter((r) => r.direction === 'out'));
-	const incoming = $derived(rows.filter((r) => r.direction === 'in'));
+	type FarSide = EntityRef & { label?: string | null; subtitle?: string | null };
 
-	function otherSide(r: EntityRelation): EntityRef {
+	/** The far end of an edge. Older responses (and manual rows from a stale
+	 *  cache) may lack `other`; fall back to the stored endpoint. */
+	function otherSide(r: EntityRelation): FarSide {
+		if (r.other) return r.other;
 		if (r.direction === 'out') return r.to;
 		if (r.direction === 'in') return r.from;
 		return r.from.type === entityType && r.from.id === entityId ? r.to : r.from;
 	}
 
-	function sourceVisible(r: EntityRelation): boolean {
-		const source = r.source ?? '';
-		return source === 'derived' || !source.startsWith('spd');
+	// The order a person reads a record: what encodes it, what it is, what was
+	// solved from it, then the catalogs that classify or use it.
+	const GROUP_ORDER = [
+		'gene',
+		'gene-region',
+		'protein',
+		'sequence',
+		'pdb-entry',
+		'fold',
+		'validation',
+		'enzyme',
+		'restriction-enzyme',
+		'reaction',
+		'pathway',
+		'biobrick',
+		'vector',
+		'reagent',
+		'cell-line',
+		'strain',
+		'other'
+	];
+
+	function rank(type: string): number {
+		const index = GROUP_ORDER.indexOf(type);
+		return index === -1 ? GROUP_ORDER.length : index;
 	}
+
+	const groups = $derived.by(() => {
+		const byType = new Map<string, EntityRelation[]>();
+		for (const relation of rows) {
+			const type = otherSide(relation).type || 'other';
+			const bucket = byType.get(type);
+			if (bucket) bucket.push(relation);
+			else byType.set(type, [relation]);
+		}
+		return [...byType.entries()]
+			.sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
+			.map(([type, items]) => ({ type, items }));
+	});
 </script>
 
-<Section title={tr('relations_title')}>
+<Section title={tr('relations_title')} hint={tr('relations_hint')}>
 	{#if loading}
 		<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 	{:else if error}
@@ -68,33 +112,37 @@
 	{:else if rows.length === 0}
 		<p class="text-sm text-muted-foreground">{tr('relations_empty')}</p>
 	{:else}
-		<div class="space-y-3">
-			{#each [{ key: 'out', label: tr('relations_outgoing'), items: outgoing }, { key: 'in', label: tr('relations_incoming'), items: incoming }] as group (group.key)}
-				{#if group.items.length}
-					<div>
-						<p class="mb-1 text-xs font-semibold text-muted-foreground">
-							{group.label} · <span class="tabular-nums">{group.items.length}</span>
-						</p>
-						<ul class="divide-y">
-							{#each group.items as r (r.id)}
-								{@const other = otherSide(r)}
-								<li class="flex flex-wrap items-center gap-x-2 gap-y-1 py-1.5 text-sm">
-									<span class="font-medium">{enumLabel('relation', r.relationType)}</span>
-									<Badge tone="muted">{enumLabel('et', other.type.replace(/-/g, '_'))}</Badge>
-									<IdLink id={other.id} kind={other.type} />
-									{#if sourceVisible(r)}
-										<Badge tone={r.source === 'derived' ? 'warn' : 'muted'}>
-											{r.source === 'derived' ? tr('relations_source_derived') : r.source}
-										</Badge>
-									{/if}
-									{#if r.note}
-										<span class="text-xs text-muted-foreground">{r.note}</span>
-									{/if}
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
+		<div class="space-y-4">
+			{#each groups as group (group.type)}
+				<div>
+					<p class="mb-1 text-xs font-semibold text-muted-foreground">
+						{enumLabel('et', group.type.replace(/-/g, '_'))} ·
+						<span class="tabular-nums">{group.items.length}</span>
+					</p>
+					<ul class="divide-y">
+						{#each group.items as r (r.id)}
+							{@const far = otherSide(r)}
+							<li class="flex flex-wrap items-baseline gap-x-2 gap-y-1 py-1.5 text-sm">
+								<span class="text-xs text-muted-foreground">{enumLabel('relation', r.relationType)}</span>
+								<IdLink id={far.id} kind={far.type} label={far.label} />
+								{#if far.subtitle}
+									<span class="text-xs text-muted-foreground">{far.subtitle}</span>
+								{/if}
+								{#if far.label}
+									<span class="font-mono text-[10px] text-muted-foreground" title={far.id}
+										>{shortPublicId(far.id)}</span
+									>
+								{/if}
+								{#if r.source !== 'derived'}
+									<Badge tone="muted">{tr('relations_asserted')}</Badge>
+								{/if}
+								{#if r.note}
+									<span class="text-xs text-muted-foreground">{r.note}</span>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				</div>
 			{/each}
 		</div>
 	{/if}

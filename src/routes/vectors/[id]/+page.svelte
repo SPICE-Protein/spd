@@ -11,6 +11,7 @@
 	import Tabs from '$lib/components/Tabs.svelte';
 	import DataTable from '$lib/components/DataTable.svelte';
 	import type { Column } from '$lib/components/table';
+	import RelationsPanel from '$lib/components/RelationsPanel.svelte';
 	import WikiPanel from '$lib/components/WikiPanel.svelte';
 	import ReferencesPanel from '$lib/components/ReferencesPanel.svelte';
 	import ProvenancePanel from '$lib/components/ProvenancePanel.svelte';
@@ -682,6 +683,7 @@
 			</Section>
 		{:else if tab === 'community'}
 			<div class="grid gap-4 lg:grid-cols-2">
+				<RelationsPanel entityType="vector" entityId={String(row.id)} />
 				<WikiPanel entityType="vector" entityId={String(row.id)} collapsible />
 				<ReferencesPanel entityType="vector_template" entityId={String(row.id)} collapsible />
 				<ProvenancePanel entityType="vector" entityId={String(row.id)} collapsible />

@@ -1679,6 +1679,9 @@ export interface EntityRelation {
 	from: EntityRef;
 	to: EntityRef;
 	note?: string | null;
+	/** The far side of the edge with the catalog's own name for it, so a
+	 *  detail page prints "Caspase-3" instead of a public-id tail. */
+	other?: EntityRef & { label?: string | null; subtitle?: string | null };
 }
 
 export interface EntityRelationsData {

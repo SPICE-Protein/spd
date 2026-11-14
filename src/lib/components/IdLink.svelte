@@ -9,11 +9,15 @@
 	let {
 		id,
 		kind = undefined,
-		showFull = false
+		showFull = false,
+		label = null
 	}: {
 		id: string | null | undefined;
 		kind?: EntityKind | string;
 		showFull?: boolean;
+		/** A human name for the record. When given it becomes the link text
+		 *  and the styling drops the mono treatment; the id stays in `title`. */
+		label?: string | null;
 	} = $props();
 
 	// spd:<kind> segment → EntityKind that has a real route.
@@ -69,14 +73,17 @@
 	{#if href}
 		<a
 			{href}
-			class="font-mono text-xs text-primary underline-offset-2 hover:underline break-all"
+			class={label
+				? 'text-sm text-primary underline-offset-2 hover:underline'
+				: 'font-mono text-xs text-primary underline-offset-2 hover:underline break-all'}
 			title={id}
 		>
-			{showFull ? id : shortPublicId(id)}
+			{label ?? (showFull ? id : shortPublicId(id))}
 		</a>
 	{:else}
-		<span class="font-mono text-xs text-muted-foreground break-all" title={id}
-			>{showFull ? id : shortPublicId(id)}</span
+		<span
+			class={label ? 'text-sm text-muted-foreground' : 'font-mono text-xs text-muted-foreground break-all'}
+			title={id}>{label ?? (showFull ? id : shortPublicId(id))}</span
 		>
 	{/if}
 {:else}

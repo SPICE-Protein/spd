@@ -300,7 +300,7 @@
 						unbind={() => restrictionEnzymes.unlinkProtein(id)}
 						onchanged={load}
 					/>
-					<RelationsPanel entityType="restriction_enzyme" entityId={String(row.id)} />
+					<RelationsPanel entityType="restriction-enzyme" entityId={String(row.id)} />
 					<WikiPanel entityType="restriction_enzyme" entityId={String(row.id)} />
 					<ReferencesPanel entityType="restriction_enzyme" entityId={String(row.id)} />
 				</div>
