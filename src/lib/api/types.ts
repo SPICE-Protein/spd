@@ -533,6 +533,14 @@ export interface ReactionRow {
 		reviewed?: boolean;
 		/** Set when SPD already holds this accession's protein record. */
 		proteinId?: string | null;
+		/**
+		 * Present on Reactome-shaped rows, which describe a complex rather than
+		 * one protein: the backend fills `accession` from the first member so the
+		 * row still has an address, but the row is not that protein.
+		 */
+		uniprot?: string[];
+		reactomeId?: string;
+		role?: string;
 	}>;
 	source?: unknown;
 	[key: string]: unknown;

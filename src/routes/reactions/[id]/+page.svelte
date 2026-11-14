@@ -420,6 +420,8 @@
 			count: number;
 			proteinId?: string | null;
 			linkedAccession?: string;
+			/** A Reactome row names a complex, not one protein. */
+			complexMembers?: string[];
 		};
 		const groups = new Map<string, Group>();
 		for (const enzyme of enzymes) {
@@ -437,7 +439,8 @@
 				enzyme,
 				count: 1,
 				proteinId: enzyme.proteinId ?? undefined,
-				linkedAccession: enzyme.proteinId ? enzyme.accession : undefined
+				linkedAccession: enzyme.proteinId ? enzyme.accession : undefined,
+				complexMembers: enzyme.uniprot?.length ? enzyme.uniprot : undefined
 			});
 		}
 		return [...groups.values()];
@@ -830,7 +833,11 @@
 												{:else}
 													{e.name || tr('reaction_protein_unnamed')}
 												{/if}
-												{#if group.proteinId && group.linkedAccession}
+												{#if group.complexMembers}
+													<span class="ml-1.5 font-mono text-[11px] text-muted-foreground"
+														>{group.complexMembers.join(' · ')}</span
+													>
+												{:else if group.proteinId && group.linkedAccession}
 													<span class="ml-1.5 font-mono text-[11px] text-muted-foreground"
 														>{group.linkedAccession}</span
 													>
@@ -861,7 +868,10 @@
 														class="text-xs text-primary underline-offset-2 hover:underline"
 														href={`/proteins/${group.proteinId}`}>{tr('catalog_in_spd')}</a
 													>
-												{:else if e.accession}
+												{:else if e.accession && !group.complexMembers}
+													<!-- One Reactome row can stand for a complex; importing its
+													     first member would put a different molecule behind the
+													     name the row shows. -->
 													<Button
 														size="xs"
 														variant="ghost"
