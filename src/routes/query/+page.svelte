@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { graphQuery } from '$lib/api/client';
+	import { external, graphQuery } from '$lib/api/client';
+	import type { ExternalImportResult } from '$lib/api/types';
 	import { SpdApiError } from '$lib/api/base';
 	import { session } from '$lib/state/session.svelte';
 	import { queryToken } from '$lib/state/query-token.svelte';
@@ -16,6 +17,8 @@
 	import ResultTree from '$lib/components/ResultTree.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import Textarea from '$lib/components/Textarea.svelte'
+	import UpstreamResolveDialog from '$lib/components/UpstreamResolveDialog.svelte';
+	import SavedQueriesPanel from '$lib/components/SavedQueriesPanel.svelte';
 	import {
 		NODE_TYPES,
 		TIERS,
@@ -23,6 +26,7 @@
 		specsToInput,
 		inputToSpecs,
 		specHeight,
+		specShape,
 		trimToDepth,
 		treesMinResolutions,
 		newSpec,
@@ -47,6 +51,32 @@
 	let running = $state(false);
 	let result = $state<Record<string, unknown> | null>(null);
 	let error = $state('');
+
+	// Which root types can be started from a name instead of an id. The ladder
+	// is one cheap GET and only decides whether the button appears; a failure
+	// just hides it, the id field still works.
+	let ladderTypes = $state<Record<string, string[]>>({});
+	$effect(() => {
+		let alive = true;
+		external
+			.ladder()
+			.then((data) => {
+				if (!alive) return;
+				const map: Record<string, string[]> = {};
+				for (const l of data.ladders) if (l.sources.length) map[l.entityType] = l.sources;
+				ladderTypes = map;
+			})
+			.catch(() => {});
+		return () => {
+			alive = false;
+		};
+	});
+	let asking = $state<{ spec: NodeSpec; entityType: string; query: string } | null>(null);
+
+	// A template is built for the standard tier. Anonymous readers get the part
+	// their depth allows — but "empty result" and "cut down to your tier" look
+	// identical on screen, so remember the cut and say so.
+	let trimmed = $state<{ from: number; to: number } | null>(null);
 
 	// Template cards and record pages link here with `?template=…`, optionally
 	// plus `rootType`/`rootId` so "query from this record" starts from the
@@ -76,7 +106,9 @@
 		// A template is built for the standard tier. Anonymous readers get the
 		// part their depth allows instead of a Run button that always refuses.
 		const depth = TIERS[tierFor(session.signedIn)].depth;
+		const before = Math.max(...roots.map((root) => specHeight(root)));
 		roots = roots.map((root) => trimToDepth(root, depth));
+		trimmed = before > depth ? { from: before, to: depth } : null;
 		mode = 'visual';
 		error = '';
 	});
@@ -130,7 +162,41 @@
 		const p = PRESETS.find((x) => x.key === key);
 		if (!p) return;
 		roots = p.make();
+		trimmed = null;
 		if (mode === 'json') rawText = JSON.stringify(specsToInput(roots), null, 2);
+	}
+
+	/** Only ladder-covered types get the button: a type with no upstream has
+	 *  nothing to search, and a control that always answers "nothing" is a lie. */
+	function lookupFor(spec: NodeSpec): (() => void) | undefined {
+		if (!ladderTypes[spec.type]) return undefined;
+		return () => (asking = { spec, entityType: spec.type, query: spec.id.trim() });
+	}
+
+	function pickUpstream(result: ExternalImportResult) {
+		// The picked record's SPD address becomes the root id; `source` stays
+		// empty so the server infers the catalog from the id's shape.
+		const target = asking?.spec;
+		if (target) target.id = result.publicId;
+		asking = null;
+	}
+
+	/** "Use as root" from a result node — the tree the reader was inspecting
+	 *  becomes the next query instead of retyping its id by hand. */
+	function reroot(kind: string, id: string) {
+		roots = [newSpec(kind, id)];
+		trimmed = null;
+		error = '';
+		// A re-rooted tree is not what the JSON tab is showing; switch back so
+		// the two views cannot disagree.
+		mode = 'visual';
+	}
+
+	function loadSaved(saved: NodeSpec[]) {
+		roots = saved;
+		trimmed = null;
+		error = '';
+		mode = 'visual';
 	}
 
 	const idsMissing = $derived(roots.some((r) => !r.id.trim()));
@@ -222,7 +288,19 @@
 		{#if mode === 'visual'}
 			<div class="space-y-3">
 				{#each roots as r, i (i)}
-					<QueryNodeEditor spec={r} isRoot maxDepth={tier.depth} onRemove={roots.length > 1 ? () => roots.splice(i, 1) : undefined} />
+					<div class="space-y-1.5">
+						<QueryNodeEditor
+							spec={r}
+							isRoot
+							maxDepth={tier.depth}
+							onRemove={roots.length > 1 ? () => roots.splice(i, 1) : undefined}
+							onlookup={lookupFor(r)}
+						/>
+						<p class="font-mono text-xs break-words text-muted-foreground">
+							<span class="text-foreground/60">{tr('query_shape')}</span>
+							{specShape(r)}
+						</p>
+					</div>
 				{/each}
 				{#if roots.length < 25}
 					<Button
@@ -261,10 +339,17 @@
 				{tr('query_run')}
 			</Button>
 		</div>
+		{#if mode === 'visual' && trimmed}
+			<p class="mt-1 text-xs text-amber-700 dark:text-amber-300">
+				{tr('query_trimmed_notice', { from: trimmed.from, to: trimmed.to })}
+			</p>
+		{/if}
 		{#if mode === 'visual' && idsMissing}
 			<p class="mt-1 text-xs text-amber-700 dark:text-amber-300">{tr('query_needs_ids')}</p>
 		{/if}
 	</Section>
+
+	<SavedQueriesPanel current={roots} onload={loadSaved} />
 
 	{#if error}
 		<div class="rounded-none border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-line">{error}</div>
@@ -283,7 +368,7 @@
 			</div>
 			<div class="space-y-3">
 				{#each resultRoots as r, i (i)}
-					<ResultTree value={r} />
+					<ResultTree value={r} onroot={reroot} />
 				{/each}
 			</div>
 			<JsonBlock class="mt-3" label={tr('query_raw')} value={result.results} />
@@ -293,3 +378,17 @@
 </div>
 
 <svelte:head><title>{tr('query_title')} · SPD</title></svelte:head>
+
+{#if asking}
+	<!-- keyed by identity: a second lookup must remount, not reuse the first
+	     dialog's rung results -->
+	{#key asking}
+		<UpstreamResolveDialog
+			entityType={asking.entityType}
+			query={asking.query}
+			open={true}
+			onclose={() => (asking = null)}
+			onpicked={pickUpstream}
+		/>
+	{/key}
+{/if}

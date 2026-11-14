@@ -6,7 +6,7 @@
  */
 import type { GraphQueryInput } from '$lib/api/types';
 
-export const NODE_TYPES = ['protein', 'sequence', 'fold', 'validation', 'environment', 'model', 'artifact'] as const;
+export const NODE_TYPES = ['gene', 'protein', 'sequence', 'fold', 'validation', 'environment', 'model', 'artifact'] as const;
 
 export interface EdgeInfo {
 	/** Edge name as it appears in `expand`. */
@@ -18,6 +18,11 @@ export interface EdgeInfo {
 }
 
 export const EDGES: Record<string, EdgeInfo[]> = {
+	// A gene reaches the proteins its CDS regions declare. This is the edge
+	// that keeps the graph on the model's own backbone: gene → CDS → protein
+	// is how a record actually arrives, and without it the graph could only
+	// describe the structural half of the collection.
+	gene: [{ edge: 'proteins', child: 'protein', many: true }],
 	protein: [{ edge: 'sequences', child: 'sequence', many: true }],
 	sequence: [
 		{ edge: 'protein', child: 'protein', many: false },
@@ -44,6 +49,26 @@ export const EDGES: Record<string, EdgeInfo[]> = {
 
 export function edgeInfo(entity: string, field: string): EdgeInfo | undefined {
 	return EDGES[entity]?.find((e) => e.edge === field);
+}
+
+/**
+ * One-line outline of a tree: `gene → proteins → sequences`. The builder
+ * shows a form per node, which says what each level is but not how the whole
+ * tree reads; this is the summary that stays legible past two levels.
+ */
+export function specShape(root: NodeSpec): string {
+	const chain = (node: NodeSpec): string => {
+		if (!node.edges.length) return '';
+		return node.edges
+			.map((edge) => {
+				const rest = chain(edge.child);
+				return rest ? `${edge.edge} → ${rest}` : edge.edge;
+			})
+			.join(' + ');
+	};
+	const label = root.source ? `${root.type}[${root.source}]` : root.type || 'value';
+	const rest = chain(root);
+	return rest ? `${label} → ${rest}` : label;
 }
 
 /** limits_for() in the backend token service: depth = max ancestors count. */

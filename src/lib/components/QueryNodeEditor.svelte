@@ -14,7 +14,8 @@
 		edgeName = '',
 		depth = 0,
 		maxDepth = 3,
-		onRemove = undefined
+		onRemove = undefined,
+		onlookup = undefined
 	}: {
 		spec: NodeSpec;
 		isRoot?: boolean;
@@ -23,6 +24,9 @@
 		depth?: number;
 		maxDepth?: number;
 		onRemove?: () => void;
+		/** Only passed for root types that have an upstream ladder. The editor
+		 *  stays dumb: the caller owns the picker and the import. */
+		onlookup?: (spec: NodeSpec) => void;
 	} = $props();
 
 	const legalEdges = $derived(EDGES[spec.type] ?? []);
@@ -48,7 +52,13 @@
 	<div class="flex flex-wrap items-center gap-2 text-sm">
 		{#if isRoot}
 			<Select name="qne_type" class="h-8 w-36" bind:value={spec.type} options={NODE_TYPES.map((t) => ({ value: t, label: tr(`nt_${t}`) }))} onchange={onRetype} />
-			<Input name="qne_id" class="h-8 min-w-40 flex-1 font-mono text-xs" placeholder={spec.type === 'protein' ? 'spd:protein:… or UniProt accession' : `spd:{spec.type}:…`} bind:value={spec.id} />
+			<Input
+				name="qne_id"
+				class="h-8 min-w-40 flex-1 font-mono text-xs"
+				placeholder={spec.type === 'protein' ? 'spd:protein:… or UniProt accession' : `spd:{spec.type}:…`}
+				title={onlookup ? tr('query_lookup_hint') : undefined}
+				bind:value={spec.id}
+			/>
 			{#if spec.type === 'protein'}
 				<Input
 					name="qne_source"
@@ -57,6 +67,16 @@
 					title={tr('query_source_hint')}
 					bind:value={spec.source}
 				/>
+			{/if}
+			{#if onlookup}
+				<Button
+					size="xs"
+					variant="outline"
+					class="h-8"
+					disabled={!spec.id.trim()}
+					title={tr('query_lookup_hint')}
+					onclick={() => onlookup(spec)}>{tr('query_root_upstream')}</Button
+				>
 			{/if}
 		{:else}
 			<Badge tone="info">{tr(`ge_${edgeName || spec.type}`)}</Badge>
