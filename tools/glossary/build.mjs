@@ -66,6 +66,10 @@ if (existsSync(tsv)) {
 const terms = {};
 let fromDict = 0;
 let rejected = 0;
+let untranslated = 0;
+
+/** A gloss has to be a Chinese reading, not the English name transcribed. */
+const CJK = /[一-鿿]/;
 
 for (const [term, hit] of Object.entries(wikidata)) {
 	if (curated[term]) continue;
@@ -78,7 +82,14 @@ for (const [term, hit] of Object.entries(wikidata)) {
 		continue;
 	}
 	const zh = t2s(hit.zh).trim();
-	if (!zh || zh === hit.zh.toLowerCase()) continue;
+	// Wikidata sometimes carries the English name in the zh slot
+	// ("Nemaline myopathy" → "Nemaline Myopathy"). Printing that would put
+	// the word twice on screen, which is worse than no gloss, so it is
+	// dropped rather than shipped.
+	if (!CJK.test(zh)) {
+		untranslated++;
+		continue;
+	}
 	const entry = { zh, src: `wikidata:${hit.qid}` };
 	const kw = keywordIds.get(term);
 	if (kw) entry.kw = kw;
@@ -104,5 +115,5 @@ writeFileSync(
 );
 
 console.log(
-	`wrote ${OUT}\n  curated ${fromCurated}\n  dictionary ${fromDict}\n  rejected (label drift) ${rejected}\n  total ${Object.keys(terms).length}`
+	`wrote ${OUT}\n  curated ${fromCurated}\n  dictionary ${fromDict}\n  rejected (label drift) ${rejected}\n  rejected (no Chinese reading) ${untranslated}\n  total ${Object.keys(terms).length}`
 );
