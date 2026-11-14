@@ -3,7 +3,6 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-	import BookmarkIcon from '@lucide/svelte/icons/bookmark';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import { tr } from '$lib/i18n';
 	import { session } from '$lib/state/session.svelte';
@@ -131,17 +130,6 @@
 					<span class="hidden sm:inline">{tr('nav_login')}</span>
 				</Button>
 			{/if}
-			<a
-				href="/market"
-				class={cn('flex items-center gap-1 whitespace-nowrap rounded-none px-2 py-1 hover:bg-accent', page.url.pathname.startsWith('/market') && 'bg-accent font-medium')}
-				title={tr('nav_market')}
-				aria-label={tr('nav_market')}
-			>
-				<BookmarkIcon class="size-4 text-muted-foreground" />
-				{#if marketReady && market.items.length > 0}
-					<span class="rounded-none bg-muted px-1.5 text-[10px] tabular-nums">{market.items.length}</span>
-				{/if}
-			</a>
 			<a
 				href="/settings"
 				class={cn('whitespace-nowrap rounded-none px-2 py-1 hover:bg-accent max-[360px]:hidden', page.url.pathname.startsWith('/settings') && 'bg-accent font-medium')}
