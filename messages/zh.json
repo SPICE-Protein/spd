@@ -127,7 +127,7 @@
   "search_hint": "蛋白名、基因、物种、质粒、细胞系、记录编号，都可以搜。",
   "search_results": "条结果",
   "search_where_hint": "搜索会读名称和记录内容，每条结果都能直达对应页面。蛋白质页里还有折叠记录、突变体和 3D 结构。",
-  "query_source_hint": "蛋白根节点可填 UniProt 登录号（未命中会自动导入）；留空时按 ID 格式识别。",
+  "query_source_hint": "外部根节点可填上游来源（{sources}），未命中会自动导入；留空时只对 UniProt 登录号按 ID 格式识别。",
   "seq_role_variant": "变体",
   "seq_role_mutant": "突变体",
   "seq_role_native": "参考序列",

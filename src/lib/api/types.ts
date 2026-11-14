@@ -1230,9 +1230,12 @@ export interface ExternalImportResult {
 	created: boolean;
 }
 /** `GET /external/ladder` — the ordered upstream ladder per entity type: the
- *  dedicated catalog first, then the same-domain fallback(s). */
+ *  dedicated catalog first, then the same-domain fallback(s). `importSources`
+ *  is the subset whose import lands on this type (a rung may supply another:
+ *  NCBI is a protein rung and imports a gene), so it is what a graph root's
+ *  `source` field may hold. */
 export interface ExternalLadderData {
-	ladders: Array<{ entityType: string; sources: ExternalSource[] }>;
+	ladders: Array<{ entityType: string; sources: ExternalSource[]; importSources?: ExternalSource[] }>;
 }
 /** One rung of `POST /external/resolve`: one source's answer. `degraded:true`
  *  means the source was unreachable — deliberately distinct from an empty rung. */

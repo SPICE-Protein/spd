@@ -58,6 +58,10 @@
 	// is one cheap GET and only decides whether the button appears; a failure
 	// just hides it, the id field still works.
 	let ladderTypes = $state<Record<string, string[]>>({});
+	// The narrower list a root's `source` field accepts: a ladder rung may
+	// supply a different entity (NCBI is a protein rung and imports a gene),
+	// so "which catalog may start this node" is its own answer from the server.
+	let importTypes = $state<Record<string, string[]>>({});
 	$effect(() => {
 		let alive = true;
 		external
@@ -65,8 +69,13 @@
 			.then((data) => {
 				if (!alive) return;
 				const map: Record<string, string[]> = {};
-				for (const l of data.ladders) if (l.sources.length) map[l.entityType] = l.sources;
+				const imports: Record<string, string[]> = {};
+				for (const l of data.ladders) {
+					if (l.sources.length) map[l.entityType] = l.sources;
+					if (l.importSources?.length) imports[l.entityType] = l.importSources;
+				}
 				ladderTypes = map;
+				importTypes = imports;
 			})
 			.catch(() => {});
 		return () => {
@@ -295,6 +304,7 @@
 							spec={r}
 							isRoot
 							maxDepth={tier.depth}
+							sources={importTypes[r.type]}
 							onRemove={roots.length > 1 ? () => roots.splice(i, 1) : undefined}
 							onlookup={lookupFor(r)}
 						/>

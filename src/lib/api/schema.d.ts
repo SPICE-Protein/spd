@@ -465,6 +465,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/seeds/pathway-steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Project a pathway's stored topology into its ordered step list (reactor rows + steps, admin-only; pathways that already have steps are skipped) */
+        post: operations["post_api_v1_admin_seeds_pathway_steps"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/seeds/pathway-topology": {
         parameters: {
             query?: never;
@@ -6323,10 +6340,12 @@ export interface components {
             id: string;
             /**
              * @description Upstream catalog for a root whose `id` is not an SPD public id.
-             *     Today only `uniprot` can become a graph node (a protein, with the
-             *     sequence the importer stores beside it). When omitted, an id shaped
-             *     like a UniProt accession is resolved through UniProt automatically;
-             *     an SPD `spd:…` id never goes upstream.
+             *     Any source whose import writes this node type works (`uniprot` →
+             *     protein, `ncbi` → gene, `cellosaurus` → cell-line, `pubchem` →
+             *     reagent, `rhea` → reaction, `reactome` → pathway, `brenda` → enzyme);
+             *     `pdb` imports a `pdb-entry`, which is not a node. When omitted, an id
+             *     shaped like a UniProt accession on a protein root is resolved through
+             *     UniProt automatically; an SPD `spd:…` id never goes upstream.
              */
             source?: string | null;
             type: string;
@@ -7951,6 +7970,42 @@ export interface operations {
         };
     };
     get_api_v1_admin_reviewers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Missing, expired, or invalid session/token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    post_api_v1_admin_seeds_pathway_steps: {
         parameters: {
             query?: never;
             header?: never;

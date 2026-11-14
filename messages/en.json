@@ -127,7 +127,7 @@
   "search_hint": "Search protein names, genes, organisms, plasmids, cell lines and record ids.",
   "search_results": "results",
   "search_where_hint": "Search reads names and record content, and every result opens its own page. Protein pages also carry fold records, mutants and 3D structures.",
-  "query_source_hint": "A protein root may carry a UniProt accession (imported on demand); leave blank to infer it from the id shape.",
+  "query_source_hint": "An external root may name its upstream source ({sources}); a miss is imported on demand. Leave blank to infer a UniProt accession from the id shape.",
   "seq_role_variant": "Variant",
   "seq_role_mutant": "Mutant",
   "seq_role_native": "Native",

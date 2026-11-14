@@ -14,6 +14,7 @@
 		edgeName = '',
 		depth = 0,
 		maxDepth = 3,
+		sources = undefined,
 		onRemove = undefined,
 		onlookup = undefined
 	}: {
@@ -23,6 +24,10 @@
 		edgeName?: string;
 		depth?: number;
 		maxDepth?: number;
+		/** Upstream catalogs whose import lands on this node type (`importSources`
+		 *  from the ladder endpoint). Empty means the type has no external root,
+		 *  so the source field would only invite a 400. */
+		sources?: string[];
 		onRemove?: () => void;
 		/** Only passed for root types that have an upstream ladder. The editor
 		 *  stays dumb: the caller owns the picker and the import. */
@@ -45,6 +50,9 @@
 	}
 	function onRetype() {
 		spec.edges = []; // old expansions would point at edges of the wrong registry
+		// A source names the catalog for the old type (uniprot on a pathway
+		// root is a 400); the new type starts without one.
+		spec.source = '';
 	}
 </script>
 
@@ -55,16 +63,16 @@
 			<Input
 				name="qne_id"
 				class="h-8 min-w-40 flex-1 font-mono text-xs"
-				placeholder={spec.type === 'protein' ? 'spd:protein:… or UniProt accession' : `spd:{spec.type}:…`}
+				placeholder={sources?.length ? `spd:${spec.type}:… or ${sources[0]} id` : `spd:${spec.type}:…`}
 				title={onlookup ? tr('query_lookup_hint') : undefined}
 				bind:value={spec.id}
 			/>
-			{#if spec.type === 'protein'}
+			{#if sources?.length}
 				<Input
 					name="qne_source"
 					class="h-8 w-28 font-mono text-xs"
-					placeholder="auto / uniprot"
-					title={tr('query_source_hint')}
+					placeholder={`auto / ${sources[0]}`}
+					title={tr('query_source_hint', { sources: sources.join(' / ') })}
 					bind:value={spec.source}
 				/>
 			{/if}
