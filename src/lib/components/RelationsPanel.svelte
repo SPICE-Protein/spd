@@ -102,6 +102,33 @@
 			.sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
 			.map(([type, items]) => ({ type, items }));
 	});
+
+	// A gene can own hundreds of regions and a pathway dozens of steps; no
+	// page should spend its height on one group. The first screenful shows,
+	// the rest stays one click away.
+	const PREVIEW = 8;
+	let expanded = $state<Record<string, boolean>>({});
+
+	// Catalog types with a detail route. A gene region, a family or an opaque
+	// `other` id is shown as text rather than linked to a page that cannot
+	// answer it.
+	const ROUTABLE = new Set([
+		'protein',
+		'gene',
+		'sequence',
+		'fold',
+		'pdb-entry',
+		'enzyme',
+		'restriction-enzyme',
+		'reaction',
+		'pathway',
+		'biobrick',
+		'vector',
+		'reagent',
+		'cell-line',
+		'strain',
+		'artifact'
+	]);
 </script>
 
 <Section title={tr('relations_title')} hint={tr('relations_hint')}>
@@ -114,17 +141,22 @@
 	{:else}
 		<div class="space-y-4">
 			{#each groups as group (group.type)}
+				{@const shown = expanded[group.type] ? group.items : group.items.slice(0, PREVIEW)}
 				<div>
 					<p class="mb-1 text-xs font-semibold text-muted-foreground">
 						{enumLabel('et', group.type.replace(/-/g, '_'))} ·
 						<span class="tabular-nums">{group.items.length}</span>
 					</p>
 					<ul class="divide-y">
-						{#each group.items as r (r.id)}
+						{#each shown as r (r.id)}
 							{@const far = otherSide(r)}
 							<li class="flex flex-wrap items-baseline gap-x-2 gap-y-1 py-1.5 text-sm">
 								<span class="text-xs text-muted-foreground">{enumLabel('relation', r.relationType)}</span>
-								<IdLink id={far.id} kind={far.type} label={far.label} />
+								<IdLink
+									id={far.id}
+									kind={ROUTABLE.has(far.type) ? far.type : undefined}
+									label={far.label}
+								/>
 								{#if far.subtitle}
 									<span class="text-xs text-muted-foreground">{far.subtitle}</span>
 								{/if}
@@ -142,6 +174,17 @@
 							</li>
 						{/each}
 					</ul>
+					{#if group.items.length > PREVIEW}
+						<button
+							type="button"
+							class="mt-1 text-xs text-primary underline-offset-2 hover:underline"
+							onclick={() => (expanded[group.type] = !expanded[group.type])}
+						>
+							{expanded[group.type]
+								? tr('relations_show_less')
+								: tr('relations_show_more', { count: group.items.length - PREVIEW })}
+						</button>
+					{/if}
 				</div>
 			{/each}
 		</div>
