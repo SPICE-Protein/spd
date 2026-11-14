@@ -7,7 +7,23 @@
 
 	// Kinds with a detail route. A graph node can also be an environment or a
 	// model, and those have no page — linking them would land on /records.
-	const ROUTED = new Set(['protein', 'gene', 'sequence', 'fold', 'validation', 'artifact']);
+	const ROUTED = new Set([
+		'protein',
+		'gene',
+		'sequence',
+		'fold',
+		'validation',
+		'artifact',
+		'pathway',
+		'reaction',
+		'enzyme',
+		'restriction-enzyme',
+		'biobrick',
+		'vector',
+		'reagent',
+		'cell-line',
+		'strain'
+	]);
 
 	// expand-edge names that come back as object keys in results — these get
 	// localized; plain payload fields keep their wire names.
@@ -23,7 +39,10 @@
 		'validations',
 		'assessment',
 		'reviews',
-		'screeningEvents'
+		'screeningEvents',
+		'reactions',
+		'pathways',
+		'relations'
 	]);
 
 	let {

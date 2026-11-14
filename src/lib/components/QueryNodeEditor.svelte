@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { EDGES, NODE_TYPES, edgeInfo, newSpec, specHeight, type NodeSpec } from '$lib/graph/registry';
+	import { EDGES, NODE_TYPES, edgeInfo, newSpec, specHeight, nodeTypeLabelKey, type NodeSpec } from '$lib/graph/registry';
 	import { tr } from '$lib/i18n';
 	import Badge from './Badge.svelte';
 	import Button from './Button.svelte';
@@ -51,7 +51,7 @@
 <div class="rounded-none border bg-card p-3 space-y-2 {tooDeep ? 'border-destructive/40' : ''}">
 	<div class="flex flex-wrap items-center gap-2 text-sm">
 		{#if isRoot}
-			<Select name="qne_type" class="h-8 w-36" bind:value={spec.type} options={NODE_TYPES.map((t) => ({ value: t, label: tr(`nt_${t}`) }))} onchange={onRetype} />
+			<Select name="qne_type" class="h-8 w-36" bind:value={spec.type} options={NODE_TYPES.map((t) => ({ value: t, label: tr(nodeTypeLabelKey(t)) }))} onchange={onRetype} />
 			<Input
 				name="qne_id"
 				class="h-8 min-w-40 flex-1 font-mono text-xs"
@@ -128,7 +128,7 @@
 				class="h-7 w-56 text-xs"
 				placeholder={tr('query_add_edge')}
 				bind:value={addPick}
-				options={[{ value: '', label: tr('query_add_edge') }, ...available.map((a) => ({ value: a.edge, label: `${tr(`ge_${a.edge}`)} → ${tr(`nt_${a.child ?? ''}`)}` }))]}
+				options={[{ value: '', label: tr('query_add_edge') }, ...available.map((a) => ({ value: a.edge, label: `${tr(`ge_${a.edge}`)} → ${a.child ? tr(nodeTypeLabelKey(a.child)) : tr('query_value_node')}` }))]}
 				onchange={onAddPick}
 			/>
 		{:else if legalEdges.length}

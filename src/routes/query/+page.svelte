@@ -33,6 +33,7 @@
 		presetProtein,
 		presetFoldEvidence,
 		presetLineage,
+		presetMetabolism,
 		type NodeSpec
 	} from '$lib/graph/registry';
 	import { QUERY_TEMPLATES } from '$lib/graph/templates';
@@ -42,7 +43,8 @@
 	const PRESETS = [
 		{ key: 'protein_graph', make: presetProtein },
 		{ key: 'fold_evidence', make: presetFoldEvidence },
-		{ key: 'sequence_lineage', make: presetLineage }
+		{ key: 'sequence_lineage', make: presetLineage },
+		{ key: 'metabolism', make: presetMetabolism }
 	];
 
 	let roots = $state<NodeSpec[]>([presetProtein()[0]]);

@@ -6,7 +6,7 @@
  * A template is only useful if it is legal on first click: `templates.test.ts`
  * walks every tree against the same edge registry the builder uses.
  */
-import { newSpec, type NodeSpec } from './registry';
+import { newSpec, presetMetabolism, type NodeSpec } from './registry';
 
 export interface QueryTemplate {
 	id: string;
@@ -224,6 +224,15 @@ export const QUERY_TEMPLATES: QueryTemplate[] = [
 		descKey: 'qt_screening_history_desc',
 		keywords: ['screening', 'validation', 'review', 'screeningEvents', '筛选', '验证', '评审'],
 		build: screeningHistory
+	},
+	{
+		// Shares the preset tree so the discoverable button and the template
+		// list cannot drift into two different definitions of the backbone.
+		id: 'metabolism_backbone',
+		titleKey: 'qt_metabolism_title',
+		descKey: 'qt_metabolism_desc',
+		keywords: ['pathway', 'reaction', 'metabolism', 'catalog', '通路', '代谢', '反应', '催化'],
+		build: presetMetabolism
 	}
 ];
 

@@ -6,7 +6,27 @@
  */
 import type { GraphQueryInput } from '$lib/api/types';
 
-export const NODE_TYPES = ['gene', 'protein', 'sequence', 'fold', 'validation', 'environment', 'model', 'artifact'] as const;
+export const NODE_TYPES = [
+	// structural half of the collection
+	'gene',
+	'protein',
+	'sequence',
+	'fold',
+	'validation',
+	'environment',
+	'model',
+	'artifact',
+	// catalog half: the names are the backend's canonical entity vocabulary
+	'pathway',
+	'reaction',
+	'enzyme',
+	'restriction-enzyme',
+	'biobrick',
+	'vector',
+	'reagent',
+	'cell-line',
+	'strain'
+] as const;
 
 export interface EdgeInfo {
 	/** Edge name as it appears in `expand`. */
@@ -17,35 +37,68 @@ export interface EdgeInfo {
 	many: boolean;
 }
 
+/**
+ * Every node carries the cross-catalog `relations` value edge: the relations
+ * layer records links in both directions, so it is modelled as an embedded
+ * list (no child node, no expansion). Appending it here instead of repeating
+ * the literal on every type keeps the two concerns — walkable edges and the
+ * shared value edge — from drifting apart.
+ */
+function withRelations(edges: EdgeInfo[]): EdgeInfo[] {
+	return [...edges, { edge: 'relations', child: null, many: true }];
+}
+
 export const EDGES: Record<string, EdgeInfo[]> = {
 	// A gene reaches the proteins its CDS regions declare. This is the edge
 	// that keeps the graph on the model's own backbone: gene → CDS → protein
 	// is how a record actually arrives, and without it the graph could only
 	// describe the structural half of the collection.
-	gene: [{ edge: 'proteins', child: 'protein', many: true }],
-	protein: [{ edge: 'sequences', child: 'sequence', many: true }],
-	sequence: [
+	gene: withRelations([{ edge: 'proteins', child: 'protein', many: true }]),
+	protein: withRelations([{ edge: 'sequences', child: 'sequence', many: true }]),
+	sequence: withRelations([
 		{ edge: 'protein', child: 'protein', many: false },
 		{ edge: 'parent', child: 'sequence', many: false },
 		{ edge: 'folds', child: 'fold', many: true }
-	],
-	fold: [
+	]),
+	fold: withRelations([
 		{ edge: 'sequence', child: 'sequence', many: false },
 		{ edge: 'environment', child: 'environment', many: false },
 		{ edge: 'model', child: 'model', many: false },
 		{ edge: 'artifacts', child: 'artifact', many: true },
 		{ edge: 'validations', child: 'validation', many: true },
 		{ edge: 'assessment', child: null, many: false }
-	],
-	validation: [
+	]),
+	validation: withRelations([
 		{ edge: 'fold', child: 'fold', many: false },
 		{ edge: 'reviews', child: null, many: true },
 		{ edge: 'screeningEvents', child: null, many: true }
-	],
-	environment: [],
-	model: [],
-	artifact: []
+	]),
+	environment: withRelations([]),
+	model: withRelations([]),
+	artifact: withRelations([]),
+	// Catalog backbone: pathway ↔ reaction are the only walkable pair. The
+	// remaining catalog entities are roots or relation targets; giving them
+	// invented children would make the mirror accept edges the server 400s.
+	pathway: withRelations([{ edge: 'reactions', child: 'reaction', many: true }]),
+	reaction: withRelations([{ edge: 'pathways', child: 'pathway', many: true }]),
+	enzyme: withRelations([]),
+	'restriction-enzyme': withRelations([]),
+	biobrick: withRelations([]),
+	vector: withRelations([]),
+	reagent: withRelations([]),
+	'cell-line': withRelations([]),
+	strain: withRelations([])
 };
+
+/**
+ * Message key for a node type label. The wire vocabulary keeps hyphens
+ * (`restriction-enzyme`, `cell-line`) while Paraglide keys cannot, so callers
+ * that build `nt_<type>` by hand would otherwise miss those two labels and
+ * fall back to a humanized raw type.
+ */
+export function nodeTypeLabelKey(type: string): string {
+	return `nt_${type.replace(/-/g, '_')}`;
+}
 
 export function edgeInfo(entity: string, field: string): EdgeInfo | undefined {
 	return EDGES[entity]?.find((e) => e.edge === field);
@@ -215,6 +268,17 @@ export function presetLineage(): NodeSpec[] {
 	const s = newSpec('sequence');
 	s.edges.push({ edge: 'protein', child: newSpec('protein') }, { edge: 'parent', child: newSpec('sequence') });
 	return [s];
+}
+
+/**
+ * Metabolism backbone: a pathway root expanding its reactions. This is the
+ * discoverable entry point into the catalog half — without it the new types
+ * are only reachable by typing an id into a root the user has to know about.
+ */
+export function presetMetabolism(): NodeSpec[] {
+	const pathway = newSpec('pathway');
+	pathway.edges.push({ edge: 'reactions', child: newSpec('reaction') });
+	return [pathway];
 }
 
 export function inputToSpecs(body: unknown): NodeSpec[] | null {
