@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { enzymeReactions, external, reagents, search } from '$lib/api/client';
 	import type { ReactionRow } from '$lib/api/types';
+	import { groupCatalysts } from '$lib/catalysts';
 	import { tr } from '$lib/i18n';
 	import { toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -402,49 +403,9 @@
 	const enzymes = $derived(
 		asList(row?.enzymes).filter((e) => e && (e.accession || e.name || e.ecNumber))
 	);
-	/**
-	 * The upstream list addresses one protein per accession, so a reaction
-	 * catalysed by a large family arrives as hundreds of rows that all read
-	 * "amidase". Without an organism column they are indistinguishable to the
-	 * reader, so group by the only fields the table actually shows and keep a
-	 * representative accession for the open action.
-	 *
-	 * A group is "held" once any member is: the backend marks each entry whose
-	 * accession already exists in SPD, and the duplicate members that read the
-	 * same are exactly the ones a reader would expect to lead to the same
-	 * record.
-	 */
-	const enzymeGroups = $derived.by(() => {
-		type Group = {
-			enzyme: (typeof enzymes)[number];
-			count: number;
-			proteinId?: string | null;
-			linkedAccession?: string;
-			/** A Reactome row names a complex, not one protein. */
-			complexMembers?: string[];
-		};
-		const groups = new Map<string, Group>();
-		for (const enzyme of enzymes) {
-			const key = `${enzyme.name ?? ''}|${enzyme.ecNumber ?? ''}|${enzyme.reviewed ?? ''}`;
-			const existing = groups.get(key);
-			if (existing) {
-				existing.count += 1;
-				if (!existing.proteinId && enzyme.proteinId) {
-					existing.proteinId = enzyme.proteinId;
-					existing.linkedAccession = enzyme.accession;
-				}
-				continue;
-			}
-			groups.set(key, {
-				enzyme,
-				count: 1,
-				proteinId: enzyme.proteinId ?? undefined,
-				linkedAccession: enzyme.proteinId ? enzyme.accession : undefined,
-				complexMembers: enzyme.uniprot?.length ? enzyme.uniprot : undefined
-			});
-		}
-		return [...groups.values()];
-	});
+	// Rule and why: `lib/catalysts.ts` (grouped by what the table shows, the
+	// SPD link taken from whichever duplicate has it, complexes kept whole).
+	const enzymeGroups = $derived(groupCatalysts(enzymes));
 
 	function boolLabel(v: boolean | number): string {
 		return Boolean(v) ? tr('common_yes') : tr('common_no');
