@@ -26,8 +26,15 @@
 	let {
 		entityType,
 		entityId,
-		onCount
-	}: { entityType: string; entityId: string; onCount?: (count: number) => void } = $props();
+		onCount,
+		hideTypes
+	}: {
+		entityType: string;
+		entityId: string;
+		onCount?: (count: number) => void;
+		/** Families this page renders in a dedicated view of its own. */
+		hideTypes?: string[];
+	} = $props();
 
 	let rows = $state<EntityRelation[]>([]);
 	let loading = $state(true);
@@ -103,9 +110,17 @@
 		return index === -1 ? GROUP_ORDER.length : index;
 	}
 
+	// A page that already prints one family in its own, richer view (a gene's
+	// regions carry coordinates, strand and evidence in a table of their own)
+	// passes it here instead of showing the same rows twice.
+	const visible = $derived.by(() => {
+		const hidden = new Set(hideTypes ?? []);
+		return hidden.size === 0 ? rows : rows.filter((r) => !hidden.has(otherSide(r).type));
+	});
+
 	const groups = $derived.by(() => {
 		const byType = new Map<string, EntityRelation[]>();
-		for (const relation of rows) {
+		for (const relation of visible) {
 			const type = otherSide(relation).type || 'other';
 			const bucket = byType.get(type);
 			if (bucket) bucket.push(relation);
@@ -149,7 +164,7 @@
 		<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 	{:else if error}
 		<p class="text-sm text-destructive">{tr('relations_error')}</p>
-	{:else if rows.length === 0}
+	{:else if visible.length === 0}
 		<p class="text-sm text-muted-foreground">{tr('relations_empty')}</p>
 	{:else}
 		<div class="space-y-4">

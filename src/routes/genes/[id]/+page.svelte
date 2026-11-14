@@ -655,7 +655,14 @@
 			</div>
 			<div class="grid gap-4 lg:grid-cols-2">
 				<ExternalIdentifiersPanel entityType="gene" entityId={String(row.id)} />
-				<RelationsPanel entityType="gene" entityId={String(row.id)} />
+				<!-- The regions table further down already lists every region with
+				     coordinates, strand, protein and evidence; the panel would repeat
+				     the same rows with two fields. -->
+				<RelationsPanel
+					entityType="gene"
+					entityId={String(row.id)}
+					hideTypes={['gene-region']}
+				/>
 			</div>
 			{#if upstreamPresent}
 				<div class="grid gap-4 lg:grid-cols-2">
