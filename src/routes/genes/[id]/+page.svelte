@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { genes, restrictionEnzymes, external } from '$lib/api/client';
-	import type { GeneRecord, GeneRegionRow } from '$lib/api/types';
+	import type { ExternalImportResult, GeneRecord, GeneRegionRow } from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
 	import { displayRecordName, fmtTime, shortPublicId } from '$lib/format';
 	import { session } from '$lib/state/session.svelte';
@@ -12,6 +12,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import UpstreamResolveDialog from '$lib/components/UpstreamResolveDialog.svelte';
 	import FormFields from '$lib/components/FormFields.svelte';
 	import type { FormField } from '$lib/components/form';
 	import { buildSafe } from '$lib/components/form-values';
@@ -250,21 +251,57 @@
 	// the region encodes. A region that already names a protein keeps that
 	// claim and the click simply opens it.
 	let resolvingProtein = $state('');
+	let upstreamTarget = $state<{ region: GeneRegionRow; accession: string } | null>(null);
+
+	async function bindResolvedProtein(region: GeneRegionRow, result: ExternalImportResult) {
+		if (session.canWrite && region.regionType === 'cds' && !region.proteinId) {
+			await genes.regions.linkProtein(region.id, result.publicId);
+			toastOk(tr('upstream_bound'));
+			await load();
+			return;
+		}
+		location.href = result.route;
+	}
+
 	async function openExternalProtein(region: GeneRegionRow, accession: string) {
 		resolvingProtein = accession;
 		try {
-			const r = await external.resolveProtein(accession);
-			if (session.canWrite && region.regionType === 'cds' && !region.proteinId) {
-				await genes.regions.linkProtein(region.id, r.publicId);
-				toastOk(tr('gene_external_protein_bound'));
-				await load();
+			// Read-only first: protein prefers UniProt and only falls back to
+			// NCBI. One hit binds silently; several hits let the user choose.
+			const resolved = await external.resolve('protein', accession);
+			const items = (resolved.rungs ?? []).flatMap((rung) => rung.items ?? []);
+			if (items.length === 0) {
+				// A degraded rung means we could not ask, which is not the same
+				// as "the catalogs answered and had nothing".
+				const degraded = (resolved.rungs ?? []).some((rung) => rung.degraded);
+				toastInfo(
+					degraded ? tr('gene_external_protein_partial') : tr('gene_external_protein_none')
+				);
 				resolvingProtein = '';
 				return;
 			}
-			location.href = r.route;
+			if (items.length === 1) {
+				const result = await external.import(items[0].source, items[0].externalId);
+				await bindResolvedProtein(region, result);
+				resolvingProtein = '';
+				return;
+			}
+			resolvingProtein = '';
+			upstreamTarget = { region, accession };
 		} catch (e) {
 			toastErr(e);
 			resolvingProtein = '';
+		}
+	}
+
+	async function bindPickedProtein(result: ExternalImportResult) {
+		const region = upstreamTarget?.region;
+		upstreamTarget = null;
+		if (!region) return;
+		try {
+			await bindResolvedProtein(region, result);
+		} catch (e) {
+			toastErr(e);
 		}
 	}
 
@@ -934,6 +971,14 @@
 					</div>
 				</div>
 			</Dialog>
+
+			<UpstreamResolveDialog
+				entityType="protein"
+				query={upstreamTarget?.accession ?? ''}
+				open={upstreamTarget !== null}
+				onclose={() => (upstreamTarget = null)}
+				onpicked={bindPickedProtein}
+			/>
 		{:else if tab === 'community'}
 			<div class="grid gap-4 lg:grid-cols-2">
 				<WikiPanel entityType="gene" entityId={String(row.id)} collapsible />

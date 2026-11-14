@@ -71,6 +71,8 @@ import type {
 	EnzymeDetail,
 	EnzymeSpeciesDataInput,
 	ExternalImportResult,
+	ExternalLadderData,
+	ExternalResolveData,
 	ExternalSearchData,
 	ExternalSource,
 	FoldArtifactsData,
@@ -1487,6 +1489,12 @@ export const external = {
 		get<ExternalSearchData>('/external/search', { source, q, limit }),
 	import: (source: ExternalSource, externalId: string) =>
 		post<ExternalImportResult>('/external/import', { source, externalId }),
+	/** Per entity type, the ordered sources: dedicated catalog first, fallback after. */
+	ladder: () => get<ExternalLadderData>('/external/ladder'),
+	/** Read-only, multi-rung lookup. Nothing is imported; the caller picks a
+	 *  candidate and then calls `import` with its source/externalId. */
+	resolve: (entityType: string, query: string, limit = 10) =>
+		post<ExternalResolveData>('/external/resolve', { entityType, query, limit }),
 	/** Resolve NP_/XP_ or UniProt protein accessions to a local protein, importing when absent. */
 	resolveProtein: (accession: string) =>
 		post<ProteinResolveResult>('/external/resolve-protein', { accession })

@@ -244,6 +244,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/proteins/duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dry-run list of protein entities a merge would fold: NCBI-CDS-derived rows whose organism and gene name match a UniProt-backed twin (read-only, local evidence only) */
+        get: operations["get_api_v1_admin_proteins_duplicates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/proteins/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Fold a duplicate protein entity into its UniProt-backed twin: references, sequences and annotations move, crosswalk conflicts are dropped, the losing row becomes retracted, and the per-table counts land in the audit trail */
+        post: operations["post_api_v1_admin_proteins_merge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/records": {
         parameters: {
             query?: never;
@@ -1636,6 +1670,40 @@ export interface paths {
         put?: never;
         /** Open/import one upstream record: fetch it, run the existing create-path gates, store in D1, and return the SPD record (anonymous allowed; idempotent by source+externalId) */
         post: operations["post_api_v1_external_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/external/ladder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ordered upstream source ladder for every SPD entity type; the first rung with hits wins */
+        get: operations["get_api_v1_external_ladder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/external/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Walk an entity type's source ladder for one query without writing SPD records; each rung reports its own degradation and whether the hit is already local */
+        post: operations["post_api_v1_external_resolve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4604,6 +4672,16 @@ export interface components {
             targetId: string;
         };
         /**
+         * @description Admin duplicate cleanup of protein entities. `keep` wins; `drop` is folded
+         *     into it and retracted. The reason is mandatory because the merge is a
+         *     scientific-identity decision, not a bookkeeping delete.
+         */
+        AdminProteinMergeInput: {
+            drop: string;
+            keep: string;
+            reason: string;
+        };
+        /**
          * @description Hide/restore share one shape: the reason is mandatory and lands in the
          *     audit trail next to the actor.
          */
@@ -5183,6 +5261,17 @@ export interface components {
             license?: string | null;
             source: string;
             url?: string | null;
+        };
+        /**
+         * @description Body of POST /api/v1/external/resolve. A read-only walk down the entity
+         *     type's source ladder: the handler never imports, it only reports what each
+         *     upstream tier knows and whether the hit already lives in SPD.
+         */
+        ExternalResolveInput: {
+            entityType: string;
+            /** Format: int64 */
+            limit?: number | null;
+            query: string;
         };
         FamilyInput: {
             description?: string | null;
@@ -7333,6 +7422,84 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Missing, expired, or invalid session/token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_api_v1_admin_proteins_duplicates: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Missing, expired, or invalid session/token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    post_api_v1_admin_proteins_merge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminProteinMergeInput"];
+            };
+        };
         responses: {
             /** @description Success — standard envelope (data = endpoint payload) */
             200: {
@@ -11131,6 +11298,68 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ImportInput"];
+            };
+        };
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_api_v1_external_ladder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    post_api_v1_external_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalResolveInput"];
             };
         };
         responses: {

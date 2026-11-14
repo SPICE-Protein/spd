@@ -1229,6 +1229,34 @@ export interface ExternalImportResult {
 	route: string;
 	created: boolean;
 }
+/** `GET /external/ladder` — the ordered upstream ladder per entity type: the
+ *  dedicated catalog first, then the same-domain fallback(s). */
+export interface ExternalLadderData {
+	ladders: Array<{ entityType: string; sources: ExternalSource[] }>;
+}
+/** One rung of `POST /external/resolve`: one source's answer. `degraded:true`
+ *  means the source was unreachable — deliberately distinct from an empty rung. */
+export interface ExternalResolveRung {
+	source: ExternalSource;
+	degraded: boolean;
+	items: ExternalResolveItem[];
+}
+export interface ExternalResolveItem {
+	source: ExternalSource;
+	externalId: string;
+	title: string;
+	subtitle?: string | null;
+	url?: string | null;
+	/** non-null when this upstream record already exists in SPD */
+	localPublicId?: string | null;
+	localRoute?: string | null;
+}
+/** `POST /external/resolve` — read-only; nothing is imported until the caller
+ *  confirms a candidate. */
+export interface ExternalResolveData {
+	entityType: string;
+	rungs: ExternalResolveRung[];
+}
 
 // ---------- personal workspace (/my) ----------
 export interface MySubmission {

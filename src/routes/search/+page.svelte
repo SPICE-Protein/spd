@@ -4,7 +4,13 @@
 	import { goto } from '$app/navigation';
 	import { search, external } from '$lib/api/client';
 	import { SpdApiError } from '$lib/api/base';
-	import type { ExternalHit, ExternalSearchData, ExternalSource, SearchHit } from '$lib/api/types';
+	import type {
+		ExternalHit,
+		ExternalLadderData,
+		ExternalSearchData,
+		ExternalSource,
+		SearchHit
+	} from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
 	import { fmtTime, jsonPreview, hitFields, hitTitle, shortPublicId } from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
@@ -36,6 +42,9 @@
 	let extFailed = $state(false);
 	let importing = $state('');
 	let extGeneration = 0;
+	// Fetched once on mount; a failed lookup leaves this null and the
+	// hand-maintained table below keeps external search working.
+	let ladders = $state<ExternalLadderData['ladders'] | null>(null);
 
 	async function run() {
 		const q = term.trim();
@@ -91,13 +100,26 @@
 		}
 	}
 
-	/** Which catalogs match the current type filter. An empty filter searches
-	 *  every catalog; a filter selects only its matching catalog, and a filter
-	 *  with no external counterpart searches none. */
-	function externalSources(type: string): ExternalSource[] {
-		const t = type.replace(/_/g, '-').toLowerCase();
-		if (!t)
-			return ['uniprot', 'pdb', 'ncbi', 'cellosaurus', 'pubchem', 'rhea', 'reactome', 'brenda'];
+	const ALL_SOURCES: ExternalSource[] = [
+		'uniprot',
+		'pdb',
+		'ncbi',
+		'cellosaurus',
+		'pubchem',
+		'rhea',
+		'reactome',
+		'brenda'
+	];
+
+	function normalizeType(type: string): string {
+		return type.replace(/_/g, '-').toLowerCase();
+	}
+
+	/** Pre-ladder table, kept as the offline fallback: if `/external/ladder`
+	 *  fails we must still search something rather than disabling the section. */
+	function fallbackSources(type: string): ExternalSource[] {
+		const t = normalizeType(type);
+		if (!t) return ALL_SOURCES;
 		if (t === 'protein') return ['uniprot'];
 		if (t === 'pdb-entry') return ['pdb'];
 		if (t === 'gene') return ['ncbi'];
@@ -107,6 +129,50 @@
 		if (t === 'pathway') return ['reactome'];
 		if (t === 'enzyme') return ['brenda'];
 		return [];
+	}
+
+	/** Which catalogs match the current type filter, sourced from the backend
+	 *  ladder when available. An empty filter searches every catalog in ladder
+	 *  order; a filter selects that type's rungs; no counterpart searches none. */
+	function externalSources(type: string): ExternalSource[] {
+		const t = normalizeType(type);
+		if (ladders) {
+			if (!t) {
+				const out: ExternalSource[] = [];
+				for (const ladder of ladders) {
+					for (const source of ladder.sources) {
+						if (!out.includes(source)) out.push(source);
+					}
+				}
+				return out;
+			}
+			const entry = ladders.find((ladder) => normalizeType(ladder.entityType) === t);
+			if (entry) return entry.sources;
+		}
+		return fallbackSources(t);
+	}
+
+	/** The dedicated catalog for the selected type: the first rung of its
+	 *  ladder. With no type filter there is no single first rung, so nothing
+	 *  is marked as preferred. */
+	const preferredSources = $derived.by(() => {
+		const out = new Set<ExternalSource>();
+		const t = normalizeType(entityType);
+		if (!ladders || !t) return out;
+		const entry = ladders.find((ladder) => normalizeType(ladder.entityType) === t);
+		const first = entry?.sources[0];
+		if (first) out.add(first);
+		return out;
+	});
+
+	async function loadLadder() {
+		try {
+			const data = await external.ladder();
+			ladders = Array.isArray(data.ladders) ? data.ladders : [];
+		} catch {
+			// The hard-coded fallback is the point of failure containment here.
+			ladders = null;
+		}
 	}
 
 	const SOURCE_TONE: Record<ExternalSource, string> = {
@@ -178,6 +244,7 @@
 	// would fire one search per keystroke; the input stays a draft until the
 	// form is submitted.
 	onMount(() => {
+		void loadLadder();
 		if (term.trim()) void run();
 	});
 
@@ -435,6 +502,10 @@
 						<div class="mt-3">
 							<div class="flex items-center gap-2">
 								<Badge tone={SOURCE_TONE[group.source]}>{tr(`ext_source_${group.source}`)}</Badge>
+								{#if preferredSources.has(group.source)}
+									<Badge tone="ok">{tr('upstream_preferred')}</Badge>
+									<InfoTip text={tr('upstream_ladder_hint')} label={tr('upstream_preferred')} />
+								{/if}
 								<span class="text-xs text-muted-foreground">{data.items.length}</span>
 							</div>
 							<ul class="mt-2 space-y-2">
