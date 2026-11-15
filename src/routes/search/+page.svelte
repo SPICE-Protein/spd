@@ -12,7 +12,7 @@
 		SearchHit
 	} from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
-	import { fmtTime, jsonPreview, hitFields, hitTitle, shortPublicId } from '$lib/format';
+	import { fmtTime, jsonPreview, hitFields, hitTitle, shortPublicId, transcriptVariant } from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
 	import { seasonal } from '$lib/state/seasonal.svelte';
 	import Badge from '$lib/components/Badge.svelte';
@@ -380,6 +380,13 @@
 		if (str('geneName')) out.push(`gene ${p.geneName}`);
 		const org = p.organism as Record<string, unknown> | undefined;
 		if (org && typeof org.scientificName === 'string') out.push(org.scientificName);
+		// Two transcripts of one gene share a symbol, so a gene hit that shows
+		// only the symbol comes back twice looking identical. The accession and
+		// the variant the source asserted are what separates them.
+		if (str('accessionVersion')) out.push(str('accessionVersion'));
+		else if (str('accession')) out.push(str('accession'));
+		const variant = transcriptVariant(str('definition'));
+		if (variant != null) out.push(tr('gene_transcript_variant', { n: variant }));
 		if (typeof p.length === 'number') out.push(`${p.length} aa`);
 		if (Array.isArray(p.mutations) && p.mutations.length)
 			out.push(`${(p.mutations as unknown[]).length} mutation(s)`);

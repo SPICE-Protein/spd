@@ -429,6 +429,21 @@ export interface GeneRegionQualifier {
 }
 export type GeneStrand = 'forward' | 'reverse' | 'unknown';
 /** A gene record carries its OWN asserted sequences — no derived RNA. */
+/**
+ * Another SPD gene record with the same NCBI gene id. One gene row is one
+ * transcript, so a gene with several RefSeq transcripts is several records:
+ * nothing links them as edges, the shared upstream id is the evidence.
+ */
+export interface GeneSiblingRecord {
+	id: string;
+	name: string;
+	symbol?: string | null;
+	accession?: string | null;
+	accessionVersion?: string | null;
+	definition?: string | null;
+	rnaLength?: number | null;
+	createdAt?: number;
+}
 export interface GeneRecord {
 	id: string;
 	name: string;
@@ -464,6 +479,8 @@ export interface GeneRecord {
 	sequenceVersion?: number | null;
 	/** epoch seconds */
 	sourceUpdatedAt?: number | null;
+	/** Other SPD records sharing this record's NCBI gene id, when any. */
+	siblings?: GeneSiblingRecord[];
 	[key: string]: unknown;
 }
 export interface GeneListRow {

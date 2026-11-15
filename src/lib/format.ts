@@ -169,6 +169,22 @@ export function displayRecordName(name: string | null | undefined, symbol?: stri
 	return text;
 }
 
+/**
+ * The transcript number an upstream definition carries
+ * ("… (PAM), transcript variant 16, mRNA." → 16).
+ *
+ * One SPD gene row is one transcript, so several rows can carry the same
+ * symbol; the variant sentence is the only thing in the record that tells
+ * them apart by what the source asserted, rather than by the `PAM (2)`
+ * ordinal the importer had to invent for name uniqueness.
+ */
+export function transcriptVariant(definition: string | null | undefined): number | null {
+	const m = (definition ?? '').match(/transcript variant\s+(\d+)/i);
+	if (!m) return null;
+	const n = Number.parseInt(m[1], 10);
+	return Number.isFinite(n) ? n : null;
+}
+
 export function payloadTitle(payload: unknown, fallback = ''): string {
 	if (!payload || typeof payload !== 'object') return fallback;
 	const o = payload as Record<string, unknown>;

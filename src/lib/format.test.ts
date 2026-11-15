@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { displayRecordName, entityHref } from './format';
+import { displayRecordName, entityHref, transcriptVariant } from './format';
 
 describe('displayRecordName', () => {
 	it('prefers the asserted symbol over the stored import label', () => {
@@ -26,5 +26,22 @@ describe('entityHref', () => {
 		expect(entityHref('enzyme_reaction', 'spd:reaction:x')).toBe('/reactions/spd:reaction:x');
 		expect(entityHref('wet_lab_validation', 'v1')).toBe('/validations/v1');
 		expect(entityHref('cell-line', 'c1')).toBe('/cell-lines/c1');
+	});
+});
+
+describe('transcriptVariant', () => {
+	it('reads the variant an upstream definition asserts', () => {
+		expect(
+			transcriptVariant(
+				'Mesoplodon mirus peptidyl-glycine alpha-amidating monooxygenase (PAM), transcript variant 16, mRNA.'
+			)
+		).toBe(16);
+		expect(transcriptVariant('Mus musculus partner and localizer of BRCA2 (Palb2), transcript variant 1, mRNA.')).toBe(1);
+	});
+
+	it('answers null when the record names no variant', () => {
+		expect(transcriptVariant('Homo sapiens BRCA1 DNA repair associated (BRCA1), mRNA.')).toBeNull();
+		expect(transcriptVariant('')).toBeNull();
+		expect(transcriptVariant(null)).toBeNull();
 	});
 });

@@ -38,7 +38,7 @@ export const CATALOGS: CatalogEntry[] = [
 			route: 'genes',
 			group: 'wetlab',
 			list: () => genes.list(),
-			columns: [{"key": "id"}, {"key": "name"}, {"key": "symbol"}, {"key": "geneType"}, {"key": "organismScientificName"}, {"key": "dnaLength"}, {"key": "rnaLength"}],
+			columns: [{"key": "id"}, {"key": "name"}, {"key": "symbol"}, {"key": "accessionVersion"}, {"key": "geneType"}, {"key": "organismScientificName"}, {"key": "dnaLength"}, {"key": "rnaLength"}],
 			// the flat organism pair becomes the nested assertion the BE
 			// contract wants — the same assembly the protein wizard does
 			create: (b) => {

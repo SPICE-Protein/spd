@@ -3,7 +3,7 @@
 	import { genes, restrictionEnzymes, external } from '$lib/api/client';
 	import type { ExternalImportResult, GeneRecord, GeneRegionRow } from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
-	import { displayRecordName, fmtTime, shortPublicId } from '$lib/format';
+	import { displayRecordName, fmtTime, shortPublicId, transcriptVariant } from '$lib/format';
 	import { session } from '$lib/state/session.svelte';
 	import { toastOk, toastInfo, toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -206,6 +206,10 @@
 			.filter(Boolean)
 			.join(' · ')
 	);
+	// Which transcript this record is. The accession is the record's identity
+	// upstream; the variant sentence is what the source said about it.
+	const variantNumber = $derived(transcriptVariant(row?.definition));
+	const siblings = $derived(row?.siblings ?? []);
 	const organismLineage = $derived(row?.organismLineage ?? []);
 	const upstreamPresent = $derived(
 		Boolean(
@@ -540,6 +544,15 @@
 						<span class="font-medium">{row.symbol}</span>
 					{/if}
 					{#if organismLabel}<span class="break-words">{organismLabel}</span>{/if}
+					<!-- Which transcript this row is: the accession is its upstream
+					     identity and the variant number is what the source asserted,
+					     neither of which the display name carries. -->
+					{#if row.accessionVersion || row.accession}
+						<code class="font-mono text-xs">{row.accessionVersion ?? row.accession}</code>
+					{/if}
+					{#if variantNumber != null}
+						<Badge tone="muted">{tr('gene_transcript_variant', { n: variantNumber })}</Badge>
+					{/if}
 					{#if unplacedCount}<Badge tone="warn">{tr('gene_region_unplaced')} ×{unplacedCount}</Badge
 						>{/if}
 				</div>
@@ -568,6 +581,43 @@
 				{/if}
 			</div>
 		</div>
+
+		<!-- One gene row is one transcript, so a gene with several RefSeq
+		     transcripts is several records that only the upstream GeneID ties
+		     together. Say so, and name each by its accession and variant rather
+		     than by the ordinal the importer had to invent for name uniqueness. -->
+		{#if siblings.length}
+			<Section
+				title={tr('gene_siblings_title')}
+				hint={tr('gene_siblings_hint', { id: row.ncbiGeneId ?? '' })}
+			>
+				<ul class="divide-y text-sm">
+					{#each siblings as s (s.id)}
+						{@const siblingVariant = transcriptVariant(s.definition)}
+						<li class="flex flex-wrap items-baseline gap-x-2 gap-y-1 py-1.5">
+							<IdLink
+								id={s.id}
+								kind="gene"
+								label={displayRecordName(s.name, s.symbol) || shortPublicId(s.id)}
+							/>
+							{#if s.accessionVersion || s.accession}
+								<code class="font-mono text-[11px] text-muted-foreground"
+									>{s.accessionVersion ?? s.accession}</code
+								>
+							{/if}
+							{#if siblingVariant != null}
+								<span class="text-xs text-muted-foreground"
+									>{tr('gene_transcript_variant', { n: siblingVariant })}</span
+								>
+							{/if}
+							{#if s.rnaLength}
+								<span class="text-xs text-muted-foreground tabular-nums">{s.rnaLength} nt</span>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</Section>
+		{/if}
 
 		<RecordContextBar entityType="gene" entityId={String(row.id)} name={displayName} />
 
