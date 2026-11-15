@@ -39,23 +39,33 @@
 	onmouseenter={() => onHover(walk.key)}
 	onmouseleave={() => onHover(null)}
 >
+	<!-- A mouse double-click surface: one click stays with the canvas for
+	     selecting and dragging. Hidden from assistive tech and the tab order
+	     because the arrow on the left is the control that actually works
+	     with a keyboard and a finger. -->
 	<button
 		type="button"
-		class="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-foreground/40"
-		aria-label={`${walk.expanded ? tr('map_collapse_node') : tr('map_expand_node')} — ${title}`}
+		class="absolute inset-0 z-0 cursor-pointer touch-manipulation"
+		aria-hidden="true"
+		tabindex="-1"
 		title={walk.label ? `${walk.label} — ${walk.id}` : walk.id}
 		ondblclick={() => onToggle(walk.key)}
 	></button>
 
-	<span class="pointer-events-none absolute top-1/2 left-1 z-10 -translate-y-1/2 text-muted-foreground">
+	<button
+		type="button"
+		class="nodrag absolute inset-y-0 left-0 z-20 flex w-6 touch-manipulation items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-foreground/40"
+		aria-label={`${walk.expanded ? tr('map_collapse_node') : tr('map_expand_node')} — ${title}`}
+		onclick={() => onToggle(walk.key)}
+	>
 		{#if walk.expanded}
 			<ChevronUpIcon class="size-3" />
 		{:else}
 			<ChevronDownIcon class="size-3" />
 		{/if}
-	</span>
+	</button>
 
-	<div class="pointer-events-none relative z-10 flex h-full flex-col justify-center gap-0.5 pr-6 pl-5">
+	<div class="pointer-events-none relative z-10 flex h-full flex-col justify-center gap-0.5 pr-6 pl-6">
 		<span class="truncate text-sm leading-tight font-medium">{title}</span>
 		<span class="truncate font-mono text-[10px] text-muted-foreground">{verb}</span>
 		{#if walk.subtitle}
@@ -86,7 +96,7 @@
 	{:else if walk.expanded && hidden > 0}
 		<button
 			type="button"
-			class="absolute right-1 bottom-0.5 z-20 font-mono text-[10px] text-primary hover:underline"
+			class="absolute right-1 bottom-0.5 z-20 touch-manipulation px-1 py-0.5 font-mono text-[10px] text-primary hover:underline"
 			onclick={(e) => {
 				e.stopPropagation();
 				onMore(walk.key);

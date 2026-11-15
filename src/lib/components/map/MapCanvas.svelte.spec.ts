@@ -30,6 +30,15 @@ function tree(edges = [edge('spd:pdb:193l'), edge('spd:pdb:194l')]): WalkState {
  * Queries go through the document rather than accessibility locators: the
  * canvas is one application region, and what these tests pin is the wiring.
  */
+/** The card whose subtitle is the given record, once the canvas has drawn it. */
+function cardOf(subtitle: string): HTMLElement {
+	const card = [...document.querySelectorAll<HTMLElement>('.svelte-flow__node')].find((el) =>
+		(el.textContent ?? '').toLowerCase().includes(subtitle.toLowerCase())
+	);
+	expect(card).toBeDefined();
+	return card!;
+}
+
 async function mount(
 	walk: WalkState,
 	handlers = { onToggle: () => {}, onMore: () => {} },
@@ -64,13 +73,25 @@ describe('MapCanvas', () => {
 		const onToggle = vi.fn();
 		await mount(tree(), { onToggle, onMore: () => {} });
 
-		const card = document.querySelector<HTMLElement>('button[aria-label*="193l"]');
-		expect(card).not.toBeNull();
+		const body = cardOf('193l').querySelector<HTMLElement>('button[aria-hidden="true"]');
+		expect(body).not.toBeNull();
 		// One click belongs to the canvas (select, drag); only a second one
 		// expands.
-		card!.click();
+		body!.click();
 		expect(onToggle).not.toHaveBeenCalled();
-		card!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+		body!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+		expect(onToggle).toHaveBeenCalledWith('pdb-entry:spd:pdb:193l');
+	});
+
+	it('expands from a single tap on the arrow', async () => {
+		// A touch screen never produces the `dblclick` above, so the card needs
+		// a control a finger can hit once. A tap arrives as a click.
+		const onToggle = vi.fn();
+		await mount(tree(), { onToggle, onMore: () => {} });
+
+		const arrow = cardOf('193l').querySelector<HTMLElement>('button[aria-label^="Expand"]');
+		expect(arrow).not.toBeNull();
+		arrow!.click();
 		expect(onToggle).toHaveBeenCalledWith('pdb-entry:spd:pdb:193l');
 	});
 
