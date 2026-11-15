@@ -25,6 +25,7 @@
 	 */
 	const browseLinks = [
 		{ href: '/browse', key: 'browse_all' },
+		{ href: '/map', key: 'nav_map' },
 		{ href: '/market', key: 'nav_market' },
 		{ href: '/proteins', key: 'nav_proteins' },
 		{ href: '/folds/query', key: 'nav_folds' },

@@ -3,6 +3,7 @@
 	import type { EntityRelation, EntityRef } from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
 	import { shortPublicId } from '$lib/format';
+	import { mapHref } from '$lib/graph/start';
 	import Section from './Section.svelte';
 	import Badge from './Badge.svelte';
 	import IdLink from './IdLink.svelte';
@@ -160,6 +161,14 @@
 </script>
 
 <Section title={tr('relations_title')} hint={tr('relations_hint')}>
+	{#snippet actions()}
+		{#if entityId}
+			<a
+				class="text-xs text-primary underline-offset-2 hover:underline"
+				href={mapHref({ type: entityType, id: entityId })}>{tr('map_from_record')}</a
+			>
+		{/if}
+	{/snippet}
 	{#if loading}
 		<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 	{:else if error}
