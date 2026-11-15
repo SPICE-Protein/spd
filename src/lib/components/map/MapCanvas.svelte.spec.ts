@@ -60,13 +60,17 @@ describe('MapCanvas', () => {
 		expect(hrefs).toContain('/pdb-entries/spd:pdb:193l');
 	});
 
-	it('asks the page to expand the node that was clicked', async () => {
+	it('asks the page to expand the node that was double-clicked', async () => {
 		const onToggle = vi.fn();
 		await mount(tree(), { onToggle, onMore: () => {} });
 
 		const card = document.querySelector<HTMLElement>('button[aria-label*="193l"]');
 		expect(card).not.toBeNull();
+		// One click belongs to the canvas (select, drag); only a second one
+		// expands.
 		card!.click();
+		expect(onToggle).not.toHaveBeenCalled();
+		card!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
 		expect(onToggle).toHaveBeenCalledWith('pdb-entry:spd:pdb:193l');
 	});
 

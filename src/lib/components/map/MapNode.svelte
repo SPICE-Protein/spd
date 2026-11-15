@@ -9,9 +9,9 @@
 	import { MAX_DEPTH } from '$lib/graph/walk';
 	import type { MapNodeData } from '$lib/graph/flow';
 
-	// One record on the canvas. The card is a button (expand / collapse) with
-	// two real controls layered on top, so the whole box is a target while the
-	// corner actions stay individually reachable.
+	// One record on the canvas. The whole card is a double-click target
+	// (expand / collapse) with two real controls layered on top, so a single
+	// click stays available to the canvas for selecting and dragging.
 	let { data, selected }: NodeProps = $props();
 
 	const walk = $derived((data as unknown as MapNodeData).walk);
@@ -44,7 +44,7 @@
 		class="absolute inset-0 z-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-foreground/40"
 		aria-label={`${walk.expanded ? tr('map_collapse_node') : tr('map_expand_node')} — ${title}`}
 		title={walk.label ? `${walk.label} — ${walk.id}` : walk.id}
-		onclick={() => onToggle(walk.key)}
+		ondblclick={() => onToggle(walk.key)}
 	></button>
 
 	<span class="pointer-events-none absolute top-1/2 left-1 z-10 -translate-y-1/2 text-muted-foreground">
