@@ -21,6 +21,8 @@ https://d-mcp.spicebio.top/mcp
 
 The transport is Streamable HTTP. The server is a thin facade over the public API: its tools read records and never write or compute. Anonymous clients get the public read tier. For deeper `spd_query` traversals, connect with an API token: sign in at [d.spicebio.top](https://d.spicebio.top), open Account (`/me`), mint a token, then send it as `Authorization: Bearer spd_...`.
 
+The graph query behind `spd_query` — node types, every edge, what each read costs, and the sentence each mistake comes back as — is written down in [docs/graph_query.md](docs/graph_query.md).
+
 Claude Code:
 
 ```sh
