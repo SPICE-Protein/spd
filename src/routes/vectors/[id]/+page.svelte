@@ -24,6 +24,7 @@
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import { ENGINEERED_REGION, fileStem, toFasta, toGenbank, toSbol3 } from '$lib/export/bio';
 	import type { ExportFeature, Molecule } from '$lib/export/bio';
+	import { projectionFormats } from '$lib/export/menu';
 
 	/**
 	 * Vector template page, sectioned after Addgene (name + backbone badges,
@@ -350,7 +351,21 @@
 					molecule: exportMolecule,
 					role: ENGINEERED_REGION
 				})
-		}
+		},
+		...projectionFormats({
+			base: exportBase,
+			disabled: !seqLoaded || !seq,
+			record: () => ({
+				name: String(row?.name ?? 'vector'),
+				description: String(row?.id ?? ''),
+				sequence: seq,
+				molecule: exportMolecule,
+				circular,
+				features: exportFeatures
+			}),
+			meta: () => ({ id: String(row?.id ?? ''), role: ENGINEERED_REGION }),
+			json: () => ({ ...row, features: placed })
+		})
 	]);
 
 	// ---------------------------------------------------------------- tables --

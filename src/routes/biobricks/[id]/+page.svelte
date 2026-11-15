@@ -25,6 +25,7 @@
 		toGenbank,
 		toSbol3
 	} from '$lib/export/bio';
+	import { projectionFormats } from '$lib/export/menu';
 
 	/**
 	 * BioBrick part page, sectioned after the iGEM Registry (part number +
@@ -404,7 +405,20 @@
 									molecule: 'dna',
 									role: partRole(partType)
 								})
-						}
+						},
+						...projectionFormats({
+							base: exportBase,
+							disabled: !seq,
+							record: () => ({
+								name: String(row?.name ?? 'biobrick'),
+								description: exportDescription,
+								sequence: seq,
+								molecule: 'dna' as const,
+								features: exportFeatures
+							}),
+							meta: () => ({ id: String(row?.id ?? ''), role: partRole(partType) }),
+							json: () => row ?? {}
+						})
 					]}
 				/>
 			</div>

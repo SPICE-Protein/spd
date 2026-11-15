@@ -3118,5 +3118,12 @@
   "query_saved_load": "Load",
   "query_saved_remove": "Remove",
   "query_saved_done": "Saved.",
-  "query_lookup_hint": "“Find upstream” treats the box on the left as a name or accession, searches the dedicated catalog first, then imports your pick as this root."
+  "query_lookup_hint": "“Find upstream” treats the box on the left as a name or accession, searches the dedicated catalog first, then imports your pick as this root.",
+  "export_embl": "EMBL (.embl)",
+  "export_gff3": "GFF3 (.gff3)",
+  "export_bed": "BED (.bed)",
+  "export_features_csv": "Features CSV (.csv)",
+  "export_features_tsv": "Features TSV (.tsv)",
+  "export_sbol2": "SBOL2 (.xml)",
+  "export_record_json": "Record JSON (.json)"
 }

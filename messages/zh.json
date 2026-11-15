@@ -3118,5 +3118,12 @@
   "query_saved_load": "载入",
   "query_saved_remove": "删除",
   "query_saved_done": "已保存。",
-  "query_lookup_hint": "「从上游查找」把左边那一栏当作名字或登录号，先去专门的上游库搜索，选定后导入并作为根节点。"
+  "query_lookup_hint": "「从上游查找」把左边那一栏当作名字或登录号，先去专门的上游库搜索，选定后导入并作为根节点。",
+  "export_embl": "EMBL (.embl)",
+  "export_gff3": "GFF3 (.gff3)",
+  "export_bed": "BED (.bed)",
+  "export_features_csv": "特征表 CSV (.csv)",
+  "export_features_tsv": "特征表 TSV (.tsv)",
+  "export_sbol2": "SBOL2 (.xml)",
+  "export_record_json": "记录 JSON (.json)"
 }

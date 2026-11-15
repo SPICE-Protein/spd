@@ -37,7 +37,8 @@
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import RecordActions from '$lib/components/RecordActions.svelte';
 	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
-	import { fileStem, toFasta } from '$lib/export/bio';
+	import { fileStem, toFasta, toGenbank } from '$lib/export/bio';
+	import { toEmbl, toRecordJson } from '$lib/export/formats';
 
 	const id = $derived(page.params.id ?? '');
 
@@ -179,6 +180,40 @@
 									sequence: seq!.sequence,
 									molecule: 'protein'
 								})
+						},
+						{
+							key: 'genbank',
+							label: tr('export_genbank'),
+							filename: `${exportBase}.gp`,
+							build: () =>
+								toGenbank({
+									name: seq!.proteinId ?? seq!.id,
+									description: `${seq!.sequenceType} ${seq!.sequenceRole}`,
+									sequence: seq!.sequence,
+									molecule: 'protein'
+								})
+						},
+						{
+							key: 'embl',
+							label: tr('export_embl'),
+							filename: `${exportBase}.embl`,
+							build: () =>
+								toEmbl(
+									{
+										name: seq!.proteinId ?? seq!.id,
+										description: `${seq!.sequenceType} ${seq!.sequenceRole}`,
+										sequence: seq!.sequence,
+										molecule: 'protein'
+									},
+									{ id: seq!.id }
+								)
+						},
+						{
+							key: 'record-json',
+							label: tr('export_record_json'),
+							filename: `${exportBase}.json`,
+							mime: 'application/json',
+							build: () => toRecordJson(seq)
 						}
 					]}
 				/>

@@ -30,6 +30,7 @@
 	import RecordContextBar from '$lib/components/RecordContextBar.svelte';
 	import DnaViewer from '$lib/gene/DnaViewer.svelte';
 	import { fileStem, GENE, regionFeatureType, toFasta, toGenbank, toSbol3 } from '$lib/export/bio';
+	import { projectionFormats } from '$lib/export/menu';
 	import {
 		REGION_TYPE_COLORS,
 		regionsToViewerFeatures,
@@ -120,15 +121,18 @@
 			.replace(/<[^>]*>/g, '')
 			.trim()
 	);
+	// A record carries DNA or RNA (or both); the flatfile describes whichever
+	// molecule it is exporting, so the regions come from the same one.
+	const exportedSeq = $derived(dnaSeq || rnaSeq);
 	const genbankFeatures = $derived(
-		dnaSeq
-			? dnaRegions
+		exportedSeq
+			? (dnaSeq ? dnaRegions : rnaRegions)
 					.filter(
 						(r) =>
 							r.startPosition != null &&
 							r.endPosition != null &&
 							r.endPosition >= r.startPosition &&
-							r.endPosition <= dnaSeq.length
+							r.endPosition <= exportedSeq.length
 					)
 					.map((r) => ({
 						type: regionFeatureType(r.regionType),
@@ -170,13 +174,13 @@
 			key: 'genbank',
 			label: tr('export_genbank'),
 			filename: `${exportBase}.gb`,
-			disabled: !dnaSeq,
+			disabled: !dnaSeq && !rnaSeq,
 			build: () =>
 				toGenbank({
 					name: displayName,
 					description: exportDescription,
-					sequence: dnaSeq,
-					molecule: 'dna' as const,
+					sequence: dnaSeq || rnaSeq,
+					molecule: dnaSeq ? ('dna' as const) : ('rna' as const),
 					circular: row?.topology === 'circular',
 					features: genbankFeatures
 				})
@@ -197,7 +201,27 @@
 					role: GENE,
 					type: GENE
 				})
-		}
+		},
+		...projectionFormats({
+			base: exportBase,
+			disabled: !dnaSeq && !rnaSeq,
+			record: () => ({
+				name: displayName,
+				description: exportDescription,
+				sequence: dnaSeq || rnaSeq,
+				molecule: dnaSeq ? ('dna' as const) : ('rna' as const),
+				circular: row?.topology === 'circular',
+				features: genbankFeatures
+			}),
+			meta: () => ({
+				id,
+				organism: row?.organism?.scientificName ?? undefined,
+				accession: row?.accessionVersion || row?.accession || undefined,
+				keywords: (row?.keywords ?? []) as string[],
+				role: GENE
+			}),
+			json: () => row ?? {}
+		})
 	]);
 
 	const organism = $derived(row?.organism ?? {});
