@@ -8,7 +8,9 @@
 	let { signature }: { signature: string } = $props();
 
 	const flow = useSvelteFlow();
-	let last = $state('');
+	// Deliberately not `$state`: this is a memo of what was last framed, and
+	// making it reactive would make the effect retrigger on its own write.
+	let last = '';
 
 	$effect(() => {
 		if (signature === last) return;
