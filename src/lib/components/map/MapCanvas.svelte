@@ -8,26 +8,31 @@
 		SvelteFlow
 	} from '@xyflow/svelte';
 	import MapNode from './MapNode.svelte';
+	import MapEdge from './MapEdge.svelte';
 	import MapAutofit from './MapAutofit.svelte';
-	import { MAP_NODE_TYPE, toFlow } from '$lib/graph/flow';
-	import type { WalkNode } from '$lib/graph/walk';
-	import { tr } from '$lib/i18n';
+	import { MAP_EDGE_TYPE, MAP_NODE_TYPE, toFlow } from '$lib/graph/flow';
+	import type { WalkEdge, WalkState } from '$lib/graph/walk';
+	import { enumLabel, tr } from '$lib/i18n';
 
 	// The canvas is Svelte Flow's; the arrangement is the walk's. Positions
 	// come from the deterministic layout, so panning and zooming never change
 	// where a record sits relative to its neighbours.
 	let {
-		nodes,
+		walk,
 		onToggle,
 		onMore
 	}: {
-		nodes: WalkNode[];
+		walk: WalkState;
 		onToggle: (key: string) => void;
 		onMore: (key: string) => void;
 	} = $props();
 
 	const nodeTypes = { [MAP_NODE_TYPE]: MapNode };
-	const graph = $derived(toFlow(nodes, { onToggle, onMore }));
+	const edgeTypes = { [MAP_EDGE_TYPE]: MapEdge };
+	// A backlink has no child card to carry its verb, so the edge says it.
+	const backLabel = (edge: WalkEdge) =>
+		`${edge.direction === 'in' ? '←' : '→'} ${enumLabel('relation', edge.relation)}`;
+	const graph = $derived(toFlow(walk, { onToggle, onMore, backLabel }));
 	// What the camera should be showing: a change here means the tree grew or
 	// shrank, not that a node merely changed state.
 	const signature = $derived(`${graph.nodes.length}/${graph.edges.length}`);
@@ -38,6 +43,7 @@
 		nodes={graph.nodes}
 		edges={graph.edges}
 		{nodeTypes}
+		{edgeTypes}
 		fitView
 		fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
 		minZoom={0.15}

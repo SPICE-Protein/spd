@@ -33,9 +33,7 @@
 <div
 	class="relative h-full w-full border bg-card transition-colors {selected
 		? 'border-foreground/60'
-		: walk.repeat
-			? 'border-dashed border-foreground/35'
-			: 'border-foreground/15'} {walk.status === 'error' ? 'border-destructive' : ''}"
+		: 'border-foreground/15'} {walk.status === 'error' ? 'border-destructive' : ''}"
 >
 	<button
 		type="button"

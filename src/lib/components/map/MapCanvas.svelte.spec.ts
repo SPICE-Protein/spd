@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import MapCanvas from './MapCanvas.svelte';
-import { attachRelations, patch, rootNode, type WalkNode } from '$lib/graph/walk';
+import { attachRelations, patchNode, startWalk, type WalkState } from '$lib/graph/walk';
 
 const ROOT = { type: 'protein', id: 'spd:protein:p1', label: 'Lysozyme C' };
 
@@ -18,10 +18,10 @@ function edge(toId: string, relationType = 'structure_of') {
 }
 
 /** Root opened once, holding the edges it is given. */
-function tree(edges = [edge('spd:pdb:193l'), edge('spd:pdb:194l')]): WalkNode[] {
-	const root = rootNode(ROOT);
-	const opened = patch([root], root.key, { expanded: true, status: 'loaded' });
-	return attachRelations(opened, root.key, edges);
+function tree(edges = [edge('spd:pdb:193l'), edge('spd:pdb:194l')]): WalkState {
+	const walk = startWalk(ROOT);
+	const key = walk.nodes[0].key;
+	return attachRelations(patchNode(walk, key, { expanded: true, status: 'loaded' }), key, edges);
 }
 
 /**
@@ -31,11 +31,11 @@ function tree(edges = [edge('spd:pdb:193l'), edge('spd:pdb:194l')]): WalkNode[] 
  * canvas is one application region, and what these tests pin is the wiring.
  */
 async function mount(
-	nodes: WalkNode[],
+	walk: WalkState,
 	handlers = { onToggle: () => {}, onMore: () => {} },
 	expected = 3
 ) {
-	render(MapCanvas, { nodes, ...handlers });
+	render(MapCanvas, { walk, ...handlers });
 	await vi.waitFor(() => {
 		expect(document.querySelectorAll('.svelte-flow__node')).toHaveLength(expected);
 	});
@@ -70,16 +70,48 @@ describe('MapCanvas', () => {
 		expect(onToggle).toHaveBeenCalledWith('pdb-entry:spd:pdb:193l');
 	});
 
+	it('draws the loop back to the record that was already there', async () => {
+		const walk = tree();
+		const sequence = walk.nodes.find((n) => n.type === 'pdb-entry')!;
+		const looped = attachRelations(patchNode(walk, sequence.key, { expanded: true }), sequence.key, [
+			{
+				id: 'back',
+				relationType: 'structure_of',
+				direction: 'in' as const,
+				source: 'derived',
+				from: { type: 'pdb-entry', id: sequence.id },
+				to: { type: 'protein', id: ROOT.id },
+				other: { type: 'protein', id: ROOT.id, label: 'Lysozyme C' }
+			}
+		]);
+		await mount(looped, { onToggle: () => {}, onMore: () => {} }, 3);
+
+		// One protein card, not a second copy of it, and an edge carrying the
+		// verb the missing card would have shown. Edges land a tick after the
+		// cards, so wait for them rather than reading straight through.
+		await vi.waitFor(() => {
+			expect(document.querySelectorAll('.svelte-flow__edge')).toHaveLength(3);
+		});
+		expect(document.querySelectorAll('.svelte-flow__node')).toHaveLength(3);
+		expect(document.querySelectorAll('.svelte-flow__edge')).toHaveLength(3);
+		// Edge labels are portalled out of the edge group, so they are read from
+		// their own container.
+		// Edge labels are portalled out of the edge group, under a container of
+		// their own. The verb is translated, so the marker is the arrow.
+		const labels = document.querySelector('.svelte-flow__edge-labels')?.textContent ?? '';
+		expect(labels).toContain('←');
+	});
+
 	it('offers the children a node is not showing', async () => {
 		// Nine edges, eight slots: the card must offer the ninth.
 		const onMore = vi.fn();
+		const rootKey = 'protein:spd:protein:p1';
 		await mount(
 			tree(Array.from({ length: 9 }, (_, i) => edge(`spd:pdb:10${i}l`))),
 			{ onToggle: () => {}, onMore },
 			9
 		);
 
-		const rootKey = 'protein:spd:protein:p1';
 		const more = [...document.querySelectorAll('button')].find(
 			(el) => el.textContent?.trim() === '+1'
 		);

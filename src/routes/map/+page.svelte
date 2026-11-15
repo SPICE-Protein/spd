@@ -10,10 +10,10 @@
 		CHILD_LIMIT,
 		MAX_DEPTH,
 		attachRelations,
-		patch,
-		rootNode,
+		patchNode,
+		startWalk,
 		visibleNodes,
-		type WalkNode
+		type WalkState
 	} from '$lib/graph/walk';
 	import { mapHref, startFromParams, typeFromPublicId, type MapStart } from '$lib/graph/start';
 	import Section from '$lib/components/Section.svelte';
@@ -24,60 +24,60 @@
 	// A walk, not a query: one record on the canvas, one hop per click, one
 	// `relations` request per node the reader actually opened. Nothing is
 	// prefetched, so the map costs what it looks like it costs.
-	let nodes = $state<WalkNode[]>([]);
+	let walk = $state<WalkState>({ nodes: [], edges: [] });
 	let term = $state('');
 	let hits = $state<SearchHit[]>([]);
 	let resolving = $state(false);
 	let message = $state('');
 
-	// A record reached twice (the same gene under two proteins) is rendered as
-	// two nodes but read from one cached relation list.
+	// A record only ever expands once; the cache makes a collapse/expand pair
+	// free and keeps a backlink from ever costing a second request.
 	const cache = new Map<string, EntityRelation[]>();
 
 	let generation = 0;
 
 	async function start(seed: MapStart) {
 		generation += 1;
-		nodes = [rootNode(seed)];
+		walk = startWalk(seed);
 		cache.clear();
 		hits = [];
 		message = '';
 		void goto(mapHref(seed), { keepFocus: true, noScroll: true, replaceState: true });
-		await expand(nodes[0].key);
+		await expand(walk.nodes[0].key);
 	}
 
 	async function expand(key: string) {
-		const node = nodes.find((n) => n.key === key);
+		const node = walk.nodes.find((n) => n.key === key);
 		if (!node) return;
 		if (node.expanded) {
-			nodes = patch(nodes, key, { expanded: false });
+			walk = patchNode(walk, key, { expanded: false });
 			return;
 		}
 		if (node.depth >= MAX_DEPTH) {
 			// Say it out loud: the walk stopped, the record did not run out.
-			nodes = patch(nodes, key, { expanded: true });
+			walk = patchNode(walk, key, { expanded: true });
 			return;
 		}
-		const cached = cache.get(node.record);
+		const cached = cache.get(node.key);
 		if (cached) {
-			nodes = attachRelations(
-				patch(nodes, key, { expanded: true, status: 'loaded', error: null }),
+			walk = attachRelations(
+				patchNode(walk, key, { expanded: true, status: 'loaded', error: null }),
 				key,
 				cached
 			);
 			return;
 		}
 		const run = generation;
-		nodes = patch(nodes, key, { expanded: true, status: 'loading', error: null });
+		walk = patchNode(walk, key, { expanded: true, status: 'loading', error: null });
 		try {
 			const res = await relations.forEntity(node.type, node.id);
 			if (run !== generation) return;
 			const list = Array.isArray(res.relations) ? res.relations : [];
-			cache.set(node.record, list);
-			nodes = attachRelations(patch(nodes, key, { status: 'loaded' }), key, list);
+			cache.set(node.key, list);
+			walk = attachRelations(patchNode(walk, key, { status: 'loaded' }), key, list);
 		} catch (e) {
 			if (run !== generation) return;
-			nodes = patch(nodes, key, {
+			walk = patchNode(walk, key, {
 				expanded: false,
 				status: 'error',
 				error: e instanceof Error ? e.message : String(e)
@@ -86,9 +86,9 @@
 	}
 
 	function showMore(key: string) {
-		const node = nodes.find((n) => n.key === key);
+		const node = walk.nodes.find((n) => n.key === key);
 		if (!node) return;
-		nodes = patch(nodes, key, { childLimit: node.childLimit + CHILD_LIMIT });
+		walk = patchNode(walk, key, { childLimit: node.childLimit + CHILD_LIMIT });
 	}
 
 	async function submitTerm() {
@@ -123,7 +123,7 @@
 
 	function reset() {
 		generation += 1;
-		nodes = [];
+		walk = { nodes: [], edges: [] };
 		hits = [];
 		message = '';
 		cache.clear();
@@ -145,7 +145,7 @@
 		}
 	});
 
-	const visible = $derived(visibleNodes(nodes));
+	const visible = $derived(visibleNodes(walk.nodes));
 	const maxDepthShown = $derived(visible.reduce((acc, n) => Math.max(acc, n.depth), 0));
 </script>
 
@@ -172,7 +172,7 @@
 		<Button type="submit" disabled={resolving || !term.trim()}>
 			{resolving ? tr('common_loading') : tr('map_start')}
 		</Button>
-		{#if nodes.length > 0}
+		{#if walk.nodes.length > 0}
 			<Button variant="ghost" onclick={reset}>{tr('map_reset')}</Button>
 		{/if}
 	</form>
@@ -203,7 +203,7 @@
 		</Section>
 	{/if}
 
-	{#if nodes.length === 0}
+	{#if walk.nodes.length === 0}
 		<p class="text-sm text-muted-foreground">{tr('map_empty')}</p>
 	{:else}
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -212,6 +212,6 @@
 			<span>{tr('map_click_hint')}</span>
 		</div>
 
-		<MapCanvas {nodes} onToggle={(key) => void expand(key)} onMore={showMore} />
+		<MapCanvas {walk} onToggle={(key) => void expand(key)} onMore={showMore} />
 	{/if}
 </div>

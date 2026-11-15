@@ -1,5 +1,5 @@
 /**
- * The walk model behind the record map: a tree the reader grows one node at a
+ * The walk model behind the record map: a graph the reader grows one node at a
  * time.
  *
  * The map answers "what does this record touch, and what does *that* touch",
@@ -10,15 +10,18 @@
  *
  * Shape decisions worth knowing before reading the code:
  *
- * - The graph is rendered as a TREE even though the underlying edges form a
- *   graph: the same record can be reached by two paths. The second arrival is
- *   marked `repeat` instead of being merged, because merging would move a node
- *   the reader already has a place for, and a map that rearranges itself while
- *   you walk is unreadable. A repeat node still expands — it is the same
- *   record, it just is not the same spot on the canvas.
+ * - One node per record. A second path to a record the reader already has adds
+ *   an EDGE back to that node instead of a second copy: the record is at one
+ *   place on the canvas, and the loop the reader just found is visible as a
+ *   loop. Those edges are flagged `back` so the canvas can draw them as
+ *   backlinks rather than as fresh branches.
+ * - Placement still needs a single parent per node, so the first edge that
+ *   reaches a record becomes its `parent` — the spanning tree the layout is
+ *   built on. Later edges are edges only.
  * - A node carries how many of its children are on screen (`childLimit`): one
- *   protein can hold two hundred edges, and no one wants them all at once. The
- *   relation list is attached in full so "show more" is local.
+ *   protein can hold two hundred edges, and no one wants them all at once. New
+ *   records are attached in full so "show more" stays local; backlinks are
+ *   drawn regardless, because they cost no space.
  * - Depth and total nodes are capped. The cap is what keeps a walk from
  *   turning into a crawl of the whole catalog; hitting it is visible (the node
  *   says so) rather than silent.
@@ -45,13 +48,9 @@ export interface WalkRef {
 }
 
 export interface WalkNode extends WalkRef {
-	/** Unique on the canvas: `<type>:<id>` for the first arrival, that plus
-	 *  `#n` for later ones. Two arrivals of one record must be two nodes,
-	 *  because expanding or collapsing one must not move the other. */
+	/** `<type>:<id>` — one node per record, so this is also its identity. */
 	key: string;
-	/** `<type>:<id>` — the record, shared by every arrival. This is what the
-	 *  relation cache is keyed on and what makes an arrival a `repeat`. */
-	record: string;
+	/** The edge that placed it; the layout stacks it under this node. */
 	parent: string | null;
 	relation: string | null;
 	direction: 'in' | 'out' | null;
@@ -59,9 +58,24 @@ export interface WalkNode extends WalkRef {
 	expanded: boolean;
 	status: 'idle' | 'loading' | 'loaded' | 'error';
 	error: string | null;
-	/** Reached before by another path: same record, different place. */
-	repeat: boolean;
 	childLimit: number;
+}
+
+export interface WalkEdge {
+	/** Unique per (queried node, far side, relation) so re-expansion is a no-op. */
+	key: string;
+	/** The node whose relation list produced this edge. */
+	from: string;
+	to: string;
+	relation: string;
+	direction: 'in' | 'out' | null;
+	/** The far side was already on the canvas: this edge closes a loop. */
+	back: boolean;
+}
+
+export interface WalkState {
+	nodes: WalkNode[];
+	edges: WalkEdge[];
 }
 
 export function nodeKey(ref: { type: string; id: string }): string {
@@ -81,11 +95,10 @@ export function farSide(relation: EntityRelation, fromKey: string): EntityRef & 
 }
 
 export function rootNode(ref: WalkRef): WalkNode {
-	const record = nodeKey(ref);
+	const key = nodeKey(ref);
 	return {
 		...ref,
-		key: record,
-		record,
+		key,
 		parent: null,
 		relation: null,
 		direction: null,
@@ -93,9 +106,12 @@ export function rootNode(ref: WalkRef): WalkNode {
 		expanded: false,
 		status: 'idle',
 		error: null,
-		repeat: false,
 		childLimit: CHILD_LIMIT
 	};
+}
+
+export function startWalk(ref: WalkRef): WalkState {
+	return { nodes: [rootNode(ref)], edges: [] };
 }
 
 export function statusOf(nodes: WalkNode[], key: string): WalkNode | undefined {
@@ -107,66 +123,76 @@ export function childrenOf(nodes: WalkNode[], key: string): WalkNode[] {
 }
 
 /** Mark one node as loading/loaded/error without touching its children. */
-export function patch(
-	nodes: WalkNode[],
-	key: string,
-	change: Partial<WalkNode>
-): WalkNode[] {
-	return nodes.map((n) => (n.key === key ? { ...n, ...change } : n));
+export function patchNode(walk: WalkState, key: string, change: Partial<WalkNode>): WalkState {
+	return {
+		nodes: walk.nodes.map((n) => (n.key === key ? { ...n, ...change } : n)),
+		edges: walk.edges
+	};
 }
 
 /**
- * Attach one entity's relation list under a node.
+ * Record one entity's relation list.
  *
- * Self-edges are dropped (a record is not its own neighbour), edges to types
- * the walk cannot read are kept as leaves (they are still true statements),
- * and a every far side already somewhere on the canvas is marked `repeat`.
+ * Self-edges are dropped (a record is not its own neighbour), edges to a record
+ * already on the canvas become backlinks, and everything else becomes a child.
+ * Edges to types the walk cannot read are kept: they are still true statements.
  */
 export function attachRelations(
-	nodes: WalkNode[],
+	walk: WalkState,
 	parentKey: string,
 	relations: EntityRelation[]
-): WalkNode[] {
-	const parent = statusOf(nodes, parentKey);
-	if (!parent) return nodes;
-	// Re-expanding a node must not duplicate its children.
-	const existing = new Set(childrenOf(nodes, parentKey).map((n) => n.record));
-	// How many times each record is already on the canvas, so a new arrival
-	// gets the next ordinal in its key.
-	const arrivals = new Map<string, number>();
-	for (const node of nodes) arrivals.set(node.record, (arrivals.get(node.record) ?? 0) + 1);
-	const added: WalkNode[] = [];
+): WalkState {
+	const parent = statusOf(walk.nodes, parentKey);
+	if (!parent) return walk;
+
+	const nodes = [...walk.nodes];
+	const edges = [...walk.edges];
+	const onCanvas = new Set(nodes.map((n) => n.key));
+	const linked = new Set(edges.map((e) => e.key));
 	let total = nodes.length;
+
 	for (const relation of relations) {
-		if (total >= MAX_NODES) break;
-		// The far side is decided against the record, not the node key: a repeat
-		// node's key carries an ordinal the edge never uses.
-		const far = farSide(relation, parent.record);
-		const record = nodeKey(far);
-		if (!far.type || !far.id || record === parent.record || existing.has(record)) continue;
-		const count = (arrivals.get(record) ?? 0) + 1;
-		added.push({
+		const far = farSide(relation, parent.key);
+		const farKey = nodeKey(far);
+		if (!far.type || !far.id || farKey === parent.key) continue;
+
+		const edgeKey = `${parent.key}>${farKey}:${relation.relationType}`;
+		if (linked.has(edgeKey)) continue;
+		linked.add(edgeKey);
+
+		const exists = onCanvas.has(farKey);
+		if (!exists && (total >= MAX_NODES || parent.depth + 1 > MAX_DEPTH)) continue;
+
+		edges.push({
+			key: edgeKey,
+			from: parent.key,
+			to: farKey,
+			relation: relation.relationType,
+			direction: relation.direction ?? null,
+			back: exists
+		});
+
+		if (exists) continue;
+		nodes.push({
 			type: far.type,
 			id: far.id,
 			label: far.label ?? null,
 			subtitle: far.subtitle ?? null,
-			key: count === 1 ? record : `${record}#${count}`,
-			record,
-			parent: parentKey,
+			key: farKey,
+			parent: parent.key,
 			relation: relation.relationType,
 			direction: relation.direction ?? null,
 			depth: parent.depth + 1,
 			expanded: false,
 			status: 'idle',
 			error: null,
-			repeat: count > 1,
 			childLimit: CHILD_LIMIT
 		});
-		existing.add(record);
-		arrivals.set(record, count);
+		onCanvas.add(farKey);
 		total += 1;
 	}
-	return [...nodes, ...added];
+
+	return { nodes, edges };
 }
 
 /** Nodes whose ancestors are all expanded and that fall inside their parent's
@@ -202,6 +228,13 @@ export function hiddenChildren(nodes: WalkNode[], key: string): number {
 	return Math.max(0, childrenOf(nodes, key).length - parent.childLimit);
 }
 
+/** Edges with both ends on screen. A collapsed branch takes its edges with it,
+ *  including the backlinks into it. */
+export function visibleEdges(walk: WalkState, visible: WalkNode[]): WalkEdge[] {
+	const onCanvas = new Set(visible.map((n) => n.key));
+	return walk.edges.filter((e) => onCanvas.has(e.from) && onCanvas.has(e.to));
+}
+
 export interface Positioned {
 	node: WalkNode;
 	x: number;
@@ -215,8 +248,8 @@ export interface WalkLayout {
 }
 
 /**
- * Lay the visible tree out left to right: depth grows along x, siblings stack
- * along y, a parent sits at the middle of its children.
+ * Lay the visible spanning tree out left to right: depth grows along x,
+ * siblings stack along y, a parent sits at the middle of its children.
  *
  * Deterministic on purpose — no physics, no settling animation. A map someone
  * is reading must not move under their cursor when an unrelated branch opens.
