@@ -69,6 +69,7 @@
 	},
 	"dependencies": {
 		"@teselagen/bio-parsers": "^0.4.38",
+		"@xyflow/svelte": "^1.7.1",
 		"dompurify": "^3.4.17",
 		"kekule-svelte": "^0.1.2",
 		"marked": "^18.1.3",
