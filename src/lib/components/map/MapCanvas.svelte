@@ -15,27 +15,42 @@
 	import { enumLabel, tr } from '$lib/i18n';
 
 	// The canvas is Svelte Flow's; the arrangement is the walk's. Positions
-	// come from the deterministic layout, so panning and zooming never change
-	// where a record sits relative to its neighbours.
+	// come from the deterministic layout unless the reader dragged a node,
+	// in which case that place wins until the map is tidied again.
 	let {
 		walk,
 		onToggle,
-		onMore
+		onMore,
+		pinned = {},
+		onPlace,
+		onTidy,
+		fitToken = 0
 	}: {
 		walk: WalkState;
 		onToggle: (key: string) => void;
 		onMore: (key: string) => void;
+		pinned?: Record<string, { x: number; y: number }>;
+		onPlace?: (key: string, position: { x: number; y: number }) => void;
+		onTidy?: () => void;
+		fitToken?: number;
 	} = $props();
+
+	let hovered = $state<string | null>(null);
 
 	const nodeTypes = { [MAP_NODE_TYPE]: MapNode };
 	const edgeTypes = { [MAP_EDGE_TYPE]: MapEdge };
 	// A backlink has no child card to carry its verb, so the edge says it.
 	const backLabel = (edge: WalkEdge) =>
 		`${edge.direction === 'in' ? '←' : '→'} ${enumLabel('relation', edge.relation)}`;
-	const graph = $derived(toFlow(walk, { onToggle, onMore, backLabel }));
+	const graph = $derived(
+		toFlow(walk, { onToggle, onMore, onHover: (key) => (hovered = key), backLabel }, {
+			pinned,
+			highlight: hovered
+		})
+	);
 	// What the camera should be showing: a change here means the tree grew or
-	// shrank, not that a node merely changed state.
-	const signature = $derived(`${graph.nodes.length}/${graph.edges.length}`);
+	// shrank (or was tidied), not that a node merely changed state.
+	const signature = $derived(`${graph.nodes.length}/${graph.edges.length}/${fitToken}`);
 </script>
 
 <div class="h-[70vh] min-h-[420px] w-full border bg-muted/20">
@@ -48,21 +63,38 @@
 		fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
 		minZoom={0.15}
 		maxZoom={1.75}
-		nodesDraggable={false}
+		nodeDragThreshold={4}
 		nodesConnectable={false}
 		edgesFocusable={false}
 		zoomOnScroll={false}
 		zoomOnDoubleClick={false}
 		panOnScroll={false}
 		preventScrolling={false}
+		onnodedragstop={({ targetNode }) => {
+			if (targetNode) onPlace?.(targetNode.id, targetNode.position);
+		}}
 	>
 		<Background variant={BackgroundVariant.Dots} gap={16} size={1} />
 		<Controls />
 		<Panel position="top-left">
 			<div
-				class="border bg-background/90 px-2 py-1 font-mono text-[10px] text-muted-foreground"
+				class="pointer-events-none border bg-background/90 px-2 py-1 font-mono text-[10px] text-muted-foreground"
 			>
 				{tr('map_pan_hint')}
+			</div>
+		</Panel>
+		<Panel position="top-right">
+			<div class="flex items-center gap-1">
+				{#if Object.keys(pinned).length > 0}
+					<span class="font-mono text-[10px] text-muted-foreground">{tr('map_moved')}</span>
+				{/if}
+				<button
+					type="button"
+					class="border bg-background/90 px-2 py-1 text-[11px] hover:bg-muted"
+					onclick={() => onTidy?.()}
+				>
+					{tr('map_tidy')}
+				</button>
 			</div>
 		</Panel>
 		<MapAutofit {signature} />

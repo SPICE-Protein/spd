@@ -18,6 +18,7 @@
 	const hidden = $derived((data as unknown as MapNodeData).hidden);
 	const onToggle = $derived((data as unknown as MapNodeData).onToggle);
 	const onMore = $derived((data as unknown as MapNodeData).onMore);
+	const onHover = $derived((data as unknown as MapNodeData).onHover);
 
 	const title = $derived(walk.label || shortPublicId(walk.id));
 	const verb = $derived(
@@ -34,6 +35,9 @@
 	class="relative h-full w-full border bg-card transition-colors {selected
 		? 'border-foreground/60'
 		: 'border-foreground/15'} {walk.status === 'error' ? 'border-destructive' : ''}"
+	role="group"
+	onmouseenter={() => onHover(walk.key)}
+	onmouseleave={() => onHover(null)}
 >
 	<button
 		type="button"
@@ -60,7 +64,7 @@
 	</div>
 
 	<a
-		class="absolute top-0.5 right-0.5 z-20 p-1 text-muted-foreground hover:text-foreground"
+		class="nodrag absolute top-0.5 right-0.5 z-20 p-1 text-muted-foreground hover:text-foreground"
 		href={entityHref(walk.type, walk.id)}
 		title={tr('map_open_record')}
 		aria-label={tr('map_open_record')}

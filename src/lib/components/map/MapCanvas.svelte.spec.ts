@@ -102,6 +102,21 @@ describe('MapCanvas', () => {
 		expect(labels).toContain('←');
 	});
 
+	it('asks the page to tidy the map', async () => {
+		const onTidy = vi.fn();
+		render(MapCanvas, { walk: tree(), onToggle: () => {}, onMore: () => {}, onTidy });
+		await vi.waitFor(() => {
+			expect(document.querySelectorAll('.svelte-flow__node')).toHaveLength(3);
+		});
+
+		const tidy = [...document.querySelectorAll('button')].find((el) =>
+			['Tidy', '整理'].includes(el.textContent?.trim() ?? '')
+		);
+		expect(tidy).toBeDefined();
+		tidy!.click();
+		expect(onTidy).toHaveBeenCalled();
+	});
+
 	it('offers the children a node is not showing', async () => {
 		// Nine edges, eight slots: the card must offer the ninth.
 		const onMore = vi.fn();

@@ -34,12 +34,19 @@
 	// free and keeps a backlink from ever costing a second request.
 	const cache = new Map<string, EntityRelation[]>();
 
+	// Nodes the reader moved by hand. Tidy throws them away and the layout
+	// takes over again.
+	let pinned = $state<Record<string, { x: number; y: number }>>({});
+	// Bumped when the view should re-frame after a tidy.
+	let fitToken = $state(0);
+
 	let generation = 0;
 
 	async function start(seed: MapStart) {
 		generation += 1;
 		walk = startWalk(seed);
 		cache.clear();
+		pinned = {};
 		hits = [];
 		message = '';
 		void goto(mapHref(seed), { keepFocus: true, noScroll: true, replaceState: true });
@@ -124,6 +131,7 @@
 	function reset() {
 		generation += 1;
 		walk = { nodes: [], edges: [] };
+		pinned = {};
 		hits = [];
 		message = '';
 		cache.clear();
@@ -212,6 +220,17 @@
 			<span>{tr('map_click_hint')}</span>
 		</div>
 
-		<MapCanvas {walk} onToggle={(key) => void expand(key)} onMore={showMore} />
+		<MapCanvas
+			{walk}
+			{pinned}
+			{fitToken}
+			onToggle={(key) => void expand(key)}
+			onMore={showMore}
+			onPlace={(key, position) => (pinned = { ...pinned, [key]: position })}
+			onTidy={() => {
+				pinned = {};
+				fitToken += 1;
+			}}
+		/>
 	{/if}
 </div>
