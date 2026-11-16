@@ -3677,7 +3677,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Substring search (LIKE) over protein/sequence/fold/pdb-entry tables and api_records; entityType narrows to one source */
+        /** Ranked substring search over every catalog table and api_records (exact id/name first, then prefix, body last), with per-type facet counts; entityType narrows to one source */
         post: operations["post_api_v1_search"];
         delete?: never;
         options?: never;

@@ -3149,5 +3149,9 @@
   "export_features_csv": "Features CSV (.csv)",
   "export_features_tsv": "Features TSV (.tsv)",
   "export_sbol2": "SBOL2 (.xml)",
-  "export_record_json": "Record JSON (.json)"
+  "export_record_json": "Record JSON (.json)",
+  "search_showing": "showing {shown}",
+  "search_match_id": "matched ID",
+  "search_match_name": "matched name",
+  "search_match_body": "matched body"
 }

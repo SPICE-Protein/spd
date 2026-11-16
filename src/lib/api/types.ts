@@ -1209,7 +1209,23 @@ export interface ApiRecordRow {
 	updatedAt?: number;
 	[key: string]: unknown;
 }
-export interface SearchHit extends ApiRecordRow {}
+export interface SearchHit extends ApiRecordRow {
+	/** Which field the term met: an id, a displayed name, or only the body. */
+	matchedOn?: 'id' | 'name' | 'body';
+}
+/** One type's match count behind the search chips. */
+export interface SearchFacet {
+	type: string;
+	count: number;
+}
+/**
+ * Counts across every type the term matches, taken before the entityType
+ * filter: narrowing never hides what else was there to find.
+ */
+export interface SearchFacets {
+	entityTypes: SearchFacet[];
+	source: { spd: number; community: number };
+}
 export interface SearchBody {
 	q?: string;
 	entityType?: string;

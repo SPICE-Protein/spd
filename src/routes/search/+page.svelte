@@ -9,6 +9,7 @@
 		ExternalLadderData,
 		ExternalSearchData,
 		ExternalSource,
+		SearchFacets,
 		SearchHit
 	} from '$lib/api/types';
 	import { tr, enumLabel } from '$lib/i18n';
@@ -20,7 +21,6 @@
 	import Input from '$lib/components/Input.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import InfoTip from '$lib/components/InfoTip.svelte';
-	import Select from '$lib/components/Select.svelte';
 	import SaveViewButton from '$lib/components/SaveViewButton.svelte';
 	import { searchTermTooLong } from '$lib/search-limit';
 
@@ -28,6 +28,13 @@
 	let entityType = $state(String(page.url.searchParams.get('entityType') ?? ''));
 	let hits = $state<SearchHit[]>([]);
 	let count = $state<number | null>(null);
+	// Matches under the current filter, and the per-type counts behind the
+	// chips. Both come from the same search response.
+	let total = $state<number | null>(null);
+	let facets = $state<SearchFacets | null>(null);
+	// A fallback scan reports counts as a floor rather than a count; the chips
+	// then drop their numbers instead of overstating precision.
+	let facetsPartial = $state(false);
 	let loading = $state(false);
 	let error = $state('');
 	const searchPlaceholder = $derived(seasonal.season === 'pi-day' ? tr('season_pi_search_placeholder') : tr('search_placeholder'));
@@ -51,6 +58,9 @@
 		if (!q) {
 			hits = [];
 			count = null;
+			total = null;
+			facets = null;
+			facetsPartial = false;
 			extGeneration++;
 			extGroups = [];
 			extUnavailable = false;
@@ -65,6 +75,9 @@
 			error = tr('search_term_too_long');
 			hits = [];
 			count = null;
+			total = null;
+			facets = null;
+			facetsPartial = false;
 			extGeneration++;
 			extGroups = [];
 			return;
@@ -73,6 +86,9 @@
 		error = '';
 		hits = [];
 		count = null;
+		total = null;
+		facets = null;
+		facetsPartial = false;
 		// External catalogs cost upstream quota on a cache miss, so they are
 		// opt-in: a new local search clears the previous external section
 		// and waits for the explicit button below.
@@ -85,6 +101,9 @@
 			const env = await search.run({ q, entityType: entityType || undefined, limit: 50 });
 			hits = Array.isArray(env.data) ? env.data : [];
 			count = env.meta?.count ?? hits.length;
+			total = typeof env.meta?.total === 'number' ? env.meta.total : null;
+			facets = (env.meta?.facets as SearchFacets | undefined) ?? null;
+			facetsPartial = env.meta?.facetsPartial === true;
 			void goto(
 				`?q=${encodeURIComponent(q)}${entityType ? `&entityType=${encodeURIComponent(entityType)}` : ''}`,
 				{
@@ -254,55 +273,24 @@
 		void runExternals(q);
 	}
 
-	/** POST /search keys are dual-cased on the wire; grouped for humans, values stay API-style. */
-	const GROUPS: Array<{ key: string; types: string[] }> = [
-		{
-			key: 'search_group_core',
-			types: ['protein', 'gene', 'sequence', 'predicted-fold', 'wet-lab-validation']
-		},
-		{
-			key: 'search_group_design',
-			types: [
-				'vector_template',
-				'expression_cassette',
-				'construct',
-				'biobrick',
-				'restriction-enzyme',
-				'codon_usage',
-				'mutation_set'
-			]
-		},
-		{
-			key: 'search_group_lab',
-			types: [
-				'reagent',
-				'enzyme',
-				'reaction',
-				'pathway',
-				'strain',
-				'cell_line',
-				'media_recipe',
-				'condition_template',
-				'protocol',
-				'measurement',
-				'mutation_effect'
-			]
-		},
-		{
-			key: 'search_group_community',
-			types: [
-				'contribution',
-				'correction',
-				'retraction',
-				'benchmark',
-				'model_feedback',
-				'interaction',
-				'family',
-				'comparison',
-				'entry_wiki'
-			]
+	/** Chips for the types the term matched, plus the active filter even when
+	 *  it matched nothing — a deep link must not hide its own filter. */
+	const facetChips = $derived.by(() => {
+		const list = facets?.entityTypes ?? [];
+		if (entityType && !list.some((facet) => facet.type === entityType)) {
+			return [{ type: entityType, count: 0 }, ...list];
 		}
-	];
+		return list;
+	});
+
+	/** The "all types" chip carries the unfiltered total. */
+	const allCount = $derived(facets ? facets.entityTypes.reduce((n, face) => n + face.count, 0) : 0);
+
+	function narrow(type: string) {
+		if (entityType === type) return;
+		entityType = type;
+		void run();
+	}
 
 	// hit.id IS the record's public id (`spd:protein:…`) — every typed read
 	// accepts it, so business routes are built straight from it. The payload
@@ -416,21 +404,6 @@
 			placeholder={searchPlaceholder}
 			bind:value={term}
 		/>
-		<Select
-			name="search_type"
-			class="h-9 w-52"
-			placeholder={tr('search_all_types')}
-			bind:value={entityType}
-			options={[
-				{ value: '', label: tr('search_all_types') },
-				...GROUPS.flatMap((g) =>
-					g.types.map((t) => ({
-						value: t,
-						label: `${tr(g.key)} · ${tr(`et_${t.replace(/-/g, '_')}`)}`
-					}))
-				)
-			]}
-		/>
 		<Button type="submit" disabled={loading}>{tr('nav_search')}</Button>
 		<SaveViewButton />
 	</form>
@@ -442,6 +415,34 @@
 		</p>
 	{/if}
 
+	{#if !loading && !error && term.trim() && facetChips.length > 0}
+		<div class="flex flex-wrap items-center gap-1.5">
+			<button
+				type="button"
+				class="inline-flex items-center gap-1 border px-2 py-0.5 text-xs {entityType
+					? 'border-border text-muted-foreground hover:bg-muted'
+					: 'border-foreground bg-muted text-foreground'}"
+				onclick={() => narrow('')}
+			>
+				{tr('search_all_types')}
+				{#if !facetsPartial}<span class="font-mono text-[10px]">{allCount}</span>{/if}
+			</button>
+			{#each facetChips as facet (facet.type)}
+				<button
+					type="button"
+					class="inline-flex items-center gap-1 border px-2 py-0.5 text-xs {entityType ===
+					facet.type
+						? 'border-foreground bg-muted text-foreground'
+						: 'border-border text-muted-foreground hover:bg-muted'}"
+					onclick={() => narrow(facet.type)}
+				>
+					{tr(`et_${facet.type.replace(/-/g, '_')}`)}
+					{#if !facetsPartial}<span class="font-mono text-[10px]">{facet.count}</span>{/if}
+				</button>
+			{/each}
+		</div>
+	{/if}
+
 	{#if loading}
 		<p class="text-sm text-muted-foreground">{tr('common_loading')}</p>
 	{:else if hits.length === 0 && !error}
@@ -449,7 +450,13 @@
 			{term.trim() ? tr('search_no_results') : tr('search_hint')}
 		</p>
 	{:else if !error}
-		<p class="text-xs text-muted-foreground">{count ?? hits.length} {tr('search_results')}</p>
+		<p class="text-xs text-muted-foreground">
+			{total ?? count ?? hits.length}
+			{tr('search_results')}
+			{#if total != null && total > hits.length}
+				<span>· {tr('search_showing', { shown: hits.length })}</span>
+			{/if}
+		</p>
 		<ul class="space-y-3">
 			{#each hits as hit (`${hit.id}`)}
 				<li class="rounded-none border bg-card p-3">
@@ -466,6 +473,11 @@
 						class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
 					>
 						{#each bits(hit) as b (b)}<span>{b}</span>{/each}
+						{#if hit.matchedOn}
+							<span class="font-mono text-[10px] text-muted-foreground"
+								>{tr(`search_match_${hit.matchedOn}`)}</span
+							>
+						{/if}
 						<a class="font-mono underline" href={`/records/${hit.id}`} title={hit.id}
 							>{shortPublicId(hit.id)}</a
 						>

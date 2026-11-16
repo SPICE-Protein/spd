@@ -3149,5 +3149,9 @@
   "export_features_csv": "特征表 CSV (.csv)",
   "export_features_tsv": "特征表 TSV (.tsv)",
   "export_sbol2": "SBOL2 (.xml)",
-  "export_record_json": "记录 JSON (.json)"
+  "export_record_json": "记录 JSON (.json)",
+  "search_showing": "已显示 {shown} 条",
+  "search_match_id": "匹配 ID",
+  "search_match_name": "匹配名称",
+  "search_match_body": "匹配正文"
 }
