@@ -11,8 +11,12 @@ export function downloadText(
 	text: string,
 	mime = 'text/plain;charset=utf-8'
 ): void {
-	const safe = filename.replace(/[\\/:*?"<>|]+/g, '_').trim() || 'export.txt';
-	const blob = new Blob([text], { type: mime });
+	downloadBlob(filename, new Blob([text], { type: mime }), 'export.txt');
+}
+
+/** Same handoff, for formats that are already encoded bytes. */
+export function downloadBlob(filename: string, blob: Blob, fallback = 'export.bin'): void {
+	const safe = filename.replace(/[\\/:*?"<>|]+/g, '_').trim() || fallback;
 	const url = URL.createObjectURL(blob);
 	const a = document.createElement('a');
 	a.href = url;

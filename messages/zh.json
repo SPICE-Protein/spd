@@ -1688,6 +1688,7 @@
   "map_tidy": "整理",
   "map_moved": "已挪动",
   "map_pan_hint": "空白处拖动平移 · 节点可拖动",
+  "map_export_image": "导出图片",
   "map_expand_node": "展开",
   "map_collapse_node": "收起",
   "market_title": "菜篮子",

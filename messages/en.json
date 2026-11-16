@@ -1688,6 +1688,7 @@
   "map_tidy": "Tidy",
   "map_moved": "moved",
   "map_pan_hint": "Drag empty space to pan · cards are draggable",
+  "map_export_image": "Export image",
   "map_expand_node": "Expand",
   "map_collapse_node": "Collapse",
   "market_title": "Market",

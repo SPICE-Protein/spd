@@ -31,10 +31,14 @@ import type { EntityRef, EntityRelation } from '$lib/api/types';
 
 export const NODE_W = 224;
 export const NODE_H = 64;
+/** Breathing room between two cards on the same ring. */
 export const GAP_X = 64;
-export const GAP_Y = 12;
 /** How many children a freshly expanded node puts on the canvas. */
 export const CHILD_LIMIT = 8;
+/** One ring per level: the distance between a node and its children. */
+export const RING = 300;
+/** How much further a crowded wedge may push its children out. */
+export const RING_PUSH = 240;
 /** How far from the root the walk may go. */
 export const MAX_DEPTH = 4;
 /** A backstop against a reader who expands everything, everywhere. */
@@ -248,8 +252,14 @@ export interface WalkLayout {
 }
 
 /**
- * Lay the visible spanning tree out left to right: depth grows along x,
- * siblings stack along y, a parent sits at the middle of its children.
+ * Lay the visible spanning tree out as a mind map: the root sits at the
+ * centre and every branch leaves it in its own direction, one ring per level,
+ * each subtree confined to an angular wedge so branches never cross.
+ *
+ * A wedge is as wide as the subtree it holds (leaf count), and a crowded
+ * wedge pushes the next ring further out so cards keep their gap; the push is
+ * capped, because a hundred cards in one degree of arc cannot be spread
+ * without sending them off the screen.
  *
  * Deterministic on purpose — no physics, no settling animation. A map someone
  * is reading must not move under their cursor when an unrelated branch opens.
@@ -262,54 +272,63 @@ export function layoutWalk(nodes: WalkNode[]): WalkLayout {
 		if (bucket) bucket.push(node);
 		else byParent.set(node.parent, [node]);
 	}
-	const heights = new Map<string, number>();
+
+	// Leaf count is the wedge weight: a branch that goes on for four levels
+	// needs more of the circle than one that ends immediately.
+	const weight = new Map<string, number>();
 	const measure = (node: WalkNode): number => {
 		const kids = byParent.get(node.key) ?? [];
-		if (kids.length === 0) {
-			heights.set(node.key, NODE_H);
-			return NODE_H;
-		}
-		const sum = kids.reduce((acc, kid) => acc + measure(kid), 0) + GAP_Y * (kids.length - 1);
-		const height = Math.max(NODE_H, sum);
-		heights.set(node.key, height);
-		return height;
+		const w = kids.length === 0 ? 1 : kids.reduce((acc, kid) => acc + measure(kid), 0);
+		weight.set(node.key, w);
+		return w;
 	};
 
 	const positions: Positioned[] = [];
-	let maxDepth = 0;
-	const place = (node: WalkNode, top: number) => {
-		const height = heights.get(node.key) ?? NODE_H;
+	const place = (node: WalkNode, start: number, span: number, radius: number) => {
+		const mid = start + span / 2;
+		positions.push({
+			node,
+			x: Math.round(radius * Math.cos(mid) - NODE_W / 2),
+			y: Math.round(radius * Math.sin(mid) - NODE_H / 2)
+		});
 		const kids = byParent.get(node.key) ?? [];
-		const x = node.depth * (NODE_W + GAP_X);
-		maxDepth = Math.max(maxDepth, node.depth);
-		if (kids.length === 0) {
-			positions.push({ node, x, y: top + (height - NODE_H) / 2 });
-			return;
-		}
-		let cursor = top;
+		if (kids.length === 0) return;
+		const total = kids.reduce((acc, kid) => acc + (weight.get(kid.key) ?? 1), 0);
+		// Two cards side by side need a chord of one card plus a gap; the
+		// tightest pair in this wedge sets the radius that chord needs.
+		const tightest = (span * Math.min(...kids.map((kid) => weight.get(kid.key) ?? 1))) / total;
+		const needed =
+			kids.length === 1
+				? RING
+				: (NODE_W + GAP_X) / (2 * Math.max(0.02, Math.sin(tightest / 2)));
+		const step = Math.min(RING + RING_PUSH, Math.max(RING, needed));
+		let cursor = start;
 		for (const kid of kids) {
-			const kidHeight = heights.get(kid.key) ?? NODE_H;
-			place(kid, cursor);
-			cursor += kidHeight + GAP_Y;
+			const share = (span * (weight.get(kid.key) ?? 1)) / total;
+			place(kid, cursor, share, radius + step);
+			cursor += share;
 		}
-		// Centre on the band the children occupy, not on the first one.
-		const first = positions.find((p) => p.node.key === kids[0].key);
-		const last = positions.find((p) => p.node.key === kids[kids.length - 1].key);
-		const centre =
-			first && last ? (first.y + (last.y - first.y) / 2) | 0 : top + (height - NODE_H) / 2;
-		positions.push({ node, x, y: centre });
 	};
 
 	const roots = nodes.filter((n) => n.parent === null);
-	let top = 0;
+	for (const root of roots) measure(root);
+	const totalWeight = roots.reduce((acc, root) => acc + (weight.get(root.key) ?? 1), 0) || 1;
+	let start = -Math.PI / 2;
 	for (const root of roots) {
-		place(root, top);
-		top += (heights.get(root.key) ?? NODE_H) + GAP_Y;
+		const span = (2 * Math.PI * (weight.get(root.key) ?? 1)) / totalWeight;
+		place(root, start, span, 0);
+		start += span;
 	}
-	const height = positions.reduce((acc, p) => Math.max(acc, p.y + NODE_H), NODE_H);
+
+	// The root's card straddles the origin, so the box is measured on both
+	// edges of every card with the origin as the fallback anchor.
+	const minX = Math.min(...positions.map((p) => p.x), 0);
+	const minY = Math.min(...positions.map((p) => p.y), 0);
+	const maxX = Math.max(...positions.map((p) => p.x + NODE_W), 0);
+	const maxY = Math.max(...positions.map((p) => p.y + NODE_H), 0);
 	return {
 		positions,
-		width: (maxDepth + 1) * NODE_W + maxDepth * GAP_X,
-		height: height + 24
+		width: maxX - minX,
+		height: maxY - minY
 	};
 }

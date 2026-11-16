@@ -1,25 +1,12 @@
 <script lang="ts">
-	import { BaseEdge, EdgeLabel, getBezierPath, type EdgeProps } from '@xyflow/svelte';
+	import { BaseEdge, EdgeLabel, getStraightPath, type EdgeProps } from '@xyflow/svelte';
 
-	// The default Svelte Flow edge cannot carry text, and a backlink has no
-	// child card to print its relation verb on. This edge draws the same
-	// bezier and puts the verb on the curve.
-	let {
-		id,
-		sourceX,
-		sourceY,
-		targetX,
-		targetY,
-		sourcePosition,
-		targetPosition,
-		data,
-		label,
-		style
-	}: EdgeProps = $props();
+	// A ray, not a curve: the map is radial, so the honest line between two
+	// records is the straight one. A backlink has no child card to print its
+	// relation verb on, so the edge carries the verb itself.
+	let { sourceX, sourceY, targetX, targetY, data, label, style }: EdgeProps = $props();
 
-	const geometry = $derived(
-		getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition })
-	);
+	const geometry = $derived(getStraightPath({ sourceX, sourceY, targetX, targetY }));
 	const back = $derived(Boolean((data as { back?: boolean } | undefined)?.back));
 </script>
 

@@ -10,7 +10,7 @@
 	import { tick } from 'svelte';
 	import { tr } from '$lib/i18n';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
-	import { downloadText } from '$lib/export/download';
+	import { downloadBlob, downloadText } from '$lib/export/download';
 	import type { ExportFormat } from '$lib/export/types';
 
 	let { formats, label = tr('export_label') }: { formats: ExportFormat[]; label?: string } =
@@ -45,8 +45,13 @@
 		if (format.disabled || busy) return;
 		busy = format.key;
 		try {
-			const text = await format.build();
-			downloadText(format.filename, text, format.mime);
+			if (format.blob) {
+				downloadBlob(format.filename, await format.blob());
+			} else if (format.build) {
+				downloadText(format.filename, await format.build(), format.mime);
+			} else {
+				throw new Error(`export ${format.key} has no serializer`);
+			}
 			toastOk(tr('exportSaved'));
 			open = false;
 		} catch (e) {

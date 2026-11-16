@@ -10,7 +10,10 @@
 	import MapNode from './MapNode.svelte';
 	import MapEdge from './MapEdge.svelte';
 	import MapAutofit from './MapAutofit.svelte';
+	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import { MAP_EDGE_TYPE, MAP_NODE_TYPE, toFlow } from '$lib/graph/flow';
+	import { mapImageFormats } from '$lib/graph/map-image';
+	import { shortPublicId } from '$lib/format';
 	import type { WalkEdge, WalkState } from '$lib/graph/walk';
 	import { enumLabel, tr } from '$lib/i18n';
 
@@ -51,6 +54,12 @@
 	// What the camera should be showing: a change here means the tree grew or
 	// shrank (or was tidied), not that a node merely changed state.
 	const signature = $derived(`${graph.nodes.length}/${graph.edges.length}/${fitToken}`);
+	// Named for the record the map was opened on, so two exports side by side
+	// say which tree each came from.
+	const root = $derived(walk.nodes.find((node) => node.parent === null));
+	const imageFormats = $derived(
+		mapImageFormats(() => graph, `spd-map-${root?.label || shortPublicId(root?.id ?? 'map')}`)
+	);
 </script>
 
 <div class="h-[70vh] min-h-[420px] w-full border bg-muted/20">
@@ -59,8 +68,6 @@
 		edges={graph.edges}
 		{nodeTypes}
 		{edgeTypes}
-		fitView
-		fitViewOptions={{ padding: 0.3, maxZoom: 1 }}
 		minZoom={0.15}
 		maxZoom={1.75}
 		nodeDragThreshold={4}
@@ -88,6 +95,7 @@
 				{#if Object.keys(pinned).length > 0}
 					<span class="font-mono text-[10px] text-muted-foreground">{tr('map_moved')}</span>
 				{/if}
+				<ExportMenu formats={imageFormats} label={tr('map_export_image')} />
 				<button
 					type="button"
 					class="border bg-background/90 px-2 py-1 text-[11px] hover:bg-muted"

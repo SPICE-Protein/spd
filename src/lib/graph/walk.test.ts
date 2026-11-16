@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { EntityRelation } from '$lib/api/types';
 import {
 	CHILD_LIMIT,
-	GAP_X,
-	GAP_Y,
 	NODE_H,
 	NODE_W,
+	RING,
+	RING_PUSH,
 	attachRelations,
 	childrenOf,
 	farSide,
@@ -236,29 +236,37 @@ describe('visibleEdges', () => {
 });
 
 describe('layoutWalk', () => {
-	it('puts one root at the origin', () => {
+	const centre = (p: { x: number; y: number }) => ({
+		x: p.x + NODE_W / 2,
+		y: p.y + NODE_H / 2
+	});
+	const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+		Math.hypot(a.x - b.x, a.y - b.y);
+
+	it('puts one root at the centre', () => {
 		const layout = layoutWalk([startWalk(ROOT).nodes[0]]);
 		expect(layout.positions).toHaveLength(1);
-		expect(layout.positions[0]).toMatchObject({ x: 0, y: 0 });
+		expect(layout.positions[0]).toMatchObject({ x: -NODE_W / 2, y: -NODE_H / 2 });
 		expect(layout.width).toBe(NODE_W);
-		expect(layout.height).toBe(NODE_H + 24);
+		expect(layout.height).toBe(NODE_H);
 	});
 
-	it('grows depth along x and stacks siblings along y', () => {
+	it('puts every branch on its own ray, one ring out', () => {
 		const layout = layoutWalk(visibleNodes(opened().nodes));
 		const at = new Map(layout.positions.map((p) => [p.node.key, p]));
-		const gene = at.get(`gene:${GENE}`)!;
-		const sequence = at.get(`sequence:${SEQ}`)!;
-		expect(at.get(nodeKey(ROOT))!.x).toBe(0);
-		expect(gene.x).toBe(NODE_W + GAP_X);
-		expect(sequence.x).toBe(NODE_W + GAP_X);
-		expect(sequence.y).toBe(0);
-		expect(gene.y).toBe(NODE_H + GAP_Y);
-		// The root sits at the middle of the two-child band.
-		expect(at.get(nodeKey(ROOT))!.y).toBe((NODE_H + GAP_Y) / 2);
+		const root = centre(at.get(nodeKey(ROOT))!);
+		const gene = centre(at.get(`gene:${GENE}`)!);
+		const sequence = centre(at.get(`sequence:${SEQ}`)!);
+
+		expect(distance(root, gene)).toBeCloseTo(RING, 0);
+		expect(distance(root, sequence)).toBeCloseTo(RING, 0);
+		// Two rays, not two cards stacked on the same side.
+		const angle = (p: { x: number; y: number }) =>
+			Math.atan2(p.y - root.y, p.x - root.x);
+		expect(Math.abs(angle(gene) - angle(sequence))).toBeCloseTo(Math.PI, 1);
 	});
 
-	it('centres a parent on the band its children occupy', () => {
+	it('sends grandchildren further out than their parent', () => {
 		const walk = opened();
 		const sequence = `sequence:${SEQ}`;
 		const deep = attachRelations(patchNode(walk, sequence, { expanded: true }), sequence, [
@@ -268,14 +276,37 @@ describe('layoutWalk', () => {
 		]);
 		const layout = layoutWalk(visibleNodes(deep.nodes));
 		const at = new Map(layout.positions.map((p) => [p.node.key, p]));
-		const kids = ['fold:spd:fold:f1', 'fold:spd:fold:f2', 'fold:spd:fold:f3'].map(
-			(k) => at.get(k)!
+		const root = centre(at.get(nodeKey(ROOT))!);
+		const sequenceAt = centre(at.get(sequence)!);
+		const kids = ['fold:spd:fold:f1', 'fold:spd:fold:f2', 'fold:spd:fold:f3'].map((k) =>
+			centre(at.get(k)!)
 		);
-		const first = kids[0];
-		const last = kids[kids.length - 1];
-		expect(at.get(sequence)!.y).toBe((first.y + (last.y - first.y) / 2) | 0);
-		// The band is taller than one node, so the layout grew with it.
-		expect(layout.height).toBeGreaterThan(NODE_H + 24);
+		for (const kid of kids) {
+			expect(distance(root, kid)).toBeGreaterThan(distance(root, sequenceAt));
+			// Grandchildren land on the next ring, and no wedge push can send
+			// them past the cap.
+			expect(distance(root, kid)).toBeGreaterThanOrEqual(RING * 2 - 1);
+			expect(distance(root, kid)).toBeLessThanOrEqual(RING * 2 + RING_PUSH + 1);
+		}
+		// The folds share one wedge, so they are one ray apart rather than
+		// scattered around the sequence.
+		expect(distance(kids[0], kids[1])).toBeGreaterThan(0);
+		// The circle grew in both directions, not just along one axis.
+		expect(layout.width).toBeGreaterThan(NODE_W);
+		expect(layout.height).toBeGreaterThan(NODE_H);
+	});
+
+	it('leaves no two cards overlapping', () => {
+		const layout = layoutWalk(visibleNodes(opened().nodes));
+		for (let i = 0; i < layout.positions.length; i += 1) {
+			for (let j = i + 1; j < layout.positions.length; j += 1) {
+				const a = layout.positions[i];
+				const b = layout.positions[j];
+				const apart =
+					Math.abs(a.x - b.x) >= NODE_W || Math.abs(a.y - b.y) >= NODE_H;
+				expect(apart).toBe(true);
+			}
+		}
 	});
 
 	it('is deterministic for the same input', () => {

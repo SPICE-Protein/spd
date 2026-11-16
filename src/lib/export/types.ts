@@ -6,6 +6,8 @@ export interface ExportFormat {
 	/** MIME type for the blob; defaults to text/plain. */
 	mime?: string;
 	/** Runs only when the user picks the format, so heavy parsers stay lazy. */
-	build: () => string | Promise<string>;
+	build?: () => string | Promise<string>;
+	/** Binary formats build a blob directly instead of round-tripping text. */
+	blob?: () => Promise<Blob>;
 	disabled?: boolean;
 }

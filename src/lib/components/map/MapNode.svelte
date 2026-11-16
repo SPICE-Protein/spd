@@ -29,8 +29,11 @@
 	);
 </script>
 
-<Handle type="target" position={Position.Left} class="map-handle" />
-<Handle type="source" position={Position.Right} class="map-handle" />
+<!-- Both anchors sit at the card's centre: on a radial map an edge leaves in
+     whatever direction the branch went, so a fixed left/right side would make
+     the line bend around the card. -->
+<Handle type="target" position={Position.Left} class="map-handle" style="left:50%;top:50%" />
+<Handle type="source" position={Position.Right} class="map-handle" style="left:50%;top:50%" />
 
 <div
 	class="relative h-full w-full border bg-card transition-colors {selected
