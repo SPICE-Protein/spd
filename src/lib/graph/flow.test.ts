@@ -73,4 +73,14 @@ describe('toFlow', () => {
 		const edges = toFlow(walk(), handlers).edges;
 		expect(edges.every((e) => !e.style?.includes('opacity'))).toBe(true);
 	});
+
+	it('reports whether a node holds any children at all', () => {
+		const nodes = toFlow(walk(), handlers).nodes;
+		const root = nodes.find((n) => n.id === ROOT_KEY)!;
+		// Two children fit under the preview limit, so nothing is hidden — and
+		// the card must not read that as "nothing linked".
+		expect(root.data.hidden).toBe(0);
+		expect(root.data.children).toBe(2);
+		expect(nodes.find((n) => n.id === A_KEY)!.data.children).toBe(0);
+	});
 });

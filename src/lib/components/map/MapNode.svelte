@@ -16,6 +16,7 @@
 
 	const walk = $derived((data as unknown as MapNodeData).walk);
 	const hidden = $derived((data as unknown as MapNodeData).hidden);
+	const childCount = $derived((data as unknown as MapNodeData).children);
 	const onToggle = $derived((data as unknown as MapNodeData).onToggle);
 	const onMore = $derived((data as unknown as MapNodeData).onMore);
 	const onHover = $derived((data as unknown as MapNodeData).onHover);
@@ -108,7 +109,7 @@
 		<span class="absolute right-1 bottom-0.5 z-20 font-mono text-[10px] text-muted-foreground">
 			{tr('map_depth_limit')}
 		</span>
-	{:else if walk.expanded && hidden === 0}
+	{:else if walk.expanded && childCount === 0}
 		<span class="absolute right-1 bottom-0.5 z-20 font-mono text-[10px] text-muted-foreground">
 			{tr('map_no_connections')}
 		</span>

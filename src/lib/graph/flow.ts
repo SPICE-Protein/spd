@@ -11,6 +11,7 @@ import type { Edge, Node } from '@xyflow/svelte';
 import {
 	NODE_H,
 	NODE_W,
+	childrenOf,
 	hiddenChildren,
 	layoutWalk,
 	visibleEdges,
@@ -26,6 +27,9 @@ export interface MapNodeData extends Record<string, unknown> {
 	walk: WalkNode;
 	/** Children this node holds but is not showing yet. */
 	hidden: number;
+	/** How many children it holds at all — zero is the only honest "nothing
+	 *  linked", while `hidden === 0` also means "all of them fit". */
+	children: number;
 	onToggle: (key: string) => void;
 	onMore: (key: string) => void;
 	onHover: (key: string | null) => void;
@@ -79,6 +83,7 @@ export function toFlow(
 		data: {
 			walk: node,
 			hidden: hiddenChildren(walk.nodes, node.key),
+			children: childrenOf(walk.nodes, node.key).length,
 			onToggle: handlers.onToggle,
 			onMore: handlers.onMore,
 			onHover: handlers.onHover
