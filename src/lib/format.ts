@@ -37,6 +37,8 @@ export type EntityKind =
 	| 'sequence'
 	| 'fold'
 	| 'validation'
+	| 'environment'
+	| 'model'
 	| 'vector'
 	| 'cassette'
 	| 'construct'
@@ -80,6 +82,8 @@ const KIND_ROUTE: Record<EntityKind, string> = {
 	sequence: '/sequences',
 	fold: '/folds',
 	validation: '/validations',
+	environment: '/environments',
+	model: '/models',
 	vector: '/vectors',
 	cassette: '/cassettes',
 	construct: '/constructs',
