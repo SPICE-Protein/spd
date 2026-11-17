@@ -4,6 +4,7 @@
 	import type { BiobrickRegistry } from '$lib/api/types';
 	import { biobricks } from '$lib/api/client';
 	import { tr, enumLabel } from '$lib/i18n';
+	import { session } from '$lib/state/session.svelte';
 	import { fmtTime } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
 	import Badge from '$lib/components/Badge.svelte';
@@ -209,7 +210,7 @@
 	>
 		{error}
 	</div>
-	{#if notHeld}
+	{#if notHeld && session.canWrite}
 		<div class="mt-3 flex flex-wrap items-center gap-3 border border-border bg-muted/30 p-4 text-sm">
 			<span>{tr('biobrick_not_held')}</span>
 			<Button size="sm" disabled={importing} onclick={importPart}>

@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation';
 	import { biobricks } from '$lib/api/client';
 	import { tr } from '$lib/i18n';
+	import { session } from '$lib/state/session.svelte';
 	import Button from './Button.svelte';
 	import { Input } from '$lib/components/ui/input';
 
@@ -31,23 +32,25 @@
 	}
 </script>
 
-<form
-	class="flex flex-wrap items-center gap-2 border border-border bg-muted/30 p-3"
-	onsubmit={(e) => {
-		e.preventDefault();
-		void run();
-	}}
->
-	<span class="text-sm">{tr('biobrick_registry_lookup')}</span>
-	<Input
-		name="biobrick_part_number"
-		class="h-9 w-56 font-mono"
-		placeholder="BBa_E0040"
-		aria-label={tr('biobrick_registry_lookup')}
-		bind:value={name}
-	/>
-	<Button type="submit" size="sm" disabled={!valid || busy}>
-		{busy ? tr('common_loading') : tr('biobrick_import_registry')}
-	</Button>
-	{#if error}<span class="text-sm text-destructive">{error}</span>{/if}
-</form>
+{#if session.canWrite}
+	<form
+		class="flex flex-wrap items-center gap-2 border border-border bg-muted/30 p-3"
+		onsubmit={(e) => {
+			e.preventDefault();
+			void run();
+		}}
+	>
+		<span class="text-sm">{tr('biobrick_registry_lookup')}</span>
+		<Input
+			name="biobrick_part_number"
+			class="h-9 w-56 font-mono"
+			placeholder="BBa_E0040"
+			aria-label={tr('biobrick_registry_lookup')}
+			bind:value={name}
+		/>
+		<Button type="submit" size="sm" disabled={!valid || busy}>
+			{busy ? tr('common_loading') : tr('biobrick_import_registry')}
+		</Button>
+		{#if error}<span class="text-sm text-destructive">{error}</span>{/if}
+	</form>
+{/if}

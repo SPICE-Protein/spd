@@ -9086,6 +9086,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
+            /** @description Missing, expired, or invalid session/token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     "get_api_v1_biobricks_by-id": {
