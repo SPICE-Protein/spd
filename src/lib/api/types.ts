@@ -340,6 +340,26 @@ export interface BiobrickRow {
 	description?: string | null;
 	[key: string]: unknown;
 }
+
+/** The registry's own identity for a part — provenance, never editable. */
+export interface BiobrickRegistry {
+	title?: string | null;
+	uuid?: string | null;
+	slug?: string | null;
+	status?: string | null;
+	role?: string | null;
+	topology?: string | null;
+	source?: string | null;
+	chassis?: {
+		designedFor?: string[];
+		characterisedIn?: string[];
+		sourceOrganism?: string[];
+	};
+	usageCount?: number;
+	license?: string | null;
+	createdAt?: number | null;
+	updatedAt?: number | null;
+}
 export interface EnzymeDetail extends EnzymeRow {
 	suppliers?: SupplierRow[];
 	/** Newest BRENDA provenance for this row's EC number; absent until fetched. */

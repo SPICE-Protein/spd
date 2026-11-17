@@ -44,6 +44,7 @@ import type {
 	ArtifactInput,
 	ArtifactRecord,
 	AssessmentInput,
+	BiobrickRegistry,
 	BiobrickRow,
 	CanonicalAssessmentRecord,
 	CassetteRow,
@@ -902,6 +903,8 @@ export const biobricks = {
 		categories?: string[];
 		parameters?: unknown;
 		crossReferences?: unknown;
+		/** Upstream identity (0068); provenance, written once at create. */
+		registry?: BiobrickRegistry;
 		origin?: 'submission' | 'batch-import';
 	}) => post<Record<string, unknown>>('/biobricks', body),
 	linkVector: (id: string, body: { vectorTemplateId: string; role?: string }) =>

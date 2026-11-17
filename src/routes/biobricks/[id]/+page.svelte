@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import type { BiobrickRegistry } from '$lib/api/types';
 	import { biobricks } from '$lib/api/client';
 	import { tr, enumLabel } from '$lib/i18n';
 	import { fmtTime } from '$lib/format';
@@ -49,6 +50,7 @@
 	}
 
 	let row = $state<Record<string, unknown> | null>(null);
+	let registry = $state<BiobrickRegistry | null>(null);
 	let vectors = $state<BiobrickVector[]>([]);
 	let error = $state('');
 	let tab = $state('overview');
@@ -58,7 +60,8 @@
 		try {
 			const r = (await biobricks.get(id)) as unknown as Record<string, unknown>;
 			vectors = Array.isArray(r.vectors) ? (r.vectors as BiobrickVector[]) : [];
-			const { vectors: _drop, ...core } = r;
+			registry = (r.registry as BiobrickRegistry | undefined) ?? null;
+			const { vectors: _drop, registry: _registry, ...core } = r;
 			row = core;
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
@@ -99,8 +102,22 @@
 			? (row.metadata as Record<string, unknown>)
 			: {}
 	);
+	// Registry facts live in their own block (0068). Rows imported before that
+	// kept the same values inside `metadata`; read either, prefer the block.
+	const reg = $derived({
+		status: registry?.status ?? (metadata.status as string | null | undefined) ?? null,
+		role: registry?.role ?? (metadata.registryRole as string | null | undefined) ?? null,
+		topology: registry?.topology ?? null,
+		license: registry?.license ?? (metadata.registryLicense as string | null | undefined) ?? null,
+		source: registry?.source ?? (metadata.source as string | null | undefined) ?? null,
+		usage: Number(registry?.usageCount ?? metadata.usageCount ?? 0),
+		updatedAt: registry?.updatedAt ?? null
+	});
 	const chassis = $derived(
-		metadata.chassis && typeof metadata.chassis === 'object' ? (metadata.chassis as Chassis) : null
+		registry?.chassis ??
+			(metadata.chassis && typeof metadata.chassis === 'object'
+				? (metadata.chassis as Chassis)
+				: null)
 	);
 	const categories = $derived(Array.isArray(row?.categories) ? (row.categories as string[]) : []);
 	const crossRefs = $derived(
@@ -162,7 +179,7 @@
 		}
 	];
 
-	const usageCount = $derived(Number(metadata.usageCount ?? 0));
+	const usageCount = $derived(reg.usage);
 </script>
 
 {#if error}
@@ -181,9 +198,9 @@
 					<Badge tone="info">{enumLabel('part', String(row.partType ?? ''))}</Badge>
 					{#if seqLen}<span>{seqLen} bp</span>{/if}
 					{#if seq}<span>GC {comp.gc}%</span>{/if}
-					{#if metadata.status}<Badge
-							tone={String(metadata.status) === 'published' ? 'ok' : 'muted'}
-							>{enumLabel('st', String(metadata.status))}</Badge
+					{#if reg.status}<Badge
+							tone={String(reg.status) === 'published' ? 'ok' : 'muted'}
+							>{enumLabel('st', String(reg.status))}</Badge
 						>{/if}
 				</div>
 				<p class="mt-1 text-xs text-muted-foreground">
@@ -281,9 +298,19 @@
 						<dd>{String(row.name ?? '')}</dd>
 						<dt class="text-muted-foreground">{tr('f_partType')}</dt>
 						<dd>{enumLabel('part', String(row.partType ?? ''))}</dd>
-						{#if metadata.registryRole}
+						{#if reg.role}
 							<dt class="text-muted-foreground">{tr('biobrick_registry_role')}</dt>
-							<dd>{String(metadata.registryRole)}</dd>
+							<dd>{String(reg.role)}</dd>
+						{/if}
+						{#if reg.topology}
+							<dt class="text-muted-foreground">{tr('f_topology')}</dt>
+							<dd>
+								{reg.topology.toLowerCase() === 'linear'
+									? tr('ln_topology_linear')
+									: reg.topology.toLowerCase() === 'circular'
+										? tr('ln_topology_circular')
+										: String(reg.topology)}
+							</dd>
 						{/if}
 						<dt class="text-muted-foreground">{tr('f_length')}</dt>
 						<dd>{seqLen ? `${seqLen} bp` : '—'}</dd>
@@ -291,16 +318,20 @@
 							<dt class="text-muted-foreground">{tr('biobrick_gc')}</dt>
 							<dd>{comp.gc}%</dd>
 						{/if}
-						{#if metadata.registryLicense}
+						{#if reg.license}
 							<dt class="text-muted-foreground">{tr('f_license')}</dt>
-							<dd>{String(metadata.registryLicense).toUpperCase()}</dd>
+							<dd>{String(reg.license).toUpperCase()}</dd>
 						{/if}
-						{#if metadata.source}
+						{#if reg.source}
 							<dt class="text-muted-foreground">{tr('f_source')}</dt>
-							<dd>{String(metadata.source)}</dd>
+							<dd>{String(reg.source)}</dd>
 						{/if}
 						<dt class="text-muted-foreground">{tr('f_createdAt')}</dt>
 						<dd>{row.createdAt != null ? fmtTime(Number(row.createdAt)) : '—'}</dd>
+						{#if reg.updatedAt}
+							<dt class="text-muted-foreground">{tr('f_updatedAt')}</dt>
+							<dd>{fmtTime(Number(reg.updatedAt))}</dd>
+						{/if}
 						{#if row.sha256}
 							<dt class="text-muted-foreground">{tr('f_sha256')}</dt>
 							<dd class="break-all font-mono text-xs">{String(row.sha256)}</dd>
