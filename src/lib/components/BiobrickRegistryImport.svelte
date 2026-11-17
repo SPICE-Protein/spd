@@ -34,7 +34,7 @@
 
 {#if session.canWrite}
 	<form
-		class="flex flex-wrap items-center gap-2 border border-border bg-muted/30 p-3"
+		class="mb-4 flex flex-wrap items-center gap-2 border border-border bg-muted/30 p-3"
 		onsubmit={(e) => {
 			e.preventDefault();
 			void run();
