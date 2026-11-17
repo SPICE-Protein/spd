@@ -1845,7 +1845,7 @@
   "biobrick_registry_usage_hint": "使用次数来自源库报告。",
   "biobrick_seq_none": "该元件没有序列。",
   "biobrick_not_held": "SPD 尚未收录该元件。",
-  "biobrick_registry_lookup": "按元件编号从 iGEM Registry 取回：",
+  "biobrick_registry_lookup": "搜索 iGEM Registry：",
   "biobrick_import_registry": "从 iGEM Registry 导入",
   "biobrick_import_note": "导入说明",
   "part_promoter": "启动子",
@@ -3156,5 +3156,11 @@
   "search_showing": "已显示 {shown} 条",
   "search_match_id": "匹配 ID",
   "search_match_name": "匹配名称",
-  "search_match_body": "匹配正文"
+  "search_match_body": "匹配正文",
+  "biobrick_registry_placeholder": "元件名，例如 PETase、terminator、sfGFP",
+  "biobrick_registry_hits": "条命中",
+  "biobrick_registry_none": "没有命中。换个词试试。",
+  "biobrick_registry_used": "被使用",
+  "biobrick_registry_open_source": "在 registry 打开",
+  "common_open": "打开"
 }

@@ -45,10 +45,23 @@
 		role?: string | null;
 		linkedAt?: number;
 	}
+	/**
+	 * The registry's chassis lists carry whole organism records (uuid, NCBI
+	 * taxid, scientific/common name); older rows stored bare names. Both are
+	 * read here, and the page shows the name either way.
+	 */
+	type ChassisEntry = string | { scientificName?: string; commonName?: string };
 	interface Chassis {
-		designedFor?: string[];
-		characterisedIn?: string[];
-		sourceOrganism?: string[];
+		designedFor?: ChassisEntry[];
+		characterisedIn?: ChassisEntry[];
+		sourceOrganism?: ChassisEntry[];
+	}
+
+	function chassisNames(entries: ChassisEntry[] | undefined): string {
+		return (entries ?? [])
+			.map((e) => (typeof e === 'string' ? e : (e.scientificName ?? e.commonName ?? '')))
+			.filter((name) => name)
+			.join(', ');
 	}
 
 	let row = $state<Record<string, unknown> | null>(null);
@@ -371,22 +384,22 @@
 					{#if chassis && (chassis.designedFor?.length || chassis.characterisedIn?.length || chassis.sourceOrganism?.length)}
 						<div class="mt-3 space-y-1 border-t pt-2 text-sm">
 							<p class="text-xs font-semibold text-muted-foreground">{tr('biobrick_chassis')}</p>
-							{#if chassis.designedFor?.length}
+							{#if chassisNames(chassis.designedFor)}
 								<p class="text-xs">
 									<span class="text-muted-foreground">{tr('biobrick_designed_for')}:</span>
-									{chassis.designedFor.join(', ')}
+									{chassisNames(chassis.designedFor)}
 								</p>
 							{/if}
-							{#if chassis.characterisedIn?.length}
+							{#if chassisNames(chassis.characterisedIn)}
 								<p class="text-xs">
 									<span class="text-muted-foreground">{tr('biobrick_characterised_in')}:</span>
-									{chassis.characterisedIn.join(', ')}
+									{chassisNames(chassis.characterisedIn)}
 								</p>
 							{/if}
-							{#if chassis.sourceOrganism?.length}
+							{#if chassisNames(chassis.sourceOrganism)}
 								<p class="text-xs">
 									<span class="text-muted-foreground">{tr('biobrick_source_organism')}:</span>
-									{chassis.sourceOrganism.join(', ')}
+									{chassisNames(chassis.sourceOrganism)}
 								</p>
 							{/if}
 						</div>
