@@ -909,6 +909,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/biobricks/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import one part from the iGEM Registry if SPD does not hold it */
+        post: operations["post_api_v1_biobricks_resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/biobricks/{id}": {
         parameters: {
             query?: never;
@@ -4864,7 +4881,39 @@ export interface components {
             origin?: string | null;
             parameters?: unknown;
             partType: string;
+            registry?: components["schemas"]["BiobrickRegistryInput"] | null;
             sequence: string;
+        };
+        /**
+         * @description What an importer may state about where a part came from. Every field is the
+         *     upstream's own value, stored verbatim; nothing here is inferred.
+         */
+        BiobrickRegistryInput: {
+            /** @description `{designedFor, characterisedIn, sourceOrganism}`, each an array of names. */
+            chassis?: unknown;
+            /** Format: int32 */
+            createdAt?: number | null;
+            /** @description SPDX id as the registry states it. */
+            license?: string | null;
+            role?: string | null;
+            slug?: string | null;
+            source?: string | null;
+            status?: string | null;
+            title?: string | null;
+            topology?: string | null;
+            /** Format: int32 */
+            updatedAt?: number | null;
+            /** Format: int32 */
+            usageCount?: number | null;
+            uuid?: string | null;
+        };
+        /**
+         * @description Ask SPD to import one named part from the iGEM Registry if it does not
+         *     hold it yet.
+         */
+        BiobrickResolveInput: {
+            /** @description Registry part number, `BBa_…`. */
+            name: string;
         };
         /** @description Batch import for deep mutational scanning (thousands of variants). */
         BulkInput: {
@@ -9003,6 +9052,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    post_api_v1_biobricks_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BiobrickResolveInput"];
+            };
+        };
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
             };
         };
     };

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { BiobrickRegistry } from '$lib/api/types';
 	import { biobricks } from '$lib/api/client';
@@ -55,6 +56,13 @@
 	let error = $state('');
 	let tab = $state('overview');
 	let copied = $state(false);
+	let importing = $state(false);
+	let importError = $state('');
+
+	// A part page addressed by registry part number is also the way to ask
+	// for a part SPD has not imported yet.
+	const registryPart = $derived(/^BBa_[A-Za-z0-9_]{1,55}$/.test(id.trim()));
+	const notHeld = $derived(registryPart && /not found/i.test(error));
 
 	async function load() {
 		try {
@@ -68,6 +76,19 @@
 		}
 	}
 	$effect(() => void load());
+
+	async function importPart() {
+		importing = true;
+		importError = '';
+		try {
+			const part = await biobricks.resolve(id.trim());
+			await goto(`/biobricks/${part.id}`, { invalidateAll: true });
+		} catch (e) {
+			importError = e instanceof Error ? e.message : String(e);
+		} finally {
+			importing = false;
+		}
+	}
 
 	const seq = $derived(
 		String(row?.sequence ?? '')
@@ -188,6 +209,15 @@
 	>
 		{error}
 	</div>
+	{#if notHeld}
+		<div class="mt-3 flex flex-wrap items-center gap-3 border border-border bg-muted/30 p-4 text-sm">
+			<span>{tr('biobrick_not_held')}</span>
+			<Button size="sm" disabled={importing} onclick={importPart}>
+				{importing ? tr('common_loading') : tr('biobrick_import_registry')}
+			</Button>
+			{#if importError}<span class="text-destructive">{importError}</span>{/if}
+		</div>
+	{/if}
 {:else if row}
 	<div class="space-y-4">
 		<!-- iGEM leads with the part number, then role/composition badges -->

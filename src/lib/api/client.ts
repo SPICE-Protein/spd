@@ -907,6 +907,19 @@ export const biobricks = {
 		registry?: BiobrickRegistry;
 		origin?: 'submission' | 'batch-import';
 	}) => post<Record<string, unknown>>('/biobricks', body),
+	/**
+	 * Import one registry part on first sight. A part SPD already holds is
+	 * answered from D1 with `created: false` and costs nothing upstream.
+	 */
+	resolve: (name: string) =>
+		post<{
+			id: string;
+			name: string;
+			partType: string;
+			length: number;
+			sha256: string;
+			created: boolean;
+		}>('/biobricks/resolve', { name }),
 	linkVector: (id: string, body: { vectorTemplateId: string; role?: string }) =>
 		post<Record<string, unknown>>(`/biobricks/${id}/vectors`, body),
 	unlinkVector: (id: string, vid: string) => del(`/biobricks/${id}/vectors/${vid}`)
