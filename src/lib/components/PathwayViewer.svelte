@@ -6,8 +6,13 @@
 	} from '$lib/api/types';
 	import { tr } from '$lib/i18n';
 	import { mode } from 'mode-watcher';
+	import { tick } from 'svelte';
 	import Button from './Button.svelte';
+	import ExportMenu from './ExportMenu.svelte';
 	import InfoTip from './InfoTip.svelte';
+	import { fileStem } from '$lib/export/bio';
+	import type { ExportFormat } from '$lib/export/types';
+	import { compartmentPaint, compartmentSwatch, reactionPaint } from '$lib/pathway/palette';
 
 	/**
 	 * SPD-owned pathway diagram.
@@ -17,19 +22,12 @@
 	 * layout: reactants → reaction → products, modifiers dashed into the
 	 * reaction. Mermaid breaks cycles and routes edges, so a pathway that never
 	 * came from Reactome renders the same way and curated edits stay readable.
+	 *
+	 * Mermaid's own theme is not used for node colour: it paints first and the
+	 * palette is applied afterwards (see `paintDiagram`), so a compartment's
+	 * hue and its label's contrast are decided in one place.
 	 */
 	let { topology }: { topology: PathwayTopology } = $props();
-
-	const COMPARTMENT_COLORS = [
-		'#2563eb',
-		'#059669',
-		'#d97706',
-		'#7c3aed',
-		'#dc2626',
-		'#0891b2',
-		'#65a30d',
-		'#c026d3'
-	];
 
 	const entityById = $derived(new Map(topology.entities.map((entity) => [entity.id, entity])));
 	const reactionById = $derived(
@@ -75,16 +73,16 @@
 
 	// ---- render -------------------------------------------------------------
 	let host = $state<HTMLDivElement>();
+	let scroller = $state<HTMLDivElement>();
+	let minimap = $state<HTMLCanvasElement>();
+	let svgEl: SVGSVGElement | null = null;
 	let renderError = $state('');
 	let zoom = $state(1);
-	let colorByCompartment = $derived(
-		new Map(
-			topology.compartments.map((compartment, index) => [
-				compartment.id,
-				COMPARTMENT_COLORS[index % COMPARTMENT_COLORS.length]
-			])
-		)
-	);
+	let showMinimap = $state(false);
+	let panning = $state(false);
+
+	const dark = $derived(mode.current === 'dark');
+	const zoomPercent = $derived(Math.round(zoom * 100));
 
 	const usedCompartments = $derived(
 		topology.compartments.filter((compartment) =>
@@ -146,15 +144,15 @@
 	$effect(() => {
 		const topo = topology;
 		const target = host;
-		const dark = mode.current === 'dark';
+		const themeDark = dark;
 		if (!target) return;
 		const seq = ++renderSeq;
-		void renderDiagram(topo, dark, target, seq);
+		void renderDiagram(topo, themeDark, target, seq);
 	});
 
 	async function renderDiagram(
 		topo: PathwayTopology,
-		dark: boolean,
+		themeDark: boolean,
 		target: HTMLDivElement,
 		seq: number
 	) {
@@ -178,7 +176,9 @@
 				// guard against a pathological import, not a readability setting.
 				maxEdges: 5000,
 				flowchart: {
-					htmlLabels: true,
+					// SVG text rather than foreignObject: the exported image has to
+					// be self-contained, and HTML labels do not rasterise into a PNG.
+					htmlLabels: false,
 					curve: 'basis',
 					nodeSpacing: 30,
 					rankSpacing: 48,
@@ -186,19 +186,19 @@
 					useMaxWidth: false
 				},
 				themeVariables: {
-					darkMode: dark,
+					darkMode: themeDark,
 					background: 'transparent',
 					fontFamily,
 					fontSize: '13px',
-					lineColor: dark ? '#64748b' : '#94a3b8',
-					textColor: dark ? '#e2e8f0' : '#0f172a',
-					mainBkg: dark ? '#0f172a' : '#ffffff',
-					nodeBorder: dark ? '#475569' : '#cbd5e1',
-					edgeLabelBackground: dark ? '#0b1120' : '#ffffff'
+					lineColor: themeDark ? '#64748b' : '#94a3b8',
+					textColor: themeDark ? '#e2e8f0' : '#0f172a',
+					mainBkg: themeDark ? '#0f172a' : '#ffffff',
+					nodeBorder: themeDark ? '#475569' : '#cbd5e1',
+					edgeLabelBackground: themeDark ? '#0b1120' : '#ffffff'
 				}
 			});
 
-			const { source, nodeKeyById } = buildSource(topo, dark);
+			const { source, nodeKeyById } = buildSource(topo);
 			const { svg } = await mermaid.render(`pathway_diagram_${seq}`, source);
 			if (seq !== renderSeq || !target.isConnected) return;
 
@@ -211,6 +211,7 @@
 			element.style.display = 'block';
 			element.setAttribute('role', 'img');
 			element.setAttribute('aria-label', topo.name);
+			svgEl = element;
 
 			for (const node of element.querySelectorAll<SVGGElement>('g.node')) {
 				const nodeId =
@@ -221,7 +222,14 @@
 				node.setAttribute('role', 'button');
 				node.setAttribute('tabindex', '0');
 				node.style.cursor = 'pointer';
-				node.addEventListener('click', () => select(key));
+				node.addEventListener('click', () => {
+					// A drag that crossed a node must not also select it.
+					if (suppressClick) {
+						suppressClick = false;
+						return;
+					}
+					select(key);
+				});
 				node.addEventListener('keydown', (event) => {
 					if (event.key === 'Enter' || event.key === ' ') {
 						event.preventDefault();
@@ -229,39 +237,26 @@
 					}
 				});
 			}
+			paintDiagram(element, themeDark);
 			applySelection();
+			await tick();
+			measure();
 		} catch (error) {
 			if (seq !== renderSeq) return;
 			renderError = error instanceof Error ? error.message : String(error);
 		}
 	}
 
-	function buildSource(topo: PathwayTopology, dark: boolean) {
+	function buildSource(topo: PathwayTopology) {
 		const lines = ['flowchart TD'];
 		const nodeKeyById = new Map<string, string>();
-		const compartmentClass = new Map<string, string>();
-		const tint = dark ? '26' : '14';
-		const labelColor = dark ? '#e2e8f0' : '#0f172a';
-
-		topo.compartments.forEach((compartment, index) => {
-			const color = COMPARTMENT_COLORS[index % COMPARTMENT_COLORS.length];
-			const className = `comp${index}`;
-			compartmentClass.set(compartment.id, className);
-			lines.push(
-				`  classDef ${className} fill:${color}${tint},stroke:${color},color:${labelColor},stroke-width:1px;`
-			);
-		});
-		lines.push(
-			`  classDef reactionNode fill:${dark ? '#111827' : '#f8fafc'},stroke:${dark ? '#64748b' : '#94a3b8'},color:${labelColor},stroke-width:1px;`
-		);
 
 		const entityNodeId = new Map<string, string>();
 		topo.entities.forEach((entity, index) => {
 			const id = `e${index}`;
-			const className = compartmentClass.get(entity.compartment);
 			entityNodeId.set(entity.id, id);
 			nodeKeyById.set(id, `e:${entity.id}`);
-			lines.push(`  ${id}["${entityLabel(entity)}"]${className ? `:::${className}` : ''}`);
+			lines.push(`  ${id}["${entityLabel(entity)}"]`);
 		});
 
 		const reactionNodeId = new Map<string, string>();
@@ -269,7 +264,7 @@
 			const id = `r${index}`;
 			reactionNodeId.set(reaction.id, id);
 			nodeKeyById.set(id, `r:${reaction.id}`);
-			lines.push(`  ${id}(["${reactionLabel(reaction)}"]):::reactionNode`);
+			lines.push(`  ${id}(["${reactionLabel(reaction)}"])`);
 		});
 
 		const seen = new Set<string>();
@@ -298,6 +293,277 @@
 		return { source: lines.join('\n'), nodeKeyById };
 	}
 
+	/**
+	 * Apply the palette after mermaid has drawn. Doing it here rather than in
+	 * `classDef` means the fill, the outline and the label colour are decided
+	 * together, and a label never ends up inheriting the theme's text colour
+	 * over a fill that came from somewhere else.
+	 */
+	function paintDiagram(svg: SVGSVGElement, themeDark: boolean) {
+		const edgeColor = themeDark ? '#64748b' : '#94a3b8';
+		for (const node of svg.querySelectorAll<SVGGElement>('g.node')) {
+			const key = node.dataset.pwKey;
+			if (!key) continue;
+			const entity = key.startsWith('e:') ? entityById.get(key.slice(2)) : null;
+			const paint = entity
+				? compartmentPaint(compartmentIndex.get(entity.compartment) ?? 0, themeDark)
+				: reactionPaint(themeDark);
+			for (const shape of node.querySelectorAll<SVGElement>('rect, path, polygon, circle, ellipse')) {
+				shape.style.fill = paint.fill;
+				shape.style.stroke = paint.stroke;
+				shape.style.strokeWidth = '1.25px';
+			}
+			for (const label of node.querySelectorAll<SVGElement>('.nodeLabel, .label, text')) {
+				label.style.fill = paint.text;
+				label.style.color = paint.text;
+			}
+		}
+		for (const path of svg.querySelectorAll<SVGElement>('.edgePath path, .flowchart-link')) {
+			path.style.stroke = edgeColor;
+		}
+		for (const marker of svg.querySelectorAll<SVGElement>('marker path')) {
+			marker.style.fill = edgeColor;
+		}
+	}
+
+	// ---- viewport ------------------------------------------------------------
+	let contentBox = { x: 0, y: 0, width: 0, height: 0 };
+	let nodeBoxes: { x: number; y: number; w: number; h: number; color: string }[] = [];
+	let mini = { scale: 1, ox: 0, oy: 0 };
+	let suppressClick = false;
+	let dragFrom: { x: number; y: number; left: number; top: number; moved: boolean } | null = null;
+
+	/** Screen pixels per SVG user unit at the current zoom. */
+	function unitScale(): number {
+		if (!svgEl || !contentBox.width) return 1;
+		return svgEl.getBoundingClientRect().width / contentBox.width;
+	}
+
+	function visibleBox() {
+		const scale = unitScale();
+		return {
+			x: contentBox.x + (scroller?.scrollLeft ?? 0) / scale,
+			y: contentBox.y + (scroller?.scrollTop ?? 0) / scale,
+			w: (scroller?.clientWidth ?? 0) / scale,
+			h: (scroller?.clientHeight ?? 0) / scale
+		};
+	}
+
+	function measure() {
+		if (!svgEl || !scroller) return;
+		const viewBox = svgEl.viewBox?.baseVal;
+		const box =
+			viewBox && viewBox.width > 0
+				? { x: viewBox.x, y: viewBox.y, width: viewBox.width, height: viewBox.height }
+				: (() => {
+						const b = svgEl.getBBox();
+						return { x: b.x, y: b.y, width: b.width, height: b.height };
+					})();
+		contentBox = box;
+		nodeBoxes = [];
+		for (const node of svgEl.querySelectorAll<SVGGElement>('g.node[data-pw-key]')) {
+			const key = node.dataset.pwKey ?? '';
+			const entity = key.startsWith('e:') ? entityById.get(key.slice(2)) : null;
+			const paint = entity
+				? compartmentPaint(compartmentIndex.get(entity.compartment) ?? 0, dark)
+				: reactionPaint(dark);
+			const b = node.getBBox();
+			nodeBoxes.push({ x: b.x, y: b.y, w: b.width, h: b.height, color: paint.stroke });
+		}
+		showMinimap =
+			(svgEl.getBoundingClientRect().height > scroller.clientHeight + 8 ||
+				svgEl.getBoundingClientRect().width > scroller.clientWidth + 8) &&
+			nodeBoxes.length > 0;
+		if (showMinimap) {
+			void tick().then(drawMinimap);
+		}
+	}
+
+	function drawMinimap() {
+		const canvas = minimap;
+		if (!canvas || !contentBox.width || !contentBox.height) return;
+		const width = canvas.clientWidth;
+		const height = canvas.clientHeight;
+		if (!width || !height) return;
+		const dpr = window.devicePixelRatio || 1;
+		canvas.width = Math.round(width * dpr);
+		canvas.height = Math.round(height * dpr);
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return;
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		ctx.clearRect(0, 0, width, height);
+
+		const pad = 4;
+		const scale = Math.min(
+			(width - pad * 2) / contentBox.width,
+			(height - pad * 2) / contentBox.height
+		);
+		const ox = pad + (width - pad * 2 - contentBox.width * scale) / 2;
+		const oy = pad + (height - pad * 2 - contentBox.height * scale) / 2;
+		mini = { scale, ox, oy };
+
+		ctx.fillStyle = dark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(100, 116, 139, 0.08)';
+		ctx.fillRect(0, 0, width, height);
+		for (const box of nodeBoxes) {
+			ctx.fillStyle = box.color;
+			ctx.fillRect(
+				ox + (box.x - contentBox.x) * scale,
+				oy + (box.y - contentBox.y) * scale,
+				Math.max(1, box.w * scale),
+				Math.max(1, box.h * scale)
+			);
+		}
+		const view = visibleBox();
+		ctx.strokeStyle = dark ? 'rgba(226, 232, 240, 0.85)' : 'rgba(15, 23, 42, 0.7)';
+		ctx.lineWidth = 1;
+		ctx.strokeRect(
+			ox + (view.x - contentBox.x) * scale,
+			oy + (view.y - contentBox.y) * scale,
+			view.w * scale,
+			view.h * scale
+		);
+	}
+
+	function jumpTo(event: PointerEvent) {
+		const canvas = minimap;
+		if (!canvas || !scroller) return;
+		const rect = canvas.getBoundingClientRect();
+		const x = (event.clientX - rect.left - mini.ox) / mini.scale + contentBox.x;
+		const y = (event.clientY - rect.top - mini.oy) / mini.scale + contentBox.y;
+		const scale = unitScale();
+		scroller.scrollLeft = (x - contentBox.x) * scale - scroller.clientWidth / 2;
+		scroller.scrollTop = (y - contentBox.y) * scale - scroller.clientHeight / 2;
+		drawMinimap();
+	}
+
+	function zoomAt(factor: number, clientX?: number, clientY?: number) {
+		const next = Math.min(5, Math.max(0.25, Number((zoom * factor).toFixed(2))));
+		if (next === zoom) return;
+		const box = scroller;
+		if (!box) {
+			zoom = next;
+			return;
+		}
+		const rect = box.getBoundingClientRect();
+		const anchorX = clientX ?? rect.left + box.clientWidth / 2;
+		const anchorY = clientY ?? rect.top + box.clientHeight / 2;
+		const fx = (box.scrollLeft + (anchorX - rect.left)) / Math.max(1, box.scrollWidth);
+		const fy = (box.scrollTop + (anchorY - rect.top)) / Math.max(1, box.scrollHeight);
+		zoom = next;
+		void tick().then(() => {
+			box.scrollLeft = fx * box.scrollWidth - (anchorX - rect.left);
+			box.scrollTop = fy * box.scrollHeight - (anchorY - rect.top);
+			void tick().then(() => {
+				measure();
+			});
+		});
+	}
+
+	function resetZoom() {
+		zoom = 1;
+		void tick().then(() => measure());
+	}
+
+	// Native listeners: the wheel handler has to preventDefault, which a
+	// passive listener cannot do.
+	$effect(() => {
+		const box = scroller;
+		if (!box) return;
+		const onWheel = (event: WheelEvent) => {
+			if (!(event.ctrlKey || event.metaKey)) return;
+			event.preventDefault();
+			zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, event.clientX, event.clientY);
+		};
+		const onScroll = () => {
+			if (showMinimap) drawMinimap();
+		};
+		box.addEventListener('wheel', onWheel, { passive: false });
+		box.addEventListener('scroll', onScroll, { passive: true });
+		const onResize = () => measure();
+		window.addEventListener('resize', onResize);
+		return () => {
+			box.removeEventListener('wheel', onWheel);
+			box.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onResize);
+		};
+	});
+
+	// ---- export -------------------------------------------------------------
+	const stem = $derived(fileStem(topology.name, topology.stableId));
+
+	function standaloneSvg(): string {
+		if (!svgEl || !contentBox.width) throw new Error('the diagram is not rendered yet');
+		const pad = 24;
+		const clone = svgEl.cloneNode(true) as SVGSVGElement;
+		clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+		clone.setAttribute(
+			'viewBox',
+			`${contentBox.x - pad} ${contentBox.y - pad} ${contentBox.width + pad * 2} ${contentBox.height + pad * 2}`
+		);
+		clone.setAttribute('width', String(Math.ceil(contentBox.width + pad * 2)));
+		clone.setAttribute('height', String(Math.ceil(contentBox.height + pad * 2)));
+		clone.removeAttribute('style');
+		const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+		const fontFamily = getComputedStyle(document.body).fontFamily;
+		style.textContent = `text { font-family: ${fontFamily}; }`;
+		clone.insertBefore(style, clone.firstChild);
+		return new XMLSerializer().serializeToString(clone);
+	}
+
+	function exportBackground(): string {
+		const body = getComputedStyle(document.body).backgroundColor;
+		if (body && body !== 'rgba(0, 0, 0, 0)' && body !== 'transparent') return body;
+		return dark ? '#0b1120' : '#ffffff';
+	}
+
+	async function pngBlob(): Promise<Blob> {
+		if (!svgEl || !contentBox.width) throw new Error('the diagram is not rendered yet');
+		const pad = 24;
+		const width = contentBox.width + pad * 2;
+		const height = contentBox.height + pad * 2;
+		// Canvas size is bounded by the browser (around 16k a side), so a large
+		// pathway is exported at the largest scale that still fits.
+		const scale = Math.min(2, 8000 / Math.max(width, height));
+		const source = new Blob([standaloneSvg()], { type: 'image/svg+xml;charset=utf-8' });
+		const url = URL.createObjectURL(source);
+		try {
+			const image = new Image();
+			image.decoding = 'async';
+			await new Promise<void>((resolve, reject) => {
+				image.onload = () => resolve();
+				image.onerror = () => reject(new Error('the diagram could not be rasterised'));
+				image.src = url;
+			});
+			const canvas = document.createElement('canvas');
+			canvas.width = Math.ceil(width * scale);
+			canvas.height = Math.ceil(height * scale);
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('canvas is unavailable');
+			ctx.fillStyle = exportBackground();
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+			return await new Promise<Blob>((resolve, reject) => {
+				canvas.toBlob(
+					(blob) => (blob ? resolve(blob) : reject(new Error('PNG encoding failed'))),
+					'image/png'
+				);
+			});
+		} finally {
+			URL.revokeObjectURL(url);
+		}
+	}
+
+	const diagramFormats = $derived<ExportFormat[]>([
+		{
+			key: 'svg',
+			label: 'SVG',
+			filename: `${stem}.svg`,
+			mime: 'image/svg+xml',
+			build: () => standaloneSvg()
+		},
+		{ key: 'png', label: 'PNG', filename: `${stem}.png`, blob: () => pngBlob() }
+	]);
+
 	// ---- interaction --------------------------------------------------------
 	function select(key: string) {
 		selected = selected === key ? null : key;
@@ -313,8 +579,43 @@
 		}
 	}
 
-	function zoomBy(factor: number) {
-		zoom = Math.min(6, Math.max(0.4, Number((zoom * factor).toFixed(2))));
+	function startPan(event: PointerEvent) {
+		if (event.button !== 0 || !scroller) return;
+		dragFrom = {
+			x: event.clientX,
+			y: event.clientY,
+			left: scroller.scrollLeft,
+			top: scroller.scrollTop,
+			moved: false
+		};
+		suppressClick = false;
+		panning = true;
+	}
+
+	function movePan(event: PointerEvent) {
+		if (!dragFrom || !scroller) return;
+		const dx = event.clientX - dragFrom.x;
+		const dy = event.clientY - dragFrom.y;
+		if (!dragFrom.moved && Math.abs(dx) + Math.abs(dy) > 4) {
+			dragFrom.moved = true;
+			// Capture only once this is a drag: capturing on pointerdown would
+			// route the click to the scroller and break node selection.
+			scroller.setPointerCapture(event.pointerId);
+		}
+		if (!dragFrom.moved) return;
+		event.preventDefault();
+		scroller.scrollLeft = dragFrom.left - dx;
+		scroller.scrollTop = dragFrom.top - dy;
+	}
+
+	function endPan(event: PointerEvent) {
+		if (!dragFrom) return;
+		suppressClick = dragFrom.moved;
+		dragFrom = null;
+		panning = false;
+		if (scroller?.hasPointerCapture(event.pointerId)) {
+			scroller.releasePointerCapture(event.pointerId);
+		}
 	}
 </script>
 
@@ -322,15 +623,14 @@
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<InfoTip text={tr('pathway_diagram_hint')} label={tr('common_more_info')} />
 		<div class="flex items-center gap-1">
-			<Button size="xs" variant="outline" onclick={() => zoomBy(1.25)}
-				>{tr('pathway_diagram_zoom_in')}</Button
-			>
-			<Button size="xs" variant="outline" onclick={() => zoomBy(0.8)}
+			<Button size="xs" variant="outline" onclick={() => zoomAt(1 / 1.25)}
 				>{tr('pathway_diagram_zoom_out')}</Button
 			>
-			<Button size="xs" variant="ghost" onclick={() => (zoom = 1)}
-				>{tr('pathway_diagram_fit')}</Button
+			<Button size="xs" variant="ghost" onclick={resetZoom}>{zoomPercent}%</Button>
+			<Button size="xs" variant="outline" onclick={() => zoomAt(1.25)}
+				>{tr('pathway_diagram_zoom_in')}</Button
 			>
+			<ExportMenu formats={diagramFormats} />
 		</div>
 	</div>
 
@@ -340,8 +640,35 @@
 		</div>
 	{/if}
 
-	<div class="pathway-mermaid max-h-[72vh] overflow-auto border bg-muted/20">
-		<div bind:this={host} style={`width:${zoom * 100}%`}></div>
+	<div class="relative">
+		<div
+			bind:this={scroller}
+			class="pathway-mermaid max-h-[72vh] overflow-auto border bg-muted/20"
+			role="region"
+			aria-label={topology.name}
+			class:cursor-grabbing={panning}
+			class:cursor-grab={!panning}
+			onpointerdown={startPan}
+			onpointermove={movePan}
+			onpointerup={endPan}
+			onpointercancel={endPan}
+		>
+			<div bind:this={host} style={`width:${zoom * 100}%`}></div>
+		</div>
+		{#if showMinimap}
+			<canvas
+				bind:this={minimap}
+				class="absolute right-2 bottom-2 h-[104px] w-[148px] cursor-pointer border bg-background/90 shadow-sm"
+				aria-label={tr('pathway_diagram_minimap')}
+				onpointerdown={(event) => {
+					(event.currentTarget as HTMLCanvasElement).setPointerCapture(event.pointerId);
+					jumpTo(event);
+				}}
+				onpointermove={(event) => {
+					if (event.buttons === 1) jumpTo(event);
+				}}
+			></canvas>
+		{/if}
 	</div>
 
 	{#if usedCompartments.length}
@@ -350,8 +677,8 @@
 			{#each usedCompartments as compartment (compartment.id)}
 				<span class="inline-flex items-center gap-1.5">
 					<span
-						class="inline-block size-2.5"
-						style={`background:${colorByCompartment.get(compartment.id)}`}
+						class="inline-block size-2.5 border"
+						style={`background:${compartmentSwatch(compartmentIndex.get(compartment.id) ?? 0, dark)}`}
 					></span>
 					{compartment.name || compartment.id}
 				</span>
@@ -435,7 +762,6 @@
 
 <style>
 	.pathway-mermaid :global(g.node) {
-		cursor: pointer;
 		transition: opacity 0.15s ease;
 	}
 	.pathway-mermaid :global(g.node.pw-selected) {

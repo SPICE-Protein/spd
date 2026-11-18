@@ -490,7 +490,7 @@
   "pathway_step_note": "note (optional)",
   "pathway_steps": "Reaction steps",
   "pathway_tab_diagram": "Diagram",
-  "pathway_diagram_hint": "Auto-laid out; zoom in to read, click a node for entity or reaction details.",
+  "pathway_diagram_hint": "Drag to pan, ⌘/Ctrl + wheel to zoom, click a node for entity or reaction details.",
   "pathway_steps_from_topology": "Topology steps come from the import. To add or change one, register a reaction step above.",
   "pathway_diagram_empty": "This pathway has no topology diagram yet. Import a Reactome pathway or submit your own topology and it will appear here.",
   "pathway_diagram_zoom_in": "Zoom in",
@@ -3154,5 +3154,6 @@
   "search_match_id": "matched ID",
   "search_match_name": "matched name",
   "search_match_body": "matched body",
-  "ext_source_igem": "iGEM Registry"
+  "ext_source_igem": "iGEM Registry",
+  "pathway_diagram_minimap": "Diagram minimap"
 }

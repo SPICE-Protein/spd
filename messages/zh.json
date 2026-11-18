@@ -490,7 +490,7 @@
   "pathway_step_note": "备注（可选）",
   "pathway_steps": "反应步骤",
   "pathway_tab_diagram": "通路图",
-  "pathway_diagram_hint": "自动布局；放大查看，点击节点查看实体或反应详情。",
+  "pathway_diagram_hint": "拖动平移，⌘/Ctrl + 滚轮缩放，点击节点查看实体或反应详情。",
   "pathway_steps_from_topology": "拓扑步骤来自导入。要新增或修改，请在上方登记反应步骤。",
   "pathway_diagram_empty": "这条通路还没有拓扑图。导入 Reactome 通路，或提交自己的拓扑，就会显示在这里。",
   "pathway_diagram_zoom_in": "放大",
@@ -3154,5 +3154,6 @@
   "search_match_id": "匹配 ID",
   "search_match_name": "匹配名称",
   "search_match_body": "匹配正文",
-  "ext_source_igem": "iGEM Registry"
+  "ext_source_igem": "iGEM Registry",
+  "pathway_diagram_minimap": "通路图小地图"
 }
