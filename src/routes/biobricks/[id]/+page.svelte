@@ -120,6 +120,12 @@
 			.trim()
 	);
 
+	// The registry's own publication and update stamps belong together; the
+	// row's creation time is when SPD imported the part, a different clock.
+	const createdAt = $derived(
+		registry?.createdAt != null ? Number(registry.createdAt) : row?.createdAt != null ? Number(row.createdAt) : null
+	);
+
 	const comp = $derived.by(() => {
 		const c = { A: 0, T: 0, G: 0, C: 0 };
 		for (const ch of seq) if (ch in c) c[ch as 'A' | 'T' | 'G' | 'C']++;
@@ -359,8 +365,10 @@
 							<dt class="text-muted-foreground">{tr('f_license')}</dt>
 							<dd>{String(reg.license).toUpperCase()}</dd>
 						{/if}
-						<dt class="text-muted-foreground">{tr('f_createdAt')}</dt>
-						<dd>{row.createdAt != null ? fmtTime(Number(row.createdAt)) : '—'}</dd>
+						{#if createdAt != null}
+							<dt class="text-muted-foreground">{tr('f_createdAt')}</dt>
+							<dd>{fmtTime(createdAt)}</dd>
+						{/if}
 						{#if reg.updatedAt}
 							<dt class="text-muted-foreground">{tr('f_updatedAt')}</dt>
 							<dd>{fmtTime(Number(reg.updatedAt))}</dd>
@@ -395,10 +403,11 @@
 					{/if}
 				</Section>
 				<div class="space-y-4">
-					<Section title={tr('biobrick_functional_desc')}>
-						{#if description}<p class="text-sm leading-6">{description}</p>
-						{:else}<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>{/if}
-					</Section>
+					{#if description}
+						<Section title={tr('biobrick_functional_desc')}>
+							<p class="text-sm leading-6">{description}</p>
+						</Section>
+					{/if}
 					{#if categories.length}
 						<Section title={tr('f_categories')}>
 							<span class="break-words text-sm">{categories.join(' · ')}</span>
