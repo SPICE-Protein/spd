@@ -43,6 +43,8 @@
 	let { config }: { config: CatalogPageConfig } = $props();
 
 	let rows = $state<Record<string, unknown>[]>([]);
+	/** Catalog size when the source reports one; a capped list says so. */
+	let total = $state<number | null>(null);
 	let loading = $state(true);
 	let error = $state('');
 	const selected = new SvelteSet<string>();
@@ -53,6 +55,8 @@
 		try {
 			const data = await config.list();
 			rows = firstArray<Record<string, unknown>>(data, 'items');
+			const meta = (data as { meta?: { total?: unknown } } | null)?.meta;
+			total = typeof meta?.total === 'number' ? meta.total : null;
 			selected.clear();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
@@ -334,6 +338,11 @@
 			onToggle={toggleRow}
 			onToggleAll={toggleAll}
 		/>
+		{#if total !== null && total > rows.length}
+			<p class="mt-1 text-xs text-muted-foreground">
+				{tr('catalog_partial', { total, shown: rows.length })}
+			</p>
+		{/if}
 		{#if rows.length === 0 && config.emptyHint}
 			<div class="border border-foreground/10 bg-muted/30 px-3 py-4 text-sm">
 				<p class="text-muted-foreground">{config.emptyHint.text}</p>

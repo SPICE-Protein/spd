@@ -1747,6 +1747,7 @@
   "catalog_export_all": "导出全部",
   "catalog_add_market": "加入菜篮子",
   "catalog_clear_selection": "清除选择",
+  "catalog_partial": "共 {total} 个，此处列出前 {shown} 个；用搜索缩小范围。",
   "catalog_no_selection": "先选择一些行",
   "my_drafts": "我的草稿",
   "my_market": "我的菜篮子",

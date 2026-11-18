@@ -1747,6 +1747,7 @@
   "catalog_export_all": "Export all",
   "catalog_add_market": "Add to market",
   "catalog_clear_selection": "Clear selection",
+  "catalog_partial": "{total} records; the first {shown} are listed. Use search to narrow.",
   "catalog_no_selection": "Select some rows first",
   "my_drafts": "My drafts",
   "my_market": "My market",
