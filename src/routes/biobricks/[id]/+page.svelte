@@ -146,7 +146,6 @@
 		role: registry?.role ?? (metadata.registryRole as string | null | undefined) ?? null,
 		topology: registry?.topology ?? null,
 		license: registry?.license ?? (metadata.registryLicense as string | null | undefined) ?? null,
-		source: registry?.source ?? (metadata.source as string | null | undefined) ?? null,
 		usage: Number(registry?.usageCount ?? metadata.usageCount ?? 0),
 		updatedAt: registry?.updatedAt ?? null
 	});
@@ -359,10 +358,6 @@
 						{#if reg.license}
 							<dt class="text-muted-foreground">{tr('f_license')}</dt>
 							<dd>{String(reg.license).toUpperCase()}</dd>
-						{/if}
-						{#if reg.source}
-							<dt class="text-muted-foreground">{tr('f_source')}</dt>
-							<dd>{String(reg.source)}</dd>
 						{/if}
 						<dt class="text-muted-foreground">{tr('f_createdAt')}</dt>
 						<dd>{row.createdAt != null ? fmtTime(Number(row.createdAt)) : '—'}</dd>
