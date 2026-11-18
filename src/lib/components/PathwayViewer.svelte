@@ -5,7 +5,7 @@
 		PathwayTopologyReaction
 	} from '$lib/api/types';
 	import { tr } from '$lib/i18n';
-	import { mode } from 'mode-watcher';
+	import { theme } from '$lib/state/theme.svelte';
 	import { tick } from 'svelte';
 	import Button from './Button.svelte';
 	import ExportMenu from './ExportMenu.svelte';
@@ -78,10 +78,11 @@
 	let svgEl: SVGSVGElement | null = null;
 	let renderError = $state('');
 	let zoom = $state(1);
+	let contentBox = $state({ x: 0, y: 0, width: 0, height: 0 });
 	let showMinimap = $state(false);
 	let panning = $state(false);
 
-	const dark = $derived(mode.current === 'dark');
+	const dark = $derived(theme.effective === 'dark');
 	const zoomPercent = $derived(Math.round(zoom * 100));
 
 	const usedCompartments = $derived(
@@ -175,10 +176,10 @@
 				// 160 reactions, 567 links), so the ceiling is raised; it stays a
 				// guard against a pathological import, not a readability setting.
 				maxEdges: 5000,
+				// SVG text rather than foreignObject: an exported image has to be
+				// self-contained, and HTML labels do not rasterise into a PNG.
+				htmlLabels: false,
 				flowchart: {
-					// SVG text rather than foreignObject: the exported image has to
-					// be self-contained, and HTML labels do not rasterise into a PNG.
-					htmlLabels: false,
 					curve: 'basis',
 					nodeSpacing: 30,
 					rankSpacing: 48,
@@ -214,8 +215,10 @@
 			svgEl = element;
 
 			for (const node of element.querySelectorAll<SVGGElement>('g.node')) {
-				const nodeId =
-					node.getAttribute('data-id') ?? node.id.replace(/^flowchart-/, '').replace(/-\d+$/, '');
+				// Mermaid's element id is `<render id>-flowchart-<node id>-<n>`.
+				const raw =
+					node.getAttribute('data-id') ?? node.id.split('flowchart-').pop() ?? node.id;
+				const nodeId = raw.replace(/-\d+$/, '');
 				const key = nodeKeyById.get(nodeId);
 				if (!key) continue;
 				node.dataset.pwKey = key;
@@ -327,7 +330,6 @@
 	}
 
 	// ---- viewport ------------------------------------------------------------
-	let contentBox = { x: 0, y: 0, width: 0, height: 0 };
 	let nodeBoxes: { x: number; y: number; w: number; h: number; color: string }[] = [];
 	let mini = { scale: 1, ox: 0, oy: 0 };
 	let suppressClick = false;
@@ -360,6 +362,7 @@
 						return { x: b.x, y: b.y, width: b.width, height: b.height };
 					})();
 		contentBox = box;
+		const onset = { width: box.width * zoom, height: box.height * zoom };
 		nodeBoxes = [];
 		for (const node of svgEl.querySelectorAll<SVGGElement>('g.node[data-pw-key]')) {
 			const key = node.dataset.pwKey ?? '';
@@ -371,8 +374,7 @@
 			nodeBoxes.push({ x: b.x, y: b.y, w: b.width, h: b.height, color: paint.stroke });
 		}
 		showMinimap =
-			(svgEl.getBoundingClientRect().height > scroller.clientHeight + 8 ||
-				svgEl.getBoundingClientRect().width > scroller.clientWidth + 8) &&
+			(onset.width > scroller.clientWidth + 8 || onset.height > scroller.clientHeight + 8) &&
 			nodeBoxes.length > 0;
 		if (showMinimap) {
 			void tick().then(drawMinimap);
@@ -437,7 +439,7 @@
 	}
 
 	function zoomAt(factor: number, clientX?: number, clientY?: number) {
-		const next = Math.min(5, Math.max(0.25, Number((zoom * factor).toFixed(2))));
+		const next = Math.min(5, Math.max(0.02, Number((zoom * factor).toFixed(3))));
 		if (next === zoom) return;
 		const box = scroller;
 		if (!box) {
@@ -462,6 +464,24 @@
 	function resetZoom() {
 		zoom = 1;
 		void tick().then(() => measure());
+	}
+
+	/** Shrink until the whole diagram is on screen; never enlarge past 1:1. */
+	function fitToView() {
+		const box = scroller;
+		if (!box || !contentBox.width) return;
+		const pad = 16;
+		const next = Math.min(
+			(box.clientWidth - pad) / contentBox.width,
+			(box.clientHeight - pad) / contentBox.height,
+			1
+		);
+		zoom = Math.max(0.02, Number(next.toFixed(3)));
+		void tick().then(() => {
+			box.scrollLeft = 0;
+			box.scrollTop = 0;
+			measure();
+		});
 	}
 
 	// Native listeners: the wheel handler has to preventDefault, which a
@@ -521,9 +541,9 @@
 		const pad = 24;
 		const width = contentBox.width + pad * 2;
 		const height = contentBox.height + pad * 2;
-		// Canvas size is bounded by the browser (around 16k a side), so a large
-		// pathway is exported at the largest scale that still fits.
-		const scale = Math.min(2, 8000 / Math.max(width, height));
+		// Canvas size is bounded by the browser, so a large pathway is exported at
+		// the largest scale that stays inside a safe canvas.
+		const scale = Math.min(2, 4096 / Math.max(width, height));
 		const source = new Blob([standaloneSvg()], { type: 'image/svg+xml;charset=utf-8' });
 		const url = URL.createObjectURL(source);
 		try {
@@ -627,6 +647,7 @@
 				>{tr('pathway_diagram_zoom_out')}</Button
 			>
 			<Button size="xs" variant="ghost" onclick={resetZoom}>{zoomPercent}%</Button>
+			<Button size="xs" variant="outline" onclick={fitToView}>{tr('pathway_diagram_fit')}</Button>
 			<Button size="xs" variant="outline" onclick={() => zoomAt(1.25)}
 				>{tr('pathway_diagram_zoom_in')}</Button
 			>
@@ -653,7 +674,7 @@
 			onpointerup={endPan}
 			onpointercancel={endPan}
 		>
-			<div bind:this={host} style={`width:${zoom * 100}%`}></div>
+			<div bind:this={host} style={`width:${contentBox.width * zoom}px`}></div>
 		</div>
 		{#if showMinimap}
 			<canvas
