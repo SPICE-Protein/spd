@@ -172,6 +172,11 @@
 				securityLevel: 'strict',
 				theme: 'base',
 				fontFamily,
+				// Mermaid stops at 500 edges by default. A Reactome pathway with
+				// its entities and reactions draws more than that (HIV Infection:
+				// 160 reactions, 567 links), so the ceiling is raised; it stays a
+				// guard against a pathological import, not a readability setting.
+				maxEdges: 5000,
 				flowchart: {
 					htmlLabels: true,
 					curve: 'basis',
