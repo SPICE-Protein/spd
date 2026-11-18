@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import type { BiobrickRegistry } from '$lib/api/types';
-	import { biobricks } from '$lib/api/client';
+	import { biobricks, external } from '$lib/api/client';
 	import { tr, enumLabel } from '$lib/i18n';
 	import { session } from '$lib/state/session.svelte';
 	import { fmtTime } from '$lib/format';
@@ -95,8 +95,10 @@
 		importing = true;
 		importError = '';
 		try {
-			const part = await biobricks.resolve(id.trim());
-			await goto(`/biobricks/${part.id}`, { invalidateAll: true });
+			// The federation's import door, not a biobrick-specific one: a
+			// part arrives the same way a protein or a reaction does.
+			const part = await external.import('igem', id.trim());
+			await goto(part.route, { invalidateAll: true });
 		} catch (e) {
 			importError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -340,6 +342,17 @@
 					<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
 						<dt class="text-muted-foreground">{tr('f_name')}</dt>
 						<dd>{String(row.name ?? '')}</dd>
+						{#if registry?.name}
+							<dt class="text-muted-foreground">{tr('biobrick_registry_part')}</dt>
+							<dd>
+								<a
+									class="font-mono hover:underline"
+									href="https://registry.igem.org/Part:{registry.name}"
+									target="_blank"
+									rel="noreferrer">{registry.name} ↗</a
+								>
+							</dd>
+						{/if}
 						<dt class="text-muted-foreground">{tr('f_partType')}</dt>
 						<dd>{enumLabel('part', String(row.partType ?? ''))}</dd>
 						{#if reg.role}

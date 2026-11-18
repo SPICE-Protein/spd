@@ -1845,7 +1845,6 @@
   "biobrick_registry_usage_hint": "Usage count comes from the source registry.",
   "biobrick_seq_none": "This part carries no sequence.",
   "biobrick_not_held": "SPD does not hold this part yet.",
-  "biobrick_registry_lookup": "Search the iGEM Registry:",
   "biobrick_import_registry": "Import from the iGEM Registry",
   "biobrick_import_note": "Import note",
   "part_promoter": "Promoter",
@@ -3157,10 +3156,6 @@
   "search_match_id": "matched ID",
   "search_match_name": "matched name",
   "search_match_body": "matched body",
-  "biobrick_registry_placeholder": "Part name, e.g. PETase, terminator, sfGFP",
-  "biobrick_registry_hits": "hits",
-  "biobrick_registry_none": "No hits. Try another word.",
-  "biobrick_registry_used": "used",
-  "biobrick_registry_open_source": "Open on registry",
-  "common_open": "Open"
+  "ext_source_igem": "iGEM Registry",
+  "biobrick_registry_part": "iGEM part number"
 }

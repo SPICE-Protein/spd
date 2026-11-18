@@ -890,21 +890,6 @@ export const restrictionEnzymes = {
 	})
 };
 
-/** One iGEM Registry hit: what the part is called, and whether SPD has it. */
-export interface RegistryCandidate {
-	name: string;
-	title: string | null;
-	description: string | null;
-	partType: string;
-	registryRole: string | null;
-	length: number | null;
-	status: string | null;
-	usageCount: number | null;
-	url: string;
-	inSpd: boolean;
-	spdId: string | null;
-}
-
 export const biobricks = {
 	list: (partType?: string) => get<unknown>('/biobricks', { part_type: partType }),
 	get: (id: string) =>
@@ -922,28 +907,6 @@ export const biobricks = {
 		registry?: BiobrickRegistry;
 		origin?: 'submission' | 'batch-import';
 	}) => post<Record<string, unknown>>('/biobricks', body),
-	/**
-	 * Title search over the registry catalogue — "PETase", "terminator",
-	 * "sfGFP". Each hit says whether SPD already holds it.
-	 */
-	registrySearch: (q: string, limit = 10) =>
-		get<{ query: string; total: number; items: RegistryCandidate[] }>(
-			'/biobricks/registry-search',
-			{ q, limit }
-		),
-	/**
-	 * Import one registry part on first sight. A part SPD already holds is
-	 * answered from D1 with `created: false` and costs nothing upstream.
-	 */
-	resolve: (name: string) =>
-		post<{
-			id: string;
-			name: string;
-			partType: string;
-			length: number;
-			sha256: string;
-			created: boolean;
-		}>('/biobricks/resolve', { name }),
 	linkVector: (id: string, body: { vectorTemplateId: string; role?: string }) =>
 		post<Record<string, unknown>>(`/biobricks/${id}/vectors`, body),
 	unlinkVector: (id: string, vid: string) => del(`/biobricks/${id}/vectors/${vid}`)

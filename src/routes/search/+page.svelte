@@ -127,7 +127,8 @@
 		'pubchem',
 		'rhea',
 		'reactome',
-		'brenda'
+		'brenda',
+		'igem'
 	];
 
 	function normalizeType(type: string): string {
@@ -147,6 +148,7 @@
 		if (t === 'reaction') return ['rhea'];
 		if (t === 'pathway') return ['reactome'];
 		if (t === 'enzyme') return ['brenda'];
+	if (t === 'biobrick') return ['igem'];
 		return [];
 	}
 
@@ -202,7 +204,8 @@
 		pubchem: 'info',
 		rhea: 'ok',
 		reactome: 'info',
-		brenda: 'warn'
+		brenda: 'warn',
+		igem: 'ok'
 	};
 
 	async function runExternals(q: string) {

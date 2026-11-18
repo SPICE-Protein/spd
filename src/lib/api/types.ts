@@ -343,6 +343,8 @@ export interface BiobrickRow {
 
 /** The registry's own identity for a part — provenance, never editable. */
 export interface BiobrickRegistry {
+	/** The registry's own address for the part (`BBa_B0015`), not its name. */
+	name?: string | null;
 	title?: string | null;
 	uuid?: string | null;
 	slug?: string | null;
@@ -1256,9 +1258,17 @@ export interface SearchBody {
 /** The catalogs SPD can federate with. Each narrows one SPD entity kind:
  * UniProt → protein, PDB → pdb-entry, NCBI Gene → gene,
  * Cellosaurus → cell-line, PubChem → reagent, Rhea → reaction,
- * Reactome → pathway, BRENDA → enzyme. */
+ * Reactome → pathway, BRENDA → enzyme, iGEM Registry → biobrick. */
 export type ExternalSource =
-	'uniprot' | 'pdb' | 'ncbi' | 'cellosaurus' | 'pubchem' | 'rhea' | 'reactome' | 'brenda';
+	| 'uniprot'
+	| 'pdb'
+	| 'ncbi'
+	| 'cellosaurus'
+	| 'pubchem'
+	| 'rhea'
+	| 'reactome'
+	| 'brenda'
+	| 'igem';
 export interface ExternalHit {
 	source: ExternalSource;
 	externalId: string;
