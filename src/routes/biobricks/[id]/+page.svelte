@@ -157,9 +157,6 @@
 				: null)
 	);
 	const categories = $derived(Array.isArray(row?.categories) ? (row.categories as string[]) : []);
-	const crossRefs = $derived(
-		Array.isArray(row?.crossReferences) ? (row.crossReferences as Record<string, unknown>[]) : []
-	);
 	const parameters = $derived(
 		row?.parameters && typeof row.parameters === 'object' && !Array.isArray(row.parameters)
 			? (row.parameters as Record<string, unknown>)
@@ -202,10 +199,6 @@
 			label: tr('f_linkedAt'),
 			format: (v) => (v.linkedAt != null ? fmtTime(v.linkedAt) : '—')
 		}
-	];
-	const xrefColumns: Column<Record<string, unknown>>[] = [
-		{ key: 'source', label: tr('f_source') },
-		{ key: 'url', label: 'URL', format: (x) => String(x.url ?? '—') }
 	];
 	const paramColumns: Column<[string, unknown]>[] = [
 		{ key: 'key', label: tr('f_parameters'), format: ([k]) => k },
@@ -252,6 +245,20 @@
 				<p class="mt-1 text-xs text-muted-foreground">
 					<code class="font-mono break-all">{String(row.id)}</code>
 				</p>
+				<!-- The one place that says where this record came from. -->
+				{#if registry?.name}
+					<p class="mt-1 text-xs text-muted-foreground">
+						{tr('f_source')}:
+						<a
+							class="underline underline-offset-2"
+							href={`https://registry.igem.org/Part:${registry.name}`}
+							target="_blank"
+							rel="noreferrer"
+							title={metadata.importNote ? String(metadata.importNote) : undefined}
+							>{tr('ext_source_igem')} ↗</a
+						>
+					</p>
+				{/if}
 			</div>
 			<PageTools />
 			<IssuePanel
@@ -266,17 +273,6 @@
 				href={`/biobricks/${row.id}`}
 				record={row}
 			/>
-			{#if crossRefs.length}
-				<div class="flex flex-wrap gap-2">
-					{#each crossRefs as x, i (i)}
-						{#if x.url}
-							<a class="underline text-xs" href={String(x.url)} target="_blank" rel="noopener"
-								>{String(x.source ?? 'link')} ↗</a
-							>
-						{/if}
-					{/each}
-				</div>
-			{/if}
 		</div>
 
 		<!-- at-a-glance tiles mirror the iGEM fact grid -->
@@ -342,23 +338,8 @@
 					<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
 						<dt class="text-muted-foreground">{tr('f_name')}</dt>
 						<dd>{String(row.name ?? '')}</dd>
-						{#if registry?.name}
-							<dt class="text-muted-foreground">{tr('biobrick_registry_part')}</dt>
-							<dd>
-								<a
-									class="font-mono hover:underline"
-									href="https://registry.igem.org/Part:{registry.name}"
-									target="_blank"
-									rel="noreferrer">{registry.name} ↗</a
-								>
-							</dd>
-						{/if}
 						<dt class="text-muted-foreground">{tr('f_partType')}</dt>
 						<dd>{enumLabel('part', String(row.partType ?? ''))}</dd>
-						{#if reg.role}
-							<dt class="text-muted-foreground">{tr('biobrick_registry_role')}</dt>
-							<dd>{String(reg.role)}</dd>
-						{/if}
 						{#if reg.topology}
 							<dt class="text-muted-foreground">{tr('f_topology')}</dt>
 							<dd>
@@ -417,33 +398,19 @@
 							{/if}
 						</div>
 					{/if}
-					{#if metadata.importNote}
-						<p class="mt-3 border-t pt-2 text-xs text-muted-foreground">
-							{tr('biobrick_import_note')}: {String(metadata.importNote)}
-						</p>
-					{/if}
 				</Section>
 				<div class="space-y-4">
 					<Section title={tr('biobrick_functional_desc')}>
 						{#if description}<p class="text-sm leading-6">{description}</p>
 						{:else}<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>{/if}
 					</Section>
-					<Section title={tr('f_categories')}>
-						{#if categories.length}
-							<div class="flex flex-wrap gap-1.5">
-								<span class="break-words">{categories.join(' · ')}</span>
-							</div>
-						{:else}
-							<p class="text-sm text-muted-foreground">{tr('common_empty')}</p>
-						{/if}
-					</Section>
+					{#if categories.length}
+						<Section title={tr('f_categories')}>
+							<span class="break-words text-sm">{categories.join(' · ')}</span>
+						</Section>
+					{/if}
 				</div>
 			</div>
-			{#if crossRefs.length}
-				<Section title={tr('f_crossReferences')}>
-					<DataTable rows={crossRefs} columns={xrefColumns} />
-				</Section>
-			{/if}
 		{:else if tab === 'sequence'}
 			<div class="flex flex-wrap items-center gap-2">
 				<Button size="xs" variant="outline" onclick={copySeq} disabled={!seq}
@@ -540,8 +507,7 @@
 			<Section title={tr('biobrick_tab_used')}>
 				{#if usageCount}
 					<p class="mb-2 text-xs text-muted-foreground">
-						{tr('biobrick_used_in')} <b class="tabular-nums">{usageCount}</b>
-						{tr('browse_biobricks').toLowerCase()} · {tr('biobrick_registry_usage_hint')}
+						{tr('biobrick_used_in', { n: usageCount })}
 					</p>
 				{/if}
 				{#if vectors.length === 0}

@@ -171,7 +171,7 @@ export const CATALOGS: CatalogEntry[] = [
 			route: 'biobricks',
 			group: 'design',
 			list: () => biobricks.list(),
-			columns: [{"key": "id"}, {"key": "name"}, {"key": "registryName"}, {"key": "partType"}, {"key": "length", "label": "length"}, {"key": "description"}],
+			columns: [{"key": "id"}, {"key": "name"}, {"key": "partType"}, {"key": "length", "label": "length"}, {"key": "description"}],
 			create: (b) => biobricks.create(b as never),
 			fields: [ { name: 'name', required: true }, { name: 'partType', kind: 'select', required: true, options: ['promoter','rbs','terminator','cds','protein_tag','regulatory','other'], ns: 'pt' }, { name: 'sequence', kind: 'textarea', required: true, rows: 6, hint: tr('biobrick_hint_seq') }, { name: 'description' }, { name: 'categories', kind: 'list' }, { name: 'metadata', kind: 'json' }, { name: 'parameters', kind: 'json' }, { name: 'crossReferences', kind: 'objectList', itemFields: [{ key: 'source' }, { key: 'url' }] } ]
 	},
