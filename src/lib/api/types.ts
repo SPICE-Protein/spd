@@ -334,6 +334,8 @@ export interface RestrictionEnzymeDetail extends RestrictionEnzymeRow {
 export interface BiobrickRow {
 	id: string;
 	name: string;
+	/** The registry's address for the part (`BBa_B0015`); `name` is its title. */
+	registryName?: string | null;
 	partType: string;
 	length?: number;
 	sequenceLength?: number;

@@ -1826,6 +1826,7 @@
   "f_crossReferences": "Cross references",
   "f_parameters": "Parameters",
   "f_usageCount": "Registry usage",
+  "f_registryName": "iGEM part number",
   "f_source": "Source",
   "f_linkedAt": "Linked",
   "common_copy": "Copy",

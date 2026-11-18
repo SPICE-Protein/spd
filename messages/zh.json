@@ -1826,6 +1826,7 @@
   "f_crossReferences": "外部引用",
   "f_parameters": "参数",
   "f_usageCount": "库内使用次数",
+  "f_registryName": "iGEM 编号",
   "f_source": "来源",
   "f_linkedAt": "关联时间",
   "common_copy": "复制",
