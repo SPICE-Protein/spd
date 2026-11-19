@@ -525,10 +525,10 @@
 							<li class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
 								<div class="min-w-0">
 									<div class="text-xs text-muted-foreground">
-										{enumLabel('reagent_ref_role', ref.role)}
+										{enumLabel('reagent_ref_role', ref.role.replace(/-/g, '_'))}
 									</div>
 									<div class="font-mono text-xs">
-										{enumLabel('reagent_ref_source', ref.source)}{#if ref.externalId} · {ref.externalId}{/if}
+										{enumLabel('reagent_ref_source', ref.source.replace(/-/g, '_'))}{#if ref.externalId} · {ref.externalId}{/if}
 									</div>
 								</div>
 								{#if isImportable(ref)}
