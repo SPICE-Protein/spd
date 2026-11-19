@@ -745,6 +745,7 @@ export interface ReagentRow {
 	experimentalProperties?: Array<{ name?: string; value?: string; unit?: string }>;
 	chemicalClasses?: string[];
 	pubchemSections?: PubchemSection[];
+	externalReferences?: ReagentExternalReference[];
 	upstreamCreated?: string | null;
 	upstreamUpdated?: string | null;
 	[key: string]: unknown;
@@ -752,8 +753,33 @@ export interface ReagentRow {
 export interface PubchemSection {
 	heading: string;
 	description?: string;
-	information?: Array<{ value: string; unit?: string; reference?: string }>;
+	/** The upstream page this heading stands for. */
+	url?: string;
+	information?: PubchemInformation[];
 	sections?: PubchemSection[];
+}
+/** One PubChem `Information` row. `name` labels counts and table cells,
+ *  `url`/`links` are where the value points, and `table` is a collection the
+ *  source renders client-side (pdb, rhea, a pathway list). */
+export interface PubchemInformation {
+	value?: string;
+	name?: string;
+	unit?: string;
+	reference?: string;
+	url?: string;
+	table?: string;
+	dataUrl?: string;
+	links?: Array<{ text: string; url: string }>;
+}
+/** A reference from a PubChem compound to a record in another catalog. When
+ *  `source` is a catalog SPD can import (`pdb`), the page resolves the address
+ *  to an SPD record instead of sending the reader upstream. */
+export interface ReagentExternalReference {
+	source: string;
+	externalId?: string | null;
+	role: string;
+	table?: string;
+	url?: string | null;
 }
 export interface VectorRow {
 	id: string;
@@ -1309,6 +1335,16 @@ export interface ExternalImportResult {
  *  `source` field may hold. */
 export interface ExternalLadderData {
 	ladders: Array<{ entityType: string; sources: ExternalSource[]; importSources?: ExternalSource[] }>;
+}
+/** `GET /external/lookup` — the SPD record an upstream address already names,
+ *  read from the import index. `publicId` is null when the address is
+ *  upstream-only, which is the signal to offer an import. */
+export interface ExternalLookupResult {
+	source: ExternalSource;
+	externalId: string;
+	publicId?: string | null;
+	entityType?: string | null;
+	route?: string | null;
 }
 /** One rung of `POST /external/resolve`: one source's answer. `degraded:true`
  *  means the source was unreachable — deliberately distinct from an empty rung. */

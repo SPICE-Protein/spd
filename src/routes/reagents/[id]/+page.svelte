@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { reagents } from '$lib/api/client';
-	import type { PubchemSection, ReagentRow } from '$lib/api/types';
+	import { external, reagents } from '$lib/api/client';
+	import type {
+		ExternalLookupResult,
+		ExternalSource,
+		PubchemSection,
+		ReagentExternalReference,
+		ReagentRow
+	} from '$lib/api/types';
 	import { tr, fieldLabel, enumLabel } from '$lib/i18n';
 	import { displayRecordName } from '$lib/format';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
@@ -55,6 +61,10 @@
 	let suppliers = $state<Record<string, unknown>[]>([]);
 	let error = $state('');
 	let loading = $state(true);
+	// Upstream records the source names, keyed by `source:id`, each resolved to
+	// the SPD record that already carries the address (`null` = not imported).
+	let resolved = $state<Record<string, ExternalLookupResult | null>>({});
+	let importingKey = $state('');
 
 	async function load() {
 		loading = true;
@@ -63,10 +73,12 @@
 			row = r;
 			suppliers = Array.isArray(r.suppliers) ? (r.suppliers as Record<string, unknown>[]) : [];
 			error = '';
+			void resolveReferences(r);
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 			row = null;
 			suppliers = [];
+			resolved = {};
 		} finally {
 			loading = false;
 		}
@@ -80,6 +92,72 @@
 		const a = row?.attributes;
 		return a && typeof a === 'object' && !Array.isArray(a) ? (a as Record<string, unknown>) : {};
 	});
+
+	/** The records the source names beyond the compound itself: the structure
+	 *  it was crystallised in, its ligand code, the collections (reactions,
+	 *  pathways) it appears in. Kept per row rather than derived from the page
+	 *  sections so a reference survives a section the reader collapses. */
+	function referencesOf(source: ReagentRow | null): ReagentExternalReference[] {
+		const list = source?.externalReferences;
+		if (!Array.isArray(list)) return [];
+		return list.filter(
+			(item): item is ReagentExternalReference =>
+				!!item && typeof item === 'object' && typeof (item as ReagentExternalReference).source === 'string'
+		);
+	}
+	// A table handle for a source that also names a concrete record ("pdb" plus
+	// structure 7SJI) is the same statement twice; keep the addressed one.
+	const externalReferences = $derived.by(() => {
+		const all = referencesOf(row);
+		const addressed = new Set(all.filter((ref) => ref.externalId).map((ref) => ref.source));
+		return all.filter((ref) => ref.externalId || !addressed.has(ref.source));
+	});
+	// A source whose address SPD can turn into a record. Everything else is
+	// only readable upstream, so the page states it without a dead action.
+	const importableSources = new Set(['pdb']);
+	const referenceKey = (ref: ReagentExternalReference) =>
+		`${ref.source}:${ref.externalId ?? ''}`;
+	const isImportable = (ref: ReagentExternalReference) =>
+		importableSources.has(ref.source) && !!ref.externalId;
+
+	async function resolveReferences(source: ReagentRow) {
+		const refs = referencesOf(source).filter(isImportable);
+		if (!refs.length) {
+			resolved = {};
+			return;
+		}
+		const answers = await Promise.all(
+			refs.map((ref) =>
+				external
+					.lookup(ref.source as ExternalSource, String(ref.externalId))
+					.catch(() => null)
+			)
+		);
+		resolved = Object.fromEntries(refs.map((ref, index) => [referenceKey(ref), answers[index]]));
+	}
+
+	async function importReference(ref: ReagentExternalReference) {
+		if (!ref.externalId) return;
+		importingKey = referenceKey(ref);
+		try {
+			const result = await external.import(ref.source as ExternalSource, String(ref.externalId));
+			resolved = {
+				...resolved,
+				[referenceKey(ref)]: {
+					source: ref.source as ExternalSource,
+					externalId: String(ref.externalId),
+					publicId: result.publicId,
+					entityType: result.entityType,
+					route: result.route
+				}
+			};
+			toastOk(tr('reagent_reference_imported'));
+		} catch (e) {
+			toastErr(e);
+		} finally {
+			importingKey = '';
+		}
+	}
 
 	const description = $derived(String(row?.description ?? '').trim());
 
@@ -438,6 +516,41 @@
 			{/if}
 
 			<RelationsPanel entityType="reagent" entityId={String(row.id)} />
+
+			{#if externalReferences.length}
+				<Section title={tr('reagent_external_records')}>
+					<ul class="divide-y">
+						{#each externalReferences as ref (referenceKey(ref))}
+							{@const local = resolved[referenceKey(ref)]}
+							<li class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+								<div class="min-w-0">
+									<div class="text-xs text-muted-foreground">
+										{enumLabel('reagent_ref_role', ref.role)}
+									</div>
+									<div class="font-mono text-xs">
+										{enumLabel('reagent_ref_source', ref.source)}{#if ref.externalId} · {ref.externalId}{/if}
+									</div>
+								</div>
+								{#if isImportable(ref)}
+									{#if local?.route}
+										<a class="text-xs underline decoration-dotted" href={local.route}>
+											{tr('reagent_reference_open')}
+										</a>
+									{:else if importingKey === referenceKey(ref)}
+										<span class="text-xs text-muted-foreground">
+											{tr('reagent_reference_importing')}
+										</span>
+									{:else}
+										<Button size="xs" variant="outline" onclick={() => importReference(ref)}>
+											{tr('reagent_reference_import')}
+										</Button>
+									{/if}
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				</Section>
+			{/if}
 
 			{#if synonyms.length || chemicalClasses.length}
 				<div class="grid gap-4 lg:grid-cols-2">

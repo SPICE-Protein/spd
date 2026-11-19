@@ -73,6 +73,7 @@ import type {
 	EnzymeSpeciesDataInput,
 	ExternalImportResult,
 	ExternalLadderData,
+	ExternalLookupResult,
 	ExternalResolveData,
 	ExternalSearchData,
 	ExternalSource,
@@ -1494,6 +1495,10 @@ export const external = {
 		post<ExternalImportResult>('/external/import', { source, externalId }),
 	/** Per entity type, the ordered sources: dedicated catalog first, fallback after. */
 	ladder: () => get<ExternalLadderData>('/external/ladder'),
+	/** Does SPD already hold this upstream address? Reads the import index, so
+	 *  it answers offline and never writes. */
+	lookup: (source: ExternalSource, externalId: string) =>
+		get<ExternalLookupResult>('/external/lookup', { source, externalId }),
 	/** Read-only, multi-rung lookup. Nothing is imported; the caller picks a
 	 *  candidate and then calls `import` with its source/externalId. */
 	resolve: (entityType: string, query: string, limit = 10) =>

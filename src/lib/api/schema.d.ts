@@ -1710,6 +1710,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/external/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The SPD record an upstream address already names, read from the import index; `publicId` null when the address is not in SPD yet */
+        get: operations["get_api_v1_external_lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/external/resolve": {
         parameters: {
             query?: never;
@@ -6146,6 +6163,12 @@ export interface components {
             /** Format: double */
             exactMass?: number | null;
             experimentalProperties?: unknown;
+            /**
+             * @description The records the source names beyond the compound itself: `[{source,
+             *     id, role, table, url}]`. Upstream data, so the refresh door may
+             *     rewrite it and a correction may fix it.
+             */
+            externalReferences?: unknown;
             /** Format: int32 */
             hBondAcceptorCount?: number | null;
             /** Format: int32 */
@@ -11409,6 +11432,38 @@ export interface operations {
     get_api_v1_external_ladder: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success — standard envelope (data = endpoint payload) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope"];
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    get_api_v1_external_lookup: {
+        parameters: {
+            query?: {
+                source?: string;
+                externalId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

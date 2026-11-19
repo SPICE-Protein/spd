@@ -2,7 +2,11 @@
 	// PubChem's remainder sections, rendered as the source's own tree. Each
 	// top-level block is a collapsible card and each nested block a <details>,
 	// so a long toxicity or spectral page never dumps every paragraph at once.
+	// A row keeps its label, its link and, for the collections PubChem renders
+	// client-side (pdb, rhea, pathway), the table handle — the value alone is
+	// often a bare number with nowhere to go.
 	import Section from '$lib/components/Section.svelte';
+	import { tr } from '$lib/i18n';
 	import type { PubchemSection } from '$lib/api/types';
 
 	let {
@@ -23,7 +27,39 @@
 		<dl class="space-y-2 text-sm">
 			{#each rows as item, index (`${index}`)}
 				<div>
-					<dd class="leading-6 break-words whitespace-pre-line">{item.value}</dd>
+					{#if item.name}
+						<dt class="text-xs font-medium text-muted-foreground">{item.name}</dt>
+					{/if}
+					{#if item.value}
+						<dd class="leading-6 break-words whitespace-pre-line">
+							{#if item.url}
+								<a class="underline decoration-dotted" href={item.url} target="_blank" rel="noopener"
+									>{item.value}</a
+								>
+							{:else}
+								{item.value}
+							{/if}
+						</dd>
+					{/if}
+					{#if item.table}
+						<dd class="font-mono text-[11px] text-muted-foreground">
+							{tr('pubchem_upstream_table')} · {item.table}
+						</dd>
+					{/if}
+					{#if item.dataUrl}
+						<dd class="font-mono text-[11px] text-muted-foreground">
+							{tr('pubchem_upstream_file')}
+						</dd>
+					{/if}
+					{#if item.links?.length}
+						<dd class="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-[11px]">
+							{#each item.links as link, linkIndex (`${linkIndex}`)}
+								<a class="underline decoration-dotted break-all" href={link.url} target="_blank" rel="noopener"
+									>{link.text || tr('pubchem_link')}</a
+								>
+							{/each}
+						</dd>
+					{/if}
 					{#if item.unit || item.reference}
 						<dt class="mt-0.5 flex flex-wrap gap-x-2 text-[11px] text-muted-foreground">
 							{#if item.unit}<span class="font-mono">{item.unit}</span>{/if}
