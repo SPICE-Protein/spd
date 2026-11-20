@@ -2614,6 +2614,7 @@
   "reagent_reference_import": "导入 SPD",
   "reagent_reference_importing": "导入中…",
   "reagent_reference_imported": "已导入 SPD",
+  "reagent_references_capped": "只列前 40 条反应",
   "reagent_ref_source_pdb": "PDB",
   "reagent_ref_source_pdbe": "PDBe",
   "reagent_ref_source_ncbi_structure": "NCBI Structure",

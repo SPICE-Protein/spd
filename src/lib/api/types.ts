@@ -780,6 +780,9 @@ export interface ReagentExternalReference {
 	role: string;
 	table?: string;
 	url?: string | null;
+	/** What the source calls the record, when it names one (a reaction's
+	 *  equation). */
+	title?: string | null;
 }
 export interface VectorRow {
 	id: string;

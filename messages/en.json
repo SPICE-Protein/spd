@@ -2614,6 +2614,7 @@
   "reagent_reference_import": "Import into SPD",
   "reagent_reference_importing": "Importing…",
   "reagent_reference_imported": "Imported into SPD",
+  "reagent_references_capped": "First 40 reactions listed",
   "reagent_ref_source_pdb": "PDB",
   "reagent_ref_source_pdbe": "PDBe",
   "reagent_ref_source_ncbi_structure": "NCBI Structure",

@@ -12,6 +12,14 @@ describe('actionableReferences', () => {
 		]);
 	});
 
+	it('keeps a reaction Rhea indexed by id', () => {
+		expect(
+			actionableReferences([
+				ref('rhea', { externalId: '10940', role: 'reactions', title: 'A = B' })
+			])
+		).toHaveLength(1);
+	});
+
 	it('drops a table the source renders itself', () => {
 		const tables = [
 			ref('rhea', { role: 'reactions', table: 'rhea' }),

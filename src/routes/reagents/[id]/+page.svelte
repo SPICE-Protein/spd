@@ -115,6 +115,12 @@
 	const referenceKey = (ref: ReagentExternalReference) =>
 		`${ref.source}:${ref.externalId ?? ''}`;
 	const externalReferences = $derived.by(() => actionableReferences(referencesOf(row)));
+	// The importer asks Rhea for a bounded page of a compound's reactions;
+	// the page says so rather than passing the cap off as the whole set.
+	const REACTION_ROW_CAP = 40;
+	const reactionsCapped = $derived(
+		externalReferences.filter((ref) => ref.source === 'rhea').length >= REACTION_ROW_CAP
+	);
 
 	async function resolveReferences(source: ReagentRow) {
 		const refs = referencesOf(source).filter(isActionableReference);
@@ -520,11 +526,13 @@
 							{@const local = resolved[referenceKey(ref)]}
 							<li class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
 								<div class="min-w-0">
+									{#if ref.title}
+										<div class="text-sm break-words">{ref.title}</div>
+									{/if}
 									<div class="text-xs text-muted-foreground">
-										{enumLabel('reagent_ref_role', ref.role.replace(/-/g, '_'))}
-									</div>
-									<div class="font-mono text-xs">
-										{enumLabel('reagent_ref_source', ref.source.replace(/-/g, '_'))}{#if ref.externalId} · {ref.externalId}{/if}
+										{enumLabel('reagent_ref_role', ref.role.replace(/-/g, '_'))} ·
+										{enumLabel('reagent_ref_source', ref.source.replace(/-/g, '_'))}{#if ref.externalId} ·
+											<span class="font-mono">{ref.externalId}</span>{/if}
 									</div>
 								</div>
 								{#if isActionableReference(ref)}
@@ -545,6 +553,9 @@
 							</li>
 						{/each}
 					</ul>
+					{#if reactionsCapped}
+						<p class="pt-2 text-xs text-muted-foreground">{tr('reagent_references_capped')}</p>
+					{/if}
 				</Section>
 			{/if}
 
