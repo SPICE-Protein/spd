@@ -10,6 +10,7 @@
 	} from '$lib/api/types';
 	import { tr, fieldLabel, enumLabel } from '$lib/i18n';
 	import { displayRecordName } from '$lib/format';
+	import { actionableReferences, isActionableReference } from '$lib/reagent-references';
 	import { toastOk, toastErr } from '$lib/state/toast.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import EntityBreadcrumb from '$lib/components/EntityBreadcrumb.svelte';
@@ -105,23 +106,18 @@
 				!!item && typeof item === 'object' && typeof (item as ReagentExternalReference).source === 'string'
 		);
 	}
-	// A table handle for a source that also names a concrete record ("pdb" plus
-	// structure 7SJI) is the same statement twice; keep the addressed one.
-	const externalReferences = $derived.by(() => {
-		const all = referencesOf(row);
-		const addressed = new Set(all.filter((ref) => ref.externalId).map((ref) => ref.source));
-		return all.filter((ref) => ref.externalId || !addressed.has(ref.source));
-	});
-	// A source whose address SPD can turn into a record. Everything else is
-	// only readable upstream, so the page states it without a dead action.
-	const importableSources = new Set(['pdb']);
+	// PubChem names two kinds of things here: records it can address (a
+	// structure code) and collections it renders as a table on its own page
+	// (Rhea reactions, Reactome pathways, its NCBI Structure search) whose
+	// rows never reach us and which therefore have no id to open or import.
+	// Only the addressed ones are listed; the tables stay where they already
+	// appear, on the section that names them.
 	const referenceKey = (ref: ReagentExternalReference) =>
 		`${ref.source}:${ref.externalId ?? ''}`;
-	const isImportable = (ref: ReagentExternalReference) =>
-		importableSources.has(ref.source) && !!ref.externalId;
+	const externalReferences = $derived.by(() => actionableReferences(referencesOf(row)));
 
 	async function resolveReferences(source: ReagentRow) {
-		const refs = referencesOf(source).filter(isImportable);
+		const refs = referencesOf(source).filter(isActionableReference);
 		if (!refs.length) {
 			resolved = {};
 			return;
@@ -531,7 +527,7 @@
 										{enumLabel('reagent_ref_source', ref.source.replace(/-/g, '_'))}{#if ref.externalId} · {ref.externalId}{/if}
 									</div>
 								</div>
-								{#if isImportable(ref)}
+								{#if isActionableReference(ref)}
 									{#if local?.route}
 										<a class="text-xs underline decoration-dotted" href={local.route}>
 											{tr('reagent_reference_open')}

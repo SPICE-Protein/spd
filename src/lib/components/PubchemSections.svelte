@@ -14,6 +14,19 @@
 		emptyText = ''
 	}: { sections?: PubchemSection[]; emptyText?: string } = $props();
 
+	// PubChem's table handles are its own keys; a reader sees the collection.
+	const TABLE_LABELS: Record<string, string> = {
+		pdb: 'PDB',
+		rhea: 'Rhea',
+		gtopdb_reaction: 'Guide to Pharmacology',
+		pathwayreaction: 'Reactome',
+		'collection=pathway&core=1': 'Pathway'
+	};
+
+	function tableLabel(table: string): string {
+		return TABLE_LABELS[table] ?? table;
+	}
+
 	function countInformation(section: PubchemSection): number {
 		return (
 			(section.information?.length ?? 0) +
@@ -43,7 +56,7 @@
 					{/if}
 					{#if item.table}
 						<dd class="font-mono text-[11px] text-muted-foreground">
-							{tr('pubchem_upstream_table')} · {item.table}
+							{tr('pubchem_upstream_table')} · {tableLabel(item.table)}
 						</dd>
 					{/if}
 					{#if item.dataUrl}
