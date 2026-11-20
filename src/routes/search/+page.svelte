@@ -117,6 +117,9 @@
 		} finally {
 			loading = false;
 		}
+		// A local miss is not an answer: the federation is searched without
+		// being asked for. With local hits the upstream call stays opt-in.
+		if (!error && hits.length === 0 && term.trim() === q) void runExternals(q);
 	}
 
 	const ALL_SOURCES: ExternalSource[] = [
@@ -493,7 +496,7 @@
 		</ul>
 	{/if}
 
-	{#if !loading && term.trim() && externalSources(entityType).length > 0}
+	{#if !loading && term.trim() && hits.length > 0 && externalSources(entityType).length > 0}
 		<div class="flex flex-wrap items-center gap-3 border border-dashed p-3">
 			<InfoTip text={tr('ext_search_hint')} label={`${tr('ext_search_button')} — ${tr('common_more_info')}`} />
 			<Button
