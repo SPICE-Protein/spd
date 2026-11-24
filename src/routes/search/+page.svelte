@@ -130,6 +130,7 @@
 		'pubchem',
 		'rhea',
 		'reactome',
+		'plant-reactome',
 		'brenda',
 		'igem'
 	];
@@ -149,9 +150,9 @@
 		if (t === 'cell-line') return ['cellosaurus'];
 		if (t === 'reagent') return ['pubchem'];
 		if (t === 'reaction') return ['rhea'];
-		if (t === 'pathway') return ['reactome'];
+		if (t === 'pathway') return ['reactome', 'plant-reactome'];
 		if (t === 'enzyme') return ['brenda'];
-	if (t === 'biobrick') return ['igem'];
+		if (t === 'biobrick') return ['igem'];
 		return [];
 	}
 
@@ -207,6 +208,7 @@
 		pubchem: 'info',
 		rhea: 'ok',
 		reactome: 'info',
+		'plant-reactome': 'ok',
 		brenda: 'warn',
 		igem: 'ok'
 	};
@@ -526,7 +528,9 @@
 					{#if data && data.items.length > 0}
 						<div class="mt-3">
 							<div class="flex items-center gap-2">
-								<Badge tone={SOURCE_TONE[group.source]}>{tr(`ext_source_${group.source}`)}</Badge>
+								<Badge tone={SOURCE_TONE[group.source]}
+									>{enumLabel('ext_source', group.source.replace(/-/g, '_'))}</Badge
+								>
 								{#if preferredSources.has(group.source)}
 									<Badge tone="ok">{tr('upstream_preferred')}</Badge>
 									<InfoTip text={tr('upstream_ladder_hint')} label={tr('upstream_preferred')} />
@@ -554,7 +558,8 @@
 													href={url}
 													target="_blank"
 													rel="noopener"
-													title={tr('ext_open_source')}>{tr(`ext_source_${group.source}`)} ↗</a
+													title={tr('ext_open_source')}
+													>{enumLabel('ext_source', group.source.replace(/-/g, '_'))} ↗</a
 												>
 											{/if}
 											<Button

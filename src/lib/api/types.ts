@@ -1287,7 +1287,8 @@ export interface SearchBody {
 /** The catalogs SPD can federate with. Each narrows one SPD entity kind:
  * UniProt → protein, PDB → pdb-entry, NCBI Gene → gene,
  * Cellosaurus → cell-line, PubChem → reagent, Rhea → reaction,
- * Reactome → pathway, BRENDA → enzyme, iGEM Registry → biobrick. */
+ * Reactome and Plant Reactome → pathway, BRENDA → enzyme,
+ * iGEM Registry → biobrick. */
 export type ExternalSource =
 	| 'uniprot'
 	| 'pdb'
@@ -1296,6 +1297,7 @@ export type ExternalSource =
 	| 'pubchem'
 	| 'rhea'
 	| 'reactome'
+	| 'plant-reactome'
 	| 'brenda'
 	| 'igem';
 export interface ExternalHit {

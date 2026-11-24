@@ -12,7 +12,7 @@
 		ExternalResolveItem,
 		ExternalSource
 	} from '$lib/api/types';
-	import { tr } from '$lib/i18n';
+	import { tr, enumLabel } from '$lib/i18n';
 	import { toastErr } from '$lib/state/toast.svelte';
 	import Badge from './Badge.svelte';
 	import Button from './Button.svelte';
@@ -41,6 +41,7 @@
 		pubchem: 'info',
 		rhea: 'ok',
 		reactome: 'info',
+		'plant-reactome': 'ok',
 		brenda: 'warn'
 	};
 
@@ -173,7 +174,7 @@
 							onclick={() => toggle(rung.source)}
 						>
 							<Badge tone={SOURCE_TONE[rung.source] ?? 'neutral'}
-								>{tr(`ext_source_${rung.source}`)}</Badge
+								>{enumLabel('ext_source', rung.source.replace(/-/g, '_'))}</Badge
 							>
 							{#if i === 0}
 								<Badge tone="ok">{tr('upstream_preferred')}</Badge>
@@ -222,7 +223,7 @@
 													</button>
 													<span class="flex shrink-0 flex-wrap items-center gap-2">
 														<Badge tone={SOURCE_TONE[item.source] ?? 'neutral'}
-															>{tr(`ext_source_${item.source}`)}</Badge
+															>{enumLabel('ext_source', item.source.replace(/-/g, '_'))}</Badge
 														>
 														{#if item.localPublicId}
 															<Badge tone="ok">{tr('upstream_in_library')}</Badge>

@@ -17,6 +17,7 @@
 		{ name: 'PubChem', href: 'https://pubchem.ncbi.nlm.nih.gov/' },
 		{ name: 'Rhea', href: 'https://www.rhea-db.org/' },
 		{ name: 'Reactome', href: 'https://reactome.org/' },
+		{ name: 'Plant Reactome', href: 'https://plantreactome.gramene.org/' },
 		{ name: 'BRENDA', href: 'https://www.brenda-enzymes.org/' }
 	];
 </script>
